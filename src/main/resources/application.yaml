@@ -26,3 +26,14 @@ spring:
           google:
             client-id: "718036740225-nccd9egms4lp44bdqpt0dh37g8gd3385.apps.googleusercontent.com"
             client-secret: "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"
+logging:
+  level:
+    org:
+      springframework:
+        security: TRACE
+
+server:
+  tomcat:
+    remoteip:
+      remote-ip-header: X-Forwarded-For
+      protocol-header: X-Forwarded-Proto
