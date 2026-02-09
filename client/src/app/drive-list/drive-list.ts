@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { DriveService } from '../drive-service';
 import { Drive } from '../drive';
-import {BehaviorSubject, combineLatest, map, Observable, shareReplay, switchMap, take} from 'rxjs';
+import { BehaviorSubject, combineLatest, map, Observable, shareReplay, switchMap, take } from 'rxjs';
 import { MatTableModule } from '@angular/material/table';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
@@ -11,7 +11,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import {Reason} from '../reason';
+import { Reason } from '../reason';
+import { DriveFilter } from '../drive-filter';
 
 @Component({
   selector: 'app-drive-list',
@@ -39,9 +40,9 @@ export class DriveList {
   public drives$: Observable<Drive[]>;
   protected displayedColumns: string[] = ['Datum', 'Template', 'Länge', 'Grund', 'Aktion'];
 
-  protected selectedYear: number | null = this.now.getFullYear();
-  protected selectedMonth: number | null = this.now.getMonth() + 1;
-  protected selectedReason: string | null = null;
+  protected selectedYear: number | null;
+  protected selectedMonth: number | null;
+  protected selectedReason: string | null;
   protected availableYears: number[] = [this.now.getFullYear()];
   protected reasons = Reason.keys();
   protected readonly months = [
@@ -59,15 +60,7 @@ export class DriveList {
     { value: 12, name: 'Dezember' }
   ];
 
-  private filterSubject = new BehaviorSubject<{
-    year: number | null;
-    month: number | null;
-    reason: string | null;
-  }>({
-    year: this.now.getFullYear(),
-    month: this.now.getMonth() + 1,
-    reason: null,
-  });
+  private filterSubject: BehaviorSubject<DriveFilter>;
 
   private touchStartX = 0;
   private touchStartY = 0;
@@ -80,6 +73,12 @@ export class DriveList {
     private snackBar: MatSnackBar,
     private router: Router
   ) {
+    const filter = this.driveService.getFilter();
+    this.selectedYear = filter.year;
+    this.selectedMonth = filter.month;
+    this.selectedReason = filter.reason;
+    this.filterSubject = new BehaviorSubject<DriveFilter>(filter);
+
     this.allDrives$ = this.refresh$.pipe(
       switchMap(() => this.driveService.findAll()),
       map(drives => {
@@ -126,11 +125,13 @@ export class DriveList {
   }
 
   private updateFilter(): void {
-    this.filterSubject.next({
+    const filter = {
       year: this.selectedYear,
       month: this.selectedMonth,
       reason: this.selectedReason
-    });
+    };
+    this.driveService.setFilter(filter);
+    this.filterSubject.next(filter);
   }
 
   editDrive(id: string): void {

@@ -19,7 +19,13 @@ describe('DriveList', () => {
       findAll: vi.fn().mockReturnValue(of([])),
       delete: vi.fn().mockReturnValue(of(undefined)),
       getLastSelectedDate: vi.fn().mockReturnValue(new Date()),
-      setLastSelectedDate: vi.fn()
+      setLastSelectedDate: vi.fn(),
+      getFilter: vi.fn().mockReturnValue({
+        year: new Date().getFullYear(),
+        month: new Date().getMonth() + 1,
+        reason: null
+      }),
+      setFilter: vi.fn()
     };
 
     snackBarMock = {

@@ -33,6 +33,20 @@ describe('DriveService', () => {
     expect(service.getLastSelectedDate()).toEqual(testDate);
   });
 
+  it('should store and retrieve the filter', () => {
+    const filter = { year: 2022, month: 5, reason: 'Business' };
+    service.setFilter(filter);
+    expect(service.getFilter()).toEqual(filter);
+  });
+
+  it('should have initial filter with current year and month', () => {
+    const filter = service.getFilter();
+    const now = new Date();
+    expect(filter.year).toBe(now.getFullYear());
+    expect(filter.month).toBe(now.getMonth() + 1);
+    expect(filter.reason).toBeNull();
+  });
+
   it('should findAll via GET', () => {
     const mockDrives = [{ id: '1', date: '2023-10-15' }];
     service.findAll().subscribe(drives => {

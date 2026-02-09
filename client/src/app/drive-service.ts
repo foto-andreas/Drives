@@ -2,12 +2,18 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
 import { Drive } from './drive';
+import { DriveFilter } from './drive-filter';
 
 @Injectable({
   providedIn: 'root',
 })
 export class DriveService {
   private lastSelectedDate: Date = new Date();
+  private currentFilter: DriveFilter = {
+    year: new Date().getFullYear(),
+    month: new Date().getMonth() + 1,
+    reason: null
+  };
 
   constructor(private http: HttpClient) {}
 
@@ -17,6 +23,14 @@ export class DriveService {
 
   public setLastSelectedDate(date: Date): void {
     this.lastSelectedDate = date;
+  }
+
+  public getFilter(): DriveFilter {
+    return this.currentFilter;
+  }
+
+  public setFilter(filter: DriveFilter): void {
+    this.currentFilter = filter;
   }
 
   public findAll(): Observable<Drive[]> {
