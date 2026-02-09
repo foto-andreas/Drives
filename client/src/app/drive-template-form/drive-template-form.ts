@@ -47,6 +47,16 @@ export class DriveTemplateForm implements OnInit {
       drive_length: new FormControl(0, [Validators.required, Validators.min(1)]),
       reason: new FormControl('PRIVATE', [Validators.required])
     });
+
+    this.templateForm.get('reason')?.valueChanges.subscribe(reason => {
+      const lengthControl = this.templateForm.get('drive_length');
+      if (reason === 'HOME') {
+        lengthControl?.setValidators([Validators.required, Validators.min(0)]);
+      } else {
+        lengthControl?.setValidators([Validators.required, Validators.min(1)]);
+      }
+      lengthControl?.updateValueAndValidity();
+    });
   }
 
   ngOnInit(): void {

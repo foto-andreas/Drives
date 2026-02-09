@@ -4,5 +4,6 @@ public enum Reason {
     PRIVATE,
     WORK,
     ESTATE,
-    OTHER
+    OTHER,
+    HOME
 }

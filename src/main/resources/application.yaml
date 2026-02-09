@@ -12,7 +12,11 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
     defer-datasource-initialization: true
+    show-sql: true
   h2:
     console:
       enabled: true

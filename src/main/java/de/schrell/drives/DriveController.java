@@ -32,7 +32,7 @@ public class DriveController {
     @PutMapping("/api/drives")
     Drive addDrive(@RequestBody Drive drive) {
         // normalize
-        if (drive.getReason() == drive.getTemplate().getReason()) {
+        if (drive.getTemplate() != null && drive.getReason() == drive.getTemplate().getReason()) {
             drive.setReason(null);
         }
         return driveRepository.save(drive);
@@ -42,7 +42,7 @@ public class DriveController {
     @PostMapping("/api/drives")
     Drive updateDrive(@RequestBody Drive drive) {
         // normalize
-        if (drive.getReason() == drive.getTemplate().getReason()) {
+        if (drive.getTemplate() != null && drive.getReason() == drive.getTemplate().getReason()) {
             drive.setReason(null);
         }
         return driveRepository.save(drive);

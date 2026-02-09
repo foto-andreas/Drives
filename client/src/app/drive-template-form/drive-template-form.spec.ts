@@ -117,4 +117,36 @@ describe('DriveTemplateForm', () => {
 
     expect(snackBarMock.open).toHaveBeenCalled();
   });
+
+  it('should allow 0 length for HOME reason', async () => {
+    fixture.detectChanges();
+    const form = (component as any).templateForm;
+
+    form.patchValue({
+      name: 'Home Office',
+      from_location: 'Home',
+      to_location: 'Home',
+      drive_length: 0,
+      reason: 'HOME'
+    });
+
+    expect(form.valid).toBe(true);
+    expect(form.get('drive_length').errors).toBeNull();
+  });
+
+  it('should not allow 0 length for WORK reason', async () => {
+    fixture.detectChanges();
+    const form = (component as any).templateForm;
+
+    form.patchValue({
+      name: 'Work',
+      from_location: 'Home',
+      to_location: 'Office',
+      drive_length: 0,
+      reason: 'WORK'
+    });
+
+    expect(form.valid).toBe(false);
+    expect(form.get('drive_length').errors).toBeTruthy();
+  });
 });

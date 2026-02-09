@@ -33,6 +33,6 @@ public class Drive {
      * Getter für das Feld {@link Drive#reason}.
      */
     public Reason getReason() {
-        return reason == null ? template.getReason() : reason;
+        return reason == null && template != null ? template.getReason() : reason;
     }
 }
