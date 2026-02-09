@@ -19,3 +19,10 @@ spring:
   web:
     resources:
       static-locations: classpath:/public/browser
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: "718036740225-nccd9egms4lp44bdqpt0dh37g8gd3385.apps.googleusercontent.com"
+            client-secret: "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"
