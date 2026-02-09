@@ -1,0 +1,55 @@
+/* You can add global styles to this file, and also import other style files */
+html, body { height: 100%; margin: 0; }
+body { font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+.success-snackbar {
+  background-color: #4caf50 !important;
+  color: white !important;
+}
+
+.success-snackbar .mdc-snackbar__surface {
+  background-color: #4caf50 !important;
+}
+
+.success-snackbar .mdc-snackbar__label {
+  color: white !important;
+}
+
+.success-snackbar .mat-mdc-snack-bar-action {
+  color: white !important;
+}
+
+.error-snackbar {
+  background-color: #f44336 !important;
+  color: white !important;
+}
+
+.error-snackbar .mdc-snackbar__surface {
+  background-color: #f44336 !important;
+}
+
+.error-snackbar .mdc-snackbar__label {
+  color: white !important;
+}
+
+.error-snackbar .mat-mdc-snack-bar-action {
+  color: white !important;
+}
+
+/* Reduzierung des Abstands der Tabellenspalten um ca. 30% */
+.mat-mdc-header-cell, .mat-mdc-cell {
+  padding-left: 11px !important;
+  padding-right: 11px !important;
+}
+
+.mat-mdc-header-cell:first-child, .mat-mdc-cell:first-child {
+  padding-left: 16px !important;
+}
+
+.mat-mdc-header-cell:last-child, .mat-mdc-cell:last-child {
+  padding-right: 16px !important;
+}
+
+.mat-button {
+  min-width: 80px;
+}

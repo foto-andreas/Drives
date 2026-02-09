@@ -1,0 +1,110 @@
+<div class="card my-5">
+  <div class="card-body">
+    <div class="d-flex gap-2 mb-2">
+      <mat-form-field appearance="outline" class="filter-field compact-filter">
+        <mat-label>Grund</mat-label>
+        <mat-select [(ngModel)]="selectedReason" (selectionChange)="onReasonChange()">
+          <mat-option [value]="null">Alle</mat-option>
+          @for (reason of reasons; track reason) {
+            <mat-option [value]="reason">{{ Reason.toString(reason) }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="filter-field compact-filter">
+        <mat-label>Jahr</mat-label>
+        <mat-select [(ngModel)]="selectedYear" (selectionChange)="onYearChange()">
+          <mat-option [value]="null">Alle</mat-option>
+          @for (year of availableYears; track year) {
+            <mat-option [value]="year">{{ year }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="filter-field compact-filter">
+        <mat-label>Monat</mat-label>
+        <mat-select [(ngModel)]="selectedMonth" (selectionChange)="onMonthChange()" [disabled]="!selectedYear">
+          <mat-option [value]="null">Alle</mat-option>
+          @for (month of months; track month.value) {
+            <mat-option [value]="month.value">{{ month.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="card-title">Fahrten</h2>
+      <div class="d-flex gap-2">
+        <button mat-raised-button color="accent" (click)="exportToCsv()">
+          <mat-icon>download</mat-icon> CSV Export
+        </button>
+        <button mat-raised-button color="primary" routerLink="/drives/new">
+          <mat-icon>add</mat-icon> Neue Fahrt
+        </button>
+      </div>
+    </div>
+
+    <table mat-table [dataSource]="drives$" class="mat-elevation-z8">
+      <!-- Datum Column -->
+      <ng-container matColumnDef="Datum">
+        <th mat-header-cell *matHeaderCellDef>Datum</th>
+        <td mat-cell *matCellDef="let element"> {{ element.date | date:'dd.MM.yyyy' }} </td>
+      </ng-container>
+
+      <!-- Template Column -->
+      <ng-container matColumnDef="Template">
+        <th mat-header-cell *matHeaderCellDef>Vorlage (Von/Nach)</th>
+        <td mat-cell *matCellDef="let element">
+          <div class="template-info">
+            <div class="template-name">{{ element.template?.name }}</div>
+            <div class="location-cell">
+              <span class="location-from">{{ element.template?.from_location }}</span>
+              <span class="location-separator"></span>
+              <span class="location-to">{{ element.template?.to_location }}</span>
+            </div>
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- Länge Column -->
+      <ng-container matColumnDef="Länge">
+        <th mat-header-cell *matHeaderCellDef>Länge</th>
+        <td mat-cell *matCellDef="let element"> {{ element.template?.drive_length }} km </td>
+      </ng-container>
+
+      <!-- Grund Column -->
+      <ng-container matColumnDef="Grund">
+        <th mat-header-cell *matHeaderCellDef>Grund</th>
+        <td mat-cell *matCellDef="let element">
+          {{ Reason.toString(element.reason) }}
+          <div class="delete-indicator">
+            <mat-icon>delete</mat-icon>
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- Aktion Column -->
+      <ng-container matColumnDef="Aktion">
+        <th mat-header-cell *matHeaderCellDef class="desktop-only">Aktion</th>
+        <td mat-cell *matCellDef="let element" class="desktop-only">
+          <button mat-icon-button color="warn" (click)="deleteDrive(element.id); $event.stopPropagation()">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;" (click)="editDrive(row.id)"
+          (touchstart)="onRowTouchStart($event, row.id)"
+          (touchmove)="onRowTouchMove($event)"
+          (touchend)="onRowTouchEnd($event, row.id)"
+          (touchcancel)="onRowTouchEnd($event, row.id)"
+          [style.transform]="row.id === swipedRowId ? 'translateX(-' + currentSwipeOffset + 'px)' : 'translateX(0)'"
+          [style.transition]="row.id === swipedRowId ? 'none' : 'transform 0.2s ease-out'"></tr>
+
+    </table>
+
+  </div>
+</div>

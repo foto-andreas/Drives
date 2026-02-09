@@ -1,0 +1,31 @@
+<mat-toolbar color="primary">
+  <button mat-icon-button (click)="sidenav.toggle()">
+    <mat-icon>menu</mat-icon>
+  </button>
+  <span>&nbsp;{{ title() }}</span>
+</mat-toolbar>
+
+<mat-sidenav-container class="sidenav-container">
+  <mat-sidenav #sidenav mode="over">
+    <mat-nav-list>
+      <a mat-list-item routerLink="/drives/new" (click)="sidenav.close()">
+        <mat-icon matListItemIcon>add_road</mat-icon>
+        <span matListItemTitle>Fahrt eintragen</span>
+      </a>
+      <a mat-list-item routerLink="/drives" (click)="sidenav.close()">
+        <mat-icon matListItemIcon>directions_car</mat-icon>
+        <span matListItemTitle>Fahrten</span>
+      </a>
+      <a mat-list-item routerLink="/driveTemplates" (click)="sidenav.close()">
+        <mat-icon matListItemIcon>list</mat-icon>
+        <span matListItemTitle>Vorlagen</span>
+      </a>
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <div class="content">
+      <router-outlet />
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>

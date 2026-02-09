@@ -1,0 +1,65 @@
+<div class="card my-5">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="card-title">Vorlagen</h2>
+      <button mat-raised-button color="primary" routerLink="/driveTemplates/new">
+        <mat-icon>add</mat-icon> Neue Vorlage
+      </button>
+    </div>
+
+    <table mat-table [dataSource]="driveTemplates$" class="mat-elevation-z8">
+      <ng-container matColumnDef="Name">
+        <th mat-header-cell *matHeaderCellDef>Name</th>
+        <td mat-cell *matCellDef="let element"> {{ element.name }} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="VonNach">
+        <th mat-header-cell *matHeaderCellDef>Von/Nach</th>
+        <td mat-cell *matCellDef="let element">
+          <div class="location-cell">
+            <span class="location-from">{{ element.from_location }}</span>
+            <span class="location-separator"></span>
+            <span class="location-to">{{ element.to_location }}</span>
+          </div>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="Länge">
+        <th mat-header-cell *matHeaderCellDef>Länge</th>
+        <td mat-cell *matCellDef="let element"> {{ element.drive_length }} km </td>
+      </ng-container>
+
+      <ng-container matColumnDef="Grund">
+        <th mat-header-cell *matHeaderCellDef>Grund</th>
+        <td mat-cell *matCellDef="let element">
+          {{ Reason.toString(element.reason) }}
+          <div class="delete-indicator">
+            <mat-icon>delete</mat-icon>
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- Aktion Column -->
+      <ng-container matColumnDef="Aktion">
+        <th mat-header-cell *matHeaderCellDef class="desktop-only">Aktion</th>
+        <td mat-cell *matCellDef="let element" class="desktop-only">
+          <button mat-icon-button color="warn" (click)="deleteTemplate(element.id); $event.stopPropagation()">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;" (click)="editTemplate(row.id)"
+          (touchstart)="onRowTouchStart($event, row.id)"
+          (touchmove)="onRowTouchMove($event)"
+          (touchend)="onRowTouchEnd($event, row.id)"
+          (touchcancel)="onRowTouchEnd($event, row.id)"
+          [style.transform]="row.id === swipedRowId ? 'translateX(-' + currentSwipeOffset + 'px)' : 'translateX(0)'"
+          [style.transition]="row.id === swipedRowId ? 'none' : 'transform 0.2s ease-out'"></tr>
+
+    </table>
+
+  </div>
+</div>

@@ -1,0 +1,22 @@
+plugins {
+  id 'com.github.node-gradle.node' version '7.1.0'
+}
+
+repositories {
+  mavenCentral()
+}
+
+node {
+  download = true
+  version = '22.13.1'
+}
+
+tasks.register('build', NpxTask) {
+  dependsOn npmInstall
+  command = 'ng'
+  args = ['build', '--output-path=../src/main/resources/public']
+  inputs.files('package.json', 'package-lock.json', 'angular.json', 'tsconfig.json', 'tsconfig.app.json')
+  inputs.dir('src')
+  inputs.dir(fileTree("node_modules").exclude(".cache"))
+  outputs.dir('../src/main/resources/public')
+}

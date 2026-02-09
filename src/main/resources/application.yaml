@@ -1,0 +1,21 @@
+spring:
+  sql:
+    init:
+      mode: always
+  application:
+    name: Fahrten
+  datasource:
+    url: jdbc:h2:file:~/data/drives
+    driverClassName: org.h2.Driver
+    username: sa
+    password: password
+  jpa:
+    hibernate:
+      ddl-auto: update
+    defer-datasource-initialization: true
+  h2:
+    console:
+      enabled: true
+  web:
+    resources:
+      static-locations: classpath:/public/browser
