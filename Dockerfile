@@ -2,4 +2,9 @@ FROM eclipse-temurin:25-jdk
 VOLUME /tmp
 ARG JAR_FILE
 COPY ${JAR_FILE} app.jar
+
+ENV DRIVES_DATABASE_PATH=~/data/drives
+ENV DRIVES_DATABASE_USERNAME=sa
+ENV DRIVES_DATABASE_PASSWORD=password
+
 ENTRYPOINT ["java","-jar","/app.jar"]

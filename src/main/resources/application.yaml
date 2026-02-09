@@ -5,10 +5,10 @@ spring:
   application:
     name: Fahrten
   datasource:
-    url: jdbc:h2:file:~/data/drives
+    url: jdbc:h2:file:${DRIVES_DATABASE_PATH:~/data/drives}
     driverClassName: org.h2.Driver
-    username: sa
-    password: password
+    username: ${DRIVES_DATABASE_USERNAME:sa}
+    password: ${DRIVES_DATABASE_PASSWORD:password}
   jpa:
     hibernate:
       ddl-auto: update
