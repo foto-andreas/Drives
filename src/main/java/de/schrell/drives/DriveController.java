@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:4200")
 public class DriveController {
 
     private final DriveRepository driveRepository;
@@ -17,16 +16,19 @@ public class DriveController {
         this.driveRepository = driveRepository;
     }
 
+    @CrossOrigin
     @GetMapping("/api/drives")
     public List<Drive> getDrives() {
         return (List<Drive>) driveRepository.findAllByOrderByDateAsc();
     }
 
+    @CrossOrigin
     @GetMapping("/api/drives/{id}")
     public Optional<Drive> getDrive(@PathVariable String id) {
         return driveRepository.findById(id);
     }
 
+    @CrossOrigin
     @PutMapping("/api/drives")
     Drive addDrive(@RequestBody Drive drive) {
         // normalize
@@ -36,6 +38,7 @@ public class DriveController {
         return driveRepository.save(drive);
     }
 
+    @CrossOrigin
     @PostMapping("/api/drives")
     Drive updateDrive(@RequestBody Drive drive) {
         // normalize
@@ -45,6 +48,7 @@ public class DriveController {
         return driveRepository.save(drive);
     }
 
+    @CrossOrigin
     @DeleteMapping("/api/drives/{id}")
     ResponseEntity<Void> deleteDrive(@PathVariable String id) {
         if (driveRepository.existsById(id)) {

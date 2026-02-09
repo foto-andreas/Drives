@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:4200")
 public class DriveTemplateController {
 
     private final DriveTemplateRepository driveTemplateRepository;
@@ -19,27 +18,32 @@ public class DriveTemplateController {
         this.driveRepository = driveRepository;
     }
 
+    @CrossOrigin
     @GetMapping("/api/driveTemplates")
     public List<DriveTemplate> getDrives() {
         return (List<DriveTemplate>) driveTemplateRepository.findAllByOrderByNameAsc();
     }
 
+    @CrossOrigin
     @GetMapping("/api/driveTemplates/{id}")
     public Optional<DriveTemplate> getDriveTemplate(@PathVariable String id) {
         return driveTemplateRepository.findById(id);
     }
 
+    @CrossOrigin
     @PutMapping("/api/driveTemplates")
     DriveTemplate addDriveTemplate(@RequestBody DriveTemplate driveTemplate) {
         driveTemplate.setId(null);
         return driveTemplateRepository.save(driveTemplate);
     }
 
+    @CrossOrigin
     @PostMapping("/api/driveTemplates")
     DriveTemplate updateDriveTemplate(@RequestBody DriveTemplate driveTemplate) {
         return driveTemplateRepository.save(driveTemplate);
     }
 
+    @CrossOrigin
     @DeleteMapping("/api/driveTemplates/{id}")
     ResponseEntity<Void> deleteDriveTemplate(@PathVariable String id) {
         Optional<DriveTemplate> template = driveTemplateRepository.findById(id);
