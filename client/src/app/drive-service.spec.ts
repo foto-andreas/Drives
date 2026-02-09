@@ -34,9 +34,14 @@ describe('DriveService', () => {
   });
 
   it('should findAll via GET', () => {
-    const mockDrives = [{ id: '1' }];
+    const mockDrives = [{ id: '1', date: '2023-10-15' }];
     service.findAll().subscribe(drives => {
-      expect(drives).toEqual(mockDrives as any);
+      expect(drives.length).toBe(1);
+      expect(drives[0].id).toBe('1');
+      expect(drives[0].date).toBeInstanceOf(Date);
+      expect(drives[0].date.getFullYear()).toBe(2023);
+      expect(drives[0].date.getMonth()).toBe(9); // 0-based
+      expect(drives[0].date.getDate()).toBe(15);
     });
     const req = httpMock.expectOne('/api/drives');
     expect(req.request.method).toBe('GET');
@@ -44,9 +49,13 @@ describe('DriveService', () => {
   });
 
   it('should get by id via GET', () => {
-    const mockDrive = { id: '1' };
+    const mockDrive = { id: '1', date: '2023-10-15' };
     service.get('1').subscribe(drive => {
-      expect(drive).toEqual(mockDrive as any);
+      expect(drive.id).toBe('1');
+      expect(drive.date).toBeInstanceOf(Date);
+      expect(drive.date.getFullYear()).toBe(2023);
+      expect(drive.date.getMonth()).toBe(9);
+      expect(drive.date.getDate()).toBe(15);
     });
     const req = httpMock.expectOne('/api/drives/1');
     expect(req.request.method).toBe('GET');

@@ -95,7 +95,7 @@ export class DriveForm implements OnInit {
 
       const drive = {
         id: this.driveId,
-        date: formValue.date,
+        date: this.formatDate(formValue.date),
         template: formValue.template,
         reason: formValue.reason || null
       };
@@ -128,6 +128,22 @@ export class DriveForm implements OnInit {
 
   compareTemplates(t1: DriveTemplate, t2: DriveTemplate): boolean {
     return t1 && t2 ? t1.id === t2.id : t1 === t2;
+  }
+
+  private formatDate(date: any): string {
+    if (!date) return '';
+    if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      return date;
+    }
+    const d = new Date(date);
+    let month = '' + (d.getMonth() + 1);
+    let day = '' + d.getDate();
+    const year = d.getFullYear();
+
+    if (month.length < 2) month = '0' + month;
+    if (day.length < 2) day = '0' + day;
+
+    return [year, month, day].join('-');
   }
 
   protected readonly Reason = Reason;

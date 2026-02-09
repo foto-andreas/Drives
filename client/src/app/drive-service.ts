@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { Drive } from './drive';
 
 @Injectable({
@@ -20,11 +20,15 @@ export class DriveService {
   }
 
   public findAll(): Observable<Drive[]> {
-    return this.http.get<Drive[]>('/api/drives');
+    return this.http.get<Drive[]>('/api/drives').pipe(
+      map(drives => drives.map(d => ({ ...d, date: this.parseDate(d.date) })))
+    );
   }
 
   public get(id: string): Observable<Drive> {
-    return this.http.get<Drive>(`/api/drives/${id}`);
+    return this.http.get<Drive>(`/api/drives/${id}`).pipe(
+      map(d => ({ ...d, date: this.parseDate(d.date) }))
+    );
   }
 
   public save(drive: any): Observable<Drive> {
@@ -37,5 +41,16 @@ export class DriveService {
 
   public delete(id: string): Observable<void> {
     return this.http.delete<void>(`/api/drives/${id}`);
+  }
+
+  private parseDate(dateStr: any): Date {
+    if (dateStr instanceof Date) return dateStr;
+    if (typeof dateStr === 'string' && dateStr.includes('-')) {
+      const parts = dateStr.split('-');
+      if (parts.length === 3) {
+        return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+      }
+    }
+    return new Date(dateStr);
   }
 }

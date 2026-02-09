@@ -107,8 +107,9 @@ describe('DriveForm', () => {
     const router = TestBed.inject(Router);
     vi.spyOn(router, 'navigate');
 
+    const testDate = new Date(2023, 5, 5);
     (component as any).driveForm.patchValue({
-      date: new Date(),
+      date: testDate,
       template: { id: 't1' },
       reason: 'WORK'
     });
@@ -117,7 +118,9 @@ describe('DriveForm', () => {
 
     component.onSubmit();
 
-    expect(driveServiceMock.save).toHaveBeenCalled();
+    expect(driveServiceMock.save).toHaveBeenCalledWith(expect.objectContaining({
+      date: '2023-06-05'
+    }));
     expect(snackBarMock.open).toHaveBeenCalled();
     expect(router.navigate).toHaveBeenCalledWith(['/drives']);
   });
