@@ -8,3 +8,10 @@ spring:
     hibernate:
       ddl-auto: create-drop
     show-sql: true
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: dummy-id
+            client-secret: dummy-secret
