@@ -4,7 +4,7 @@ Das Frontend ist in mehrere Standalone-Komponenten unterteilt. Jede Komponente b
 
 ## Hauptkomponenten
 
-### DriveList (`/drive-list`)
+### DriveList (`drive-list`)
 Die zentrale Ansicht zum Einsehen der Fahrten.
 - **Funktionen:**
   - Tabellarische Anzeige der Fahrten.
@@ -13,7 +13,7 @@ Die zentrale Ansicht zum Einsehen der Fahrten.
   - Löschen von Einträgen.
   - Verlinkung zur Bearbeitung.
 
-### DriveForm (`/drive-form`)
+### DriveForm (`drive-form`)
 Das Formular zum Erfassen und Ändern von Fahrten.
 - **Funktionen:**
   - Auswahl einer Vorlage (Dropdown).
@@ -21,14 +21,14 @@ Das Formular zum Erfassen und Ändern von Fahrten.
   - Manueller Override des Grundes.
   - Validierung der Pflichtfelder.
 
-### DriveTemplateList (`/drive-template-list`)
+### DriveTemplateList (`drive-template-list`)
 Verwaltung der Fahrtvorlagen.
 - **Funktionen:**
   - Auflistung aller verfügbaren Vorlagen.
   - Button zum Erstellen neuer Vorlagen.
   - Bearbeiten und Löschen von Vorlagen.
 
-### DriveTemplateForm (`/drive-template-form`)
+### DriveTemplateForm (`drive-template-form`)
 Formular für Vorlagen.
 - **Eingabefelder:** Name, Länge (km), Start, Ziel, Grund.
 - **Besonderheit:** Der Name muss eindeutig sein (Backend-Validierung).

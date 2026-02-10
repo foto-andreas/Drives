@@ -1,6 +1,6 @@
 # Fahrtenbuch
 
-Fahrtenbuch auf Basis von Fahrt-Vorlagen und Möglichkeit, HomeOffice-Tage nachzuhalten. 
+Fahrtenbuch auf Basis von Fahrtvorlagen und Möglichkeit, Home-Office-Tage nachzuhalten.
 Es gibt einen CSV-Export (auf Basis der Filtermöglichkeiten) für die Steuererklärung.
 
 ## Dokumentation
@@ -16,7 +16,7 @@ runLocal.sh
 
 ## Deployment
 
-Der Client-Coe wird zusammen mit dem Server-Code gebaut. Die gesamte Anwendung kann als Docker-Container
+Der Client-Code wird zusammen mit dem Server-Code gebaut. Die gesamte Anwendung kann als Docker-Container
 bereitgestellt werden. Wenn der Task ```dockerBuild``` nicht funktioniert, das hier benutzen:
 ```bash
 ./gradlew build && \
@@ -39,7 +39,7 @@ docker load -i ~/drives.tar && \
 
 Im Repo gibt es die folgenden Beispieldateien für ein Deployment mit Docker und Traefik als Reverse-Proxy:
 * docker-compose.yaml
-* traefik-dynamic-drives.yaml
+* traefik-dynamic-drives-middleware.yaml
 * docker-drives-env.txt
 
 Die Einstellungen für die Middleware müssen per File bereitgestellt werden, 
@@ -48,7 +48,7 @@ dann daran, dass Middlewares nicht gefunden werden.
 
 ## Junie
 
-### Doku-Prompt:
+### Doku-Prompt
 ```text
 * Erstelle eine ausführliche Dokumentation für jedes Package und jede Klasse.
 * Beschreibe Ressourcen und deren Nutzung. 
@@ -57,8 +57,15 @@ dann daran, dass Middlewares nicht gefunden werden.
 * Erstelle eine Gesamtdokumentation auf oberer Ebene, die eine Zusammenfassung und Links zu den Einzel-Dokumentationen enthält.
 * Die gesamte Dokumentation soll einheitlich aussehen 
 ```
+### Doku-Update
+```text
+Prüfe sämtliche Dokumentations-Dateien und Kommentare im Code auf aktuellen Stand und 
+Korrektheit. Nimm eventuelle Korrekturen und Erweiterungen vor. 
+Halte dich an die aktuelle einheitliche Struktur.
+```
 
-### Codestyle:
+
+### Codestyle
 ```text
 * Suche die Junie-guidelines.md Dateien und passe den Code dahingehend an, dass diese soweit wie möglich 
 und sinnvoll erfüllt sind. 
@@ -66,7 +73,7 @@ und sinnvoll erfüllt sind.
 * Achte auf speziell implementierte Getter und Setter. Erhalte deren Verhalten.
 ```
 
-### Korrektheit:
+### Korrektheit
 ```text
 * Prüfe den gesamten Code intensiv auf Korrektheit.
 * Wenn ein Verhalten fraglich ist, stelle Rückfragen.

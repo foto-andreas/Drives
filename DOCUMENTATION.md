@@ -23,7 +23,7 @@ graph LR
     Spring <--> DB[(Datenbank)]
 ```
 
-- **Backend:** Spring Boot 3.x, Java 21, Spring Data JPA, Spring Security (OAuth2).
+- **Backend:** Spring Boot 4.x, Java 25, Spring Data JPA, Spring Security (OAuth2).
 - **Frontend:** Angular 19, TypeScript, Signals, HTML/CSS.
 - **Datenbank:** H2 (Entwicklung) / PostgreSQL (Produktion).
 
@@ -74,8 +74,13 @@ Die Anwendung nutzt Google OAuth2 zur Authentifizierung. Die Konfiguration erfol
 - `GOOGLE_CLIENT_ID`
 - `GOOGLE_CLIENT_SECRET`
 
+### Datenbank & Migrationen
+- Entwicklung: H2 (Datei/In-Memory) • Produktion: PostgreSQL
+- Flyway-Migrationen liegen unter `src/main/resources/db/migration`
+- Aktuelle Einstellung: `spring.jpa.hibernate.ddl-auto=update` (siehe `src/main/resources/application.yaml`)
+
 ### CSV-Export
 In der Fahrtenliste (`DriveList`) ist ein CSV-Export implementiert, der die aktuell gefilterte Ansicht exportiert. Dies ist besonders nützlich für die Steuererklärung.
 
 ### Home-Office Tracking
-Über den speziellen Grund `HOME` (HomeOffice) können Tage erfasst werden, an denen nicht gefahren wurde, was ebenfalls für die steuerliche Absetzbarkeit relevant ist.
+Über den speziellen Grund `HOME` (Home-Office) können Tage erfasst werden, an denen nicht gefahren wurde, was ebenfalls für die steuerliche Absetzbarkeit relevant ist.

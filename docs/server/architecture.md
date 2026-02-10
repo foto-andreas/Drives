@@ -38,9 +38,10 @@ Die Anwendung nutzt **OAuth2 Login** (Google).
 - CSRF-Schutz ist aktiviert und nutzt ein Cookie-basiertes Verfahren, das mit dem Angular-Frontend kompatibel ist.
 
 ### Datenbank-Management
-Die Anwendung nutzt JPA zur Persistenz. 
-- In der Entwicklung wird typischerweise eine H2-In-Memory-Datenbank oder eine lokale PostgreSQL-Instanz genutzt.
-- Die Schema-Validierung erfolgt beim Start (`ddl-auto=validate`).
+Die Anwendung nutzt JPA zur Persistenz.
+- In der Entwicklung wird typischerweise eine H2-Datei-/In-Memory-Datenbank oder eine lokale PostgreSQL-Instanz genutzt.
+- Flyway-Migrationen liegen unter `src/main/resources/db/migration`.
+- Aktuelle Einstellung: `spring.jpa.hibernate.ddl-auto=update` (siehe `application.yaml`).
 
 ### Dependency Injection
 Es wird konsequent auf **Constructor Injection** gesetzt. Lombok wird verwendet, um Boilerplate-Code wie Konstruktoren, Getter und Setter zu minimieren.
