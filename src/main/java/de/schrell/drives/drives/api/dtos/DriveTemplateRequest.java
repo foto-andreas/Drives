@@ -11,7 +11,7 @@ public record DriveTemplateRequest(
         @NotBlank(message = "Name is required") String name,
         @Min(value = 0, message = "Drive length must be at least 0") int driveLength,
         @NotEmpty(message = "From location is required") String fromLocation,
-        @NotEmpty(message = "To location is required") String toLocation,
+        @NotBlank(message = "To location is required") String toLocation,
         @NotNull(message = "Reason is required") Reason reason
 ) {
 }

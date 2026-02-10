@@ -101,8 +101,13 @@ export class DriveTemplateForm {
           this.notifications.success('Vorlage erfolgreich gespeichert', 4000);
           this.router.navigate(['/driveTemplates']);
         },
-        error: () => {
-          this.notifications.error('Fehler beim Speichern der Vorlage', 4000);
+        error: (err) => {
+          const serverMsg = err && typeof err === 'object'
+            ? (err.error && typeof err.error === 'object' && err.error.message ? err.error.message : err.message)
+            : '';
+          const statusText = err && err.status ? ` (Status ${err.status})` : '';
+          const full = `Fehler beim Speichern der Vorlage${serverMsg ? ': ' + serverMsg : ''}${statusText}`;
+          this.notifications.error(full, 4000);
         }
       });
   }

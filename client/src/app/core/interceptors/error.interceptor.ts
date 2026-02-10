@@ -1,7 +1,9 @@
-import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
+import { HttpErrorResponse, HttpInterceptorFn, HttpContextToken } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { catchError, throwError } from 'rxjs';
 import { NotificationService } from '../services/notification.service';
+
+export const SUPPRESS_GLOBAL_ERROR_TOAST = new HttpContextToken<boolean>(() => false);
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const notifications = inject(NotificationService);
@@ -17,9 +19,11 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         errorMessage = error.message;
       }
 
-      const fullMessage = `Fehler ${statusCode}: ${errorMessage}`;
-
-      notifications.error(fullMessage, 4000);
+      // Wenn der Request globale Fehler-Toasts unterdrückt, hier keine Meldung anzeigen
+      if (!req.context.get(SUPPRESS_GLOBAL_ERROR_TOAST)) {
+        const fullMessage = `Fehler ${statusCode}: ${errorMessage}`;
+        notifications.error(fullMessage, 4000);
+      }
 
       return throwError(() => error);
     })
