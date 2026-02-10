@@ -10,6 +10,18 @@ Das Basis-Paket der Anwendung.
 | `FahrtenApplication` | Die Hauptklasse der Spring Boot Anwendung. |
 | `SecurityConfig` | Konfiguration der Sicherheitseinstellungen (OAuth2-Login, CSRF-Handling, CORS-Unterstützung). |
 
+## de.schrell.drives.config.multitenancy
+Konfiguration und Infrastruktur für Multitenancy.
+
+| Klasse | Beschreibung |
+| :--- | :--- |
+| `MultiTenantDataSourceConfiguration` | Erstellt tenant-spezifische DataSources und leitet die DB-URL dynamisch aus der Basis-URL ab. |
+| `TenantAwareRoutingDataSource` | Routing-DataSource, die anhand des aktuellen Tenants die richtige DataSource auswählt. |
+| `TenantContext` | ThreadLocal-Container für den aktuell aktiven Tenant. |
+| `TenantFilter` | Filter zur Ermittlung des Tenants aus dem OAuth2-Principal. |
+| `DatabaseInitializationTracker` | Merkt sich Initialisierungen pro Tenant und liefert den Status zurück. |
+| `InitializationNotificationFilter` | Setzt `X-Db-Initialized`, wenn eine Initialisierung erfolgt ist. |
+
 ## de.schrell.drives.drives.api
 Enthält die Web-Schicht der Anwendung (Controller und DTOs).
 

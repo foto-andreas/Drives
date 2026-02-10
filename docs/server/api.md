@@ -108,6 +108,25 @@ Gibt den aktuell authentifizierten Benutzernamen zurück.
 
 ---
 
+## Initialisierung
+
+### Initialisierungsstatus prüfen
+`GET /api/initialization-status`
+
+Gibt zurück, ob die Datenbank des aktiven Tenants in dieser Session initialisiert wurde.
+
+**Antwort:** `200 OK` mit `InitializationStatusResponse`.
+
+```json
+{
+  "initialized": true
+}
+```
+
+**Hinweis:** Bei normalen Requests wird zusätzlich der Header `X-Db-Initialized: true` gesetzt, sobald eine Initialisierung erfolgt ist.
+
+---
+
 ## Fehlerbehandlung
 
 Das System verwendet eine globale Fehlerbehandlung (`GlobalExceptionHandler`), die ein einheitliches Fehlerformat zurückgibt.

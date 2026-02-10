@@ -74,6 +74,13 @@ Die Anwendung nutzt Google OAuth2 zur Authentifizierung. Die Konfiguration erfol
 - `GOOGLE_CLIENT_ID`
 - `GOOGLE_CLIENT_SECRET`
 
+### Multitenancy & dynamische DB-URL
+- Der Tenant wird aus dem OAuth2-Benutzer abgeleitet (E-Mail-Teil vor `@`).
+- Falls kein Tenant verfügbar ist, wird `default` verwendet.
+- Die Basis-DB-URL stammt aus `spring.datasource.url`. Pro Tenant wird ein Suffix `_<tenantId>` ergänzt.
+  - Beispiel: `jdbc:h2:file:~/data/drives` → `jdbc:h2:file:~/data/drives_max`
+- Die Initialisierung erfolgt pro Tenant beim ersten Zugriff. Bei einer Initialisierung wird bei normalen Requests der Header `X-Db-Initialized: true` gesetzt. Der Endpunkt `/api/initialization-status` liefert den aktuellen Initialisierungsstatus für den aktiven Tenant.
+
 ### Datenbank & Migrationen
 - Entwicklung: H2 (Datei/In-Memory) • Produktion: PostgreSQL
 - Flyway-Migrationen liegen unter `src/main/resources/db/migration`

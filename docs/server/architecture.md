@@ -43,5 +43,11 @@ Die Anwendung nutzt JPA zur Persistenz.
 - Flyway-Migrationen liegen unter `src/main/resources/db/migration`.
 - Aktuelle Einstellung: `spring.jpa.hibernate.ddl-auto=update` (siehe `application.yaml`).
 
+### Multitenancy & dynamische DB-URL
+- Der Tenant wird im `TenantFilter` aus dem OAuth2-Principal abgeleitet und im `TenantContext` gespeichert (E-Mail-Teil vor `@`).
+- `TenantAwareRoutingDataSource` wählt die passende DataSource je Tenant.
+- `MultiTenantDataSourceConfiguration` erzeugt DataSources dynamisch, indem die `spring.datasource.url` pro Tenant um `_<tenantId>` ergänzt wird.
+- `DatabaseInitializationTracker` merkt sich Initialisierungen pro Tenant; `InitializationNotificationFilter` setzt bei normalen Requests den Header `X-Db-Initialized: true`, wenn eine Initialisierung erfolgt ist.
+
 ### Dependency Injection
 Es wird konsequent auf **Constructor Injection** gesetzt. Lombok wird verwendet, um Boilerplate-Code wie Konstruktoren, Getter und Setter zu minimieren.

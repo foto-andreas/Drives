@@ -71,8 +71,8 @@ public class MultiTenantDataSourceConfiguration {
     private DataSource createDataSource(String tenantId) {
         HikariDataSource dataSource = new HikariDataSource();
 
-        // baseUrl ist jdbc:h2:file:~/data/drives
-        // Wir wollen jdbc:h2:file:~/data/drives_<tenantId>
+        // Basis-URL aus der Konfiguration (z.B. jdbc:h2:file:~/data/drives oder jdbc:postgresql://host/db)
+        // Pro Tenant wird der DB-Name per Suffix ergänzt: <baseUrl>_<tenantId>
         String url;
         if ("default".equals(tenantId)) {
             url = baseUrl;
