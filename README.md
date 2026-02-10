@@ -28,9 +28,11 @@ und nach Übertragung der drives.tar auf Server-Seite:
 ```bash
 docker load -i ~/drives.tar && \
   pushd /opt/drives-as && \
+  docker compose down \
   docker compose up -d && \
   popd && \
   pushd /opt/drives-tas && \
+  docker compose down \
   docker compose up -d && \
   popd
 ```
