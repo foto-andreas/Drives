@@ -52,6 +52,10 @@ describe('DriveTemplateList', () => {
     }
   });
 
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+
   it('should handle all major functionality', async () => {
     // 1. Initial load
     expect(driveTemplateServiceMock.findAll).toHaveBeenCalled();
