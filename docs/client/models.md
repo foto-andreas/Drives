@@ -53,6 +53,15 @@ export interface DriveFilter {
 }
 ```
 
+### UserResponse
+Rückgabedatentyp des Benutzer-Endpunkts.
+
+```typescript
+export interface UserResponse {
+  name: string;
+}
+```
+
 ## Enums
 
 ### Reason

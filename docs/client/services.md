@@ -17,6 +17,12 @@ Verwaltet die Fahrtvorlagen.
 - **Backend-Kommunikation:** CRUD-Operationen für `DriveTemplate`.
 - Bietet eine einfache Schnittstelle zum Laden aller Vorlagen für Dropdowns in Formularen.
 
+### UserService
+Lädt Informationen über den aktuell angemeldeten Benutzer.
+- **Backend-Kommunikation:** Ruft `/api/user` ab.
+- **State-Management:**
+  - `name`: Ein Readonly-Signal, das den Namen des Benutzers enthält.
+
 ## Helper
 
 ### ReasonHelper

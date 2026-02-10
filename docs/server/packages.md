@@ -18,6 +18,7 @@ Enthält die Web-Schicht der Anwendung (Controller und DTOs).
 | :--- | :--- |
 | `DriveController` | REST-Endpunkte für die Verwaltung von Fahrten. |
 | `DriveTemplateController` | REST-Endpunkte für die Verwaltung von Fahrtvorlagen. |
+| `UserController` | REST-Endpunkt für den Abruf des aktuell angemeldeten Benutzers. |
 
 ### dtos
 | Klasse | Beschreibung |
@@ -26,6 +27,7 @@ Enthält die Web-Schicht der Anwendung (Controller und DTOs).
 | `DriveResponse` | Record für die Rückgabe von Fahrtdaten an das Frontend. |
 | `DriveTemplateRequest` | Record für Eingabedaten für Fahrtvorlagen. |
 | `DriveTemplateResponse` | Record für die Rückgabe von Fahrtvorlagen. |
+| `UserResponse` | Record für die Rückgabe des Benutzernamens. |
 | `ErrorResponse` | Standardisiertes Format für Fehlermeldungen. |
 
 ### handlers
