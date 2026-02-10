@@ -36,8 +36,9 @@ docker load -i ~/drives.tar && \
 
 ### Codestyle:
 ```text
-Suche die Junie-guidelines.md Dateien und kpasse den Code dahingehend an, dass diese soweit wie möglich und 
-sinnvoll erfüllt sind.
+* Suche die Junie-guidelines.md Dateien und kpasse den Code dahingehend an, dass diese soweit wie möglich 
+und sinnvoll erfüllt sind. 
+* Achte darauf, dass Lombok benutzt wird und ergänze nicht die durch Lombok implizit bereitgestellten Dinge.
 ```
 
 ### Korrektheit:
