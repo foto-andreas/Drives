@@ -17,9 +17,16 @@
         <mat-form-field appearance="fill" class="full-width">
           <mat-label>Vorlage</mat-label>
           <mat-select formControlName="template" [compareWith]="compareTemplates">
+            <mat-select-trigger>
+              {{ getTemplateLabel(driveForm.get('template')?.value) }}
+            </mat-select-trigger>
             @for (template of templates$ | async; track template.id) {
-              <mat-option [value]="template">
-                {{ template.name }} ({{ template.from_location }} -> {{ template.to_location }})
+              <mat-option [value]="template" [matTooltip]="getTemplateTooltip(template)" matTooltipClass="multi-line-tooltip">
+                @if (isMobile) {
+                  {{ template.name }}
+                } @else {
+                  {{ getTemplateLabel(template) }}
+                }
               </mat-option>
             }
           </mat-select>

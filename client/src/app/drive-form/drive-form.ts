@@ -8,7 +8,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { provideNativeDateAdapter } from '@angular/material/core';
+import { BreakpointObserver, Breakpoints, LayoutModule } from '@angular/cdk/layout';
 import { DriveService } from '../drive-service';
 import { DriveTemplateService } from '../drive-template-service';
 import { DriveTemplate } from '../drive-template';
@@ -30,6 +32,8 @@ import { ViewChild } from '@angular/core';
     MatSelectModule,
     MatSnackBarModule,
     MatDatepickerModule,
+    MatTooltipModule,
+    LayoutModule,
     RouterLink
   ],
   templateUrl: './drive-form.html',
@@ -41,6 +45,7 @@ export class DriveForm implements OnInit {
   protected templates$: Observable<DriveTemplate[]>;
   protected reasons = Reason.keys();
   protected isEdit = false;
+  protected isMobile = false;
   protected latestDriveDate: Date | null = null;
   private driveId: string | null = null;
 
@@ -49,7 +54,8 @@ export class DriveForm implements OnInit {
     private router: Router,
     private snackBar: MatSnackBar,
     private driveService: DriveService,
-    private driveTemplateService: DriveTemplateService
+    private driveTemplateService: DriveTemplateService,
+    private breakpointObserver: BreakpointObserver
   ) {
     this.driveForm = new FormGroup({
       date: new FormControl(this.driveService.getLastSelectedDate(), [Validators.required]),
@@ -58,6 +64,10 @@ export class DriveForm implements OnInit {
     });
 
     this.templates$ = this.driveTemplateService.findAll();
+
+    this.breakpointObserver.observe([Breakpoints.Handset]).subscribe(result => {
+      this.isMobile = result.matches;
+    });
   }
 
   ngOnInit(): void {
@@ -141,6 +151,17 @@ export class DriveForm implements OnInit {
 
   compareTemplates(t1: DriveTemplate, t2: DriveTemplate): boolean {
     return t1 && t2 ? t1.id === t2.id : t1 === t2;
+  }
+
+  getTemplateLabel(template: DriveTemplate): string {
+    if (!template) return '';
+    return `${template.name} (${template.from_location} -> ${template.to_location})`;
+  }
+
+  getTemplateTooltip(template: DriveTemplate): string {
+    return `Von: ${template.from_location}\nNach: ${template.to_location}\nLänge: ${
+      template.drive_length
+    } km\nGrund: ${Reason.toString(template.reason)}`;
   }
 
   private formatDate(date: any): string {

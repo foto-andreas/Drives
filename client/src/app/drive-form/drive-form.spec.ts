@@ -9,6 +9,7 @@ import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/route
 import { BehaviorSubject, of, throwError } from 'rxjs';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { Router } from '@angular/router';
+import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 
 describe('DriveForm', () => {
   let component: DriveForm;
@@ -17,6 +18,7 @@ describe('DriveForm', () => {
   let driveTemplateServiceMock: any;
   let snackBarMock: any;
   let paramMapSubject: BehaviorSubject<any>;
+  let breakpointObserverMock: any;
 
   beforeEach(async () => {
     paramMapSubject = new BehaviorSubject(convertToParamMap({}));
@@ -36,6 +38,10 @@ describe('DriveForm', () => {
       open: vi.fn()
     };
 
+    breakpointObserverMock = {
+      observe: vi.fn().mockReturnValue(of({ matches: false }))
+    };
+
     await TestBed.configureTestingModule({
       imports: [DriveForm, NoopAnimationsModule],
       providers: [
@@ -43,6 +49,7 @@ describe('DriveForm', () => {
         { provide: DriveService, useValue: driveServiceMock },
         { provide: DriveTemplateService, useValue: driveTemplateServiceMock },
         { provide: MatSnackBar, useValue: snackBarMock },
+        { provide: BreakpointObserver, useValue: breakpointObserverMock },
         {
           provide: ActivatedRoute,
           useValue: {
@@ -56,7 +63,8 @@ describe('DriveForm', () => {
         providers: [
           { provide: DriveService, useValue: driveServiceMock },
           { provide: DriveTemplateService, useValue: driveTemplateServiceMock },
-          { provide: MatSnackBar, useValue: snackBarMock }
+          { provide: MatSnackBar, useValue: snackBarMock },
+          { provide: BreakpointObserver, useValue: breakpointObserverMock }
         ]
       }
     })
@@ -178,5 +186,39 @@ describe('DriveForm', () => {
     expect(component.compareTemplates(t1, t2)).toBe(true);
     expect(component.compareTemplates(t1, t3)).toBe(false);
     expect(component.compareTemplates(null as any, null as any)).toBe(true);
+  });
+
+  it('should generate correct label text', () => {
+    const template = {
+      name: 'Test',
+      from_location: 'A',
+      to_location: 'B'
+    } as any;
+    const label = component.getTemplateLabel(template);
+    expect(label).toBe('Test (A -> B)');
+  });
+
+  it('should generate correct tooltip text', () => {
+    const template = {
+      name: 'Test',
+      from_location: 'A',
+      to_location: 'B',
+      drive_length: 10,
+      reason: 'WORK'
+    } as any;
+    const tooltip = component.getTemplateTooltip(template);
+    expect(tooltip).toContain('Von: A');
+    expect(tooltip).toContain('Nach: B');
+    expect(tooltip).toContain('Länge: 10 km');
+    expect(tooltip).toContain('Grund: Arbeit');
+  });
+
+  it('should detect mobile state', () => {
+    breakpointObserverMock.observe.mockReturnValue(of({ matches: true }));
+    // Re-create component to trigger constructor logic
+    fixture = TestBed.createComponent(DriveForm);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+    expect((component as any).isMobile).toBe(true);
   });
 });

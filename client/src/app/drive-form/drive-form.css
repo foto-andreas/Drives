@@ -25,3 +25,7 @@ h2 {
   border-top: 1px solid #eee;
   padding-top: 16px;
 }
+
+::ng-deep .multi-line-tooltip {
+  white-space: pre-line !important;
+}
