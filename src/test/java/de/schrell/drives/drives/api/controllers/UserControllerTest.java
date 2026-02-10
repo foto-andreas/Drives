@@ -71,6 +71,16 @@ class UserControllerTest {
     }
 
     @Test
+    void returnsUnbekanntWhenOAuth2TokenPrincipalIsNull() {
+        OAuth2AuthenticationToken token = mock(OAuth2AuthenticationToken.class);
+        when(token.getPrincipal()).thenReturn(null);
+
+        UserResponse response = controller.getUser(token);
+
+        assertThat(response.name()).isEqualTo("Unbekannt");
+    }
+
+    @Test
     void returnsUnbekanntWhenNoAttributeMatches() {
         Authentication authentication = mock(Authentication.class);
         OAuth2User oauth2User = mock(OAuth2User.class);
@@ -80,5 +90,46 @@ class UserControllerTest {
         UserResponse response = controller.getUser(authentication);
 
         assertThat(response.name()).isEqualTo("Unbekannt");
+    }
+
+    @Test
+    void resolveNameFromAttributesHandlesNullAttributes() {
+        Authentication authentication = mock(Authentication.class);
+        OAuth2User oauth2User = mock(OAuth2User.class);
+        when(authentication.getPrincipal()).thenReturn(oauth2User);
+        when(oauth2User.getAttributes()).thenReturn(null);
+
+        UserResponse response = controller.getUser(authentication);
+
+        assertThat(response.name()).isEqualTo("Unbekannt");
+    }
+
+    @Test
+    void resolveNameFromAttributesIgnoresBlankStrings() {
+        Authentication authentication = mock(Authentication.class);
+        OAuth2User oauth2User = mock(OAuth2User.class);
+        when(authentication.getPrincipal()).thenReturn(oauth2User);
+        when(oauth2User.getAttributes()).thenReturn(Map.of("name", "  ", "email", "valid@mail.com"));
+
+        UserResponse response = controller.getUser(authentication);
+
+        assertThat(response.name()).isEqualTo("valid@mail.com");
+    }
+
+    @Test
+    void resolveNameFromAttributesPrioritizesCorrectKeys() {
+        Authentication authentication = mock(Authentication.class);
+        OAuth2User oauth2User = mock(OAuth2User.class);
+        when(authentication.getPrincipal()).thenReturn(oauth2User);
+        
+        // order: name, given_name, preferred_username, email
+        when(oauth2User.getAttributes()).thenReturn(Map.of(
+            "given_name", "Given",
+            "preferred_username", "Pref",
+            "email", "mail@example.com"
+        ));
+
+        UserResponse response = controller.getUser(authentication);
+        assertThat(response.name()).isEqualTo("Given");
     }
 }
