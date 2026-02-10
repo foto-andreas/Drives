@@ -57,6 +57,12 @@ export class DriveService {
     return this.http.delete<void>(`/api/drives/${id}`);
   }
 
+  public getLatestDriveDate(): Observable<Date | null> {
+    return this.http.get<string | null>('/api/latestDrive').pipe(
+      map(dateStr => (dateStr ? this.parseDate(dateStr) : null))
+    );
+  }
+
   private parseDate(dateStr: any): Date {
     if (dateStr instanceof Date) return dateStr;
     if (typeof dateStr === 'string' && dateStr.includes('-')) {

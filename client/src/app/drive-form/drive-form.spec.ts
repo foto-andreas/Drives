@@ -27,7 +27,7 @@ describe('DriveForm', () => {
       setLastSelectedDate: vi.fn(),
       get: vi.fn().mockReturnValue(of({})),
       save: vi.fn().mockReturnValue(of({})),
-      findAll: vi.fn().mockReturnValue(of([]))
+      getLatestDriveDate: vi.fn().mockReturnValue(of(null))
     };
 
     driveTemplateServiceMock = {
@@ -86,23 +86,18 @@ describe('DriveForm', () => {
 
   it('should load latest drive date on init', () => {
     const latestDate = new Date(2023, 10, 20);
-    driveServiceMock.findAll.mockReturnValue(of([{ date: latestDate }]));
+    driveServiceMock.getLatestDriveDate.mockReturnValue(of(latestDate));
     fixture.detectChanges();
-    expect(driveServiceMock.findAll).toHaveBeenCalled();
+    expect(driveServiceMock.getLatestDriveDate).toHaveBeenCalled();
     expect((component as any).latestDriveDate).toEqual(latestDate);
   });
 
-  it('should ignore drives without valid date when loading latest drive date', () => {
-    const latestDate = new Date(2024, 5, 15);
-    driveServiceMock.findAll.mockReturnValue(of([
-      { date: null },
-      { date: 'invalid-date' },
-      { date: latestDate }
-    ]));
+  it('should handle empty latest drive date response', () => {
+    driveServiceMock.getLatestDriveDate.mockReturnValue(of(null));
 
     fixture.detectChanges();
 
-    expect((component as any).latestDriveDate).toEqual(latestDate);
+    expect((component as any).latestDriveDate).toBeNull();
   });
 
   it('should load drive for editing if id is provided', async () => {

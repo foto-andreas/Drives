@@ -4,6 +4,7 @@ import de.schrell.drives.domain.Drive;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,6 +27,16 @@ public class DriveController {
     @GetMapping("/api/drives/{id}")
     public Optional<Drive> getDrive(@PathVariable String id) {
         return driveRepository.findById(id);
+    }
+
+    @CrossOrigin
+    @GetMapping("/api/latestDrive")
+    public ResponseEntity<LocalDate> getLatestDriveDate() {
+        LocalDate latestDate = driveRepository.findLatestDate();
+        if (latestDate == null) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(latestDate);
     }
 
     @CrossOrigin
