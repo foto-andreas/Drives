@@ -6,6 +6,8 @@ import { DriveService } from '../drive-service';
 import { DriveTemplateService } from '../drive-template-service';
 import { HttpErrorResponse } from '@angular/common/http';
 
+import { provideRouter } from '@angular/router';
+
 class DriveServiceMock {
   save() {
     const errorBody = {
@@ -23,6 +25,7 @@ class DriveServiceMock {
   }
   getLatestDriveDate() { return of(null); }
   lastSelectedDate() { return new Date(); }
+  setLastSelectedDate(date: Date) {}
 }
 
 class DriveTemplateServiceMock {
@@ -39,14 +42,21 @@ describe('DriveForm', () => {
       providers: [
         { provide: DriveService, useClass: DriveServiceMock },
         { provide: DriveTemplateService, useClass: DriveTemplateServiceMock },
-        { provide: MatSnackBar, useValue: { open: (...args: any[]) => { lastOpenArgs = args; } } },
+        provideRouter([])
       ]
+    }).overrideComponent(DriveForm, {
+      add: {
+        providers: [
+          { provide: MatSnackBar, useValue: { open: (...args: any[]) => { lastOpenArgs = args; } } }
+        ]
+      }
     });
   });
 
-  it('soll bei Fehler beim Speichern zusammengefasste Snackbar unten/zentriert anzeigen', () => {
+  it('soll bei Fehler beim Speichern zusammengefasste Snackbar unten/zentriert anzeigen', async () => {
     const fixture = TestBed.createComponent(DriveForm);
     const comp = fixture.componentInstance;
+    fixture.detectChanges();
 
     // Formular mit minimal gültigen Werten befüllen
     const form = (comp as any).driveForm as any;
@@ -57,6 +67,8 @@ describe('DriveForm', () => {
     });
 
     comp.onSubmit();
+
+    await new Promise(r => setTimeout(r, 150));
 
     expect(lastOpenArgs).not.toBeNull();
     // Textinhalt und Formatierung prüfen

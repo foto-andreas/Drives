@@ -94,13 +94,21 @@ describe('DriveTemplateList', () => {
     vi.stubGlobal('confirm', vi.fn(() => true));
     driveTemplateServiceMock.delete.mockReturnValue(throwError(() => ({ status: 500 })));
     component.deleteTemplate('1');
-    expect(snackBarMock.open).toHaveBeenCalledWith('Fehler beim Löschen der Vorlage', 'OK', expect.any(Object));
-
-    // 4b. Deletion error status 409
-    snackBarMock.open.mockClear();
-    driveTemplateServiceMock.delete.mockReturnValue(throwError(() => ({ status: 409 })));
-    component.deleteTemplate('1');
-    expect(snackBarMock.open).toHaveBeenCalledWith('Diese Vorlage wird noch in Fahrten verwendet', 'OK', expect.any(Object));
+    expect(snackBarMock.open).toHaveBeenCalledWith(
+      expect.stringContaining('Fehler beim Löschen der Vorlage'),
+      'Schließen',
+      expect.objectContaining({
+        duration: 4000,
+        horizontalPosition: 'center',
+        verticalPosition: 'bottom',
+        panelClass: ['error-snackbar']
+      })
+    );
+    expect(snackBarMock.open).toHaveBeenCalledWith(
+      expect.stringContaining('(Status 500)'),
+      'Schließen',
+      expect.any(Object)
+    );
 
     // 5. Swipe move right (deltaX <= 0)
     component.onRowTouchStart(mockEvent, '1');

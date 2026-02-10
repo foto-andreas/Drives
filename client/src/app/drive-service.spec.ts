@@ -8,6 +8,7 @@ describe('DriveService', () => {
   let httpMock: HttpTestingController;
 
   beforeEach(() => {
+    TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [
         DriveService,
@@ -57,7 +58,9 @@ describe('DriveService', () => {
       expect(drives[0].date.getMonth()).toBe(9); // 0-based
       expect(drives[0].date.getDate()).toBe(15);
     });
-    const req = httpMock.expectOne('/api/drives');
+    const now = new Date();
+    const expectedUrl = `/api/drives?year=${now.getFullYear()}&month=${now.getMonth() + 1}`;
+    const req = httpMock.expectOne(expectedUrl);
     expect(req.request.method).toBe('GET');
     req.flush(mockDrives);
   });

@@ -5,7 +5,12 @@ import { DriveList } from './drive-list';
 import { DriveService } from '../drive-service';
 import { HttpErrorResponse } from '@angular/common/http';
 
+import { provideRouter } from '@angular/router';
+import { signal } from '@angular/core';
+
 class DriveServiceMock {
+  public currentFilter = signal({ year: 2026, month: 2, reason: null });
+
   delete() {
     const errorBody = {
       status: 500,
@@ -32,16 +37,26 @@ describe('DriveList', () => {
       imports: [DriveList],
       providers: [
         { provide: DriveService, useClass: DriveServiceMock },
-        { provide: MatSnackBar, useValue: { open: (...args: any[]) => { lastOpenArgs = args; } } },
+        provideRouter([])
       ]
+    }).overrideComponent(DriveList, {
+      add: {
+        providers: [
+          { provide: MatSnackBar, useValue: { open: (...args: any[]) => { lastOpenArgs = args; } } }
+        ]
+      }
     });
   });
 
-  it('soll bei Fehler beim Löschen zusammengefasste Snackbar unten/zentriert anzeigen', () => {
+  it('soll bei Fehler beim Löschen zusammengefasste Snackbar unten/zentriert anzeigen', async () => {
+    vi.stubGlobal('confirm', vi.fn(() => true));
     const fixture = TestBed.createComponent(DriveList);
     const comp = fixture.componentInstance;
+    fixture.detectChanges();
 
     comp['deleteDrive']('1');
+
+    await new Promise(r => setTimeout(r, 150));
 
     expect(lastOpenArgs).not.toBeNull();
     const text = String(lastOpenArgs?.[0] ?? '');
@@ -51,5 +66,6 @@ describe('DriveList', () => {
     expect(lastOpenArgs?.[1]).toBe('Schließen');
     expect(lastOpenArgs?.[2]).toMatchObject({ horizontalPosition: 'center', verticalPosition: 'bottom' });
     expect(lastOpenArgs?.[2]?.panelClass).toContain('error-snackbar');
+    vi.unstubAllGlobals();
   });
 });
