@@ -1,0 +1,104 @@
+package de.schrell.drives.drives.api.controllers;
+
+import de.schrell.drives.drives.api.dtos.DriveRequest;
+import de.schrell.drives.drives.api.dtos.DriveResponse;
+import de.schrell.drives.drives.domain.commands.DriveCommand;
+import de.schrell.drives.drives.domain.entities.Reason;
+import de.schrell.drives.drives.domain.services.DriveService;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class DriveControllerTest {
+
+    @Mock
+    private DriveService driveService;
+
+    @InjectMocks
+    private DriveController controller;
+
+    @Test
+    void getDrivesReturnsList() {
+        DriveResponse response = new DriveResponse("1", LocalDate.now(), null, Reason.WORK);
+        when(driveService.findAll()).thenReturn(List.of(response));
+
+        List<DriveResponse> result = controller.getDrives();
+
+        assertThat(result).containsExactly(response);
+    }
+
+    @Test
+    void getDriveByIdReturnsDrive() {
+        DriveResponse response = new DriveResponse("1", LocalDate.now(), null, Reason.WORK);
+        when(driveService.findById("1")).thenReturn(response);
+
+        DriveResponse result = controller.getDrive("1");
+
+        assertThat(result).isEqualTo(response);
+    }
+
+    @Test
+    void getLatestDriveDateReturnsOkWhenPresent() {
+        LocalDate date = LocalDate.now();
+        when(driveService.findLatestDate()).thenReturn(Optional.of(date));
+
+        ResponseEntity<LocalDate> response = controller.getLatestDriveDate();
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isEqualTo(date);
+    }
+
+    @Test
+    void getLatestDriveDateReturnsNoContentWhenEmpty() {
+        when(driveService.findLatestDate()).thenReturn(Optional.empty());
+
+        ResponseEntity<LocalDate> response = controller.getLatestDriveDate();
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+    }
+
+    @Test
+    void addDriveCallsService() {
+        DriveRequest request = new DriveRequest(null, LocalDate.now(), "t1", Reason.WORK);
+        DriveResponse response = new DriveResponse("1", request.date(), null, Reason.WORK);
+        when(driveService.create(any(DriveCommand.class))).thenReturn(response);
+
+        DriveResponse result = controller.addDrive(request);
+
+        assertThat(result).isEqualTo(response);
+        verify(driveService).create(argThat(cmd -> cmd.templateId().equals("t1")));
+    }
+
+    @Test
+    void updateDriveCallsService() {
+        DriveRequest request = new DriveRequest("1", LocalDate.now(), "t1", Reason.WORK);
+        DriveResponse response = new DriveResponse("1", request.date(), null, Reason.WORK);
+        when(driveService.update(any(DriveCommand.class))).thenReturn(response);
+
+        DriveResponse result = controller.updateDrive(request);
+
+        assertThat(result).isEqualTo(response);
+        verify(driveService).update(argThat(cmd -> cmd.id().equals("1")));
+    }
+
+    @Test
+    void deleteDriveCallsService() {
+        ResponseEntity<Void> response = controller.deleteDrive("1");
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        verify(driveService).delete("1");
+    }
+}
