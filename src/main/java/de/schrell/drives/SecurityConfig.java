@@ -1,5 +1,6 @@
 package de.schrell.drives;
 
+import de.schrell.drives.config.multitenancy.TenantFilter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,6 +31,7 @@ public class SecurityConfig {
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                 .csrfTokenRequestHandler(requestHandler)
             )
+            .addFilterBefore(new TenantFilter(), BasicAuthenticationFilter.class)
             .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
             .authorizeHttpRequests(authorizeRequests -> authorizeRequests
                 .requestMatchers("/error", "/favicon.ico", "/*.js", "/*.css", "/*.png", "/index.html").permitAll()
