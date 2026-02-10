@@ -86,4 +86,45 @@ class TenantFilterTest {
         assertThat(tenantInChain.get()).isEqualTo("user_company_com");
         assertThat(TenantContext.getCurrentTenant()).isNull();
     }
+
+    @Test
+    void fallsBackToAuthenticationNameWhenOAuth2EmailMissing() throws Exception {
+        TenantFilter filter = new TenantFilter();
+        OAuth2User oauth2User = new DefaultOAuth2User(
+                List.of(new SimpleGrantedAuthority("ROLE_USER")),
+                Map.of("sub", "123"),
+                "sub"
+        );
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(oauth2User, "n/a", oauth2User.getAuthorities())
+        );
+
+        AtomicReference<String> tenantInChain = new AtomicReference<>();
+        FilterChain chain = (request, response) -> tenantInChain.set(TenantContext.getCurrentTenant());
+
+        filter.doFilter(new MockHttpServletRequest(), new MockHttpServletResponse(), chain);
+
+        assertThat(tenantInChain.get()).isEqualTo("123");
+        assertThat(TenantContext.getCurrentTenant()).isNull();
+    }
+
+    @Test
+    void doesNotSetTenantWhenAuthenticationNotAuthenticated() throws Exception {
+        TenantFilter filter = new TenantFilter();
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                "user@company.com",
+                "n/a",
+                List.of(new SimpleGrantedAuthority("ROLE_USER"))
+        );
+        authentication.setAuthenticated(false);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        AtomicReference<String> tenantInChain = new AtomicReference<>();
+        FilterChain chain = (request, response) -> tenantInChain.set(TenantContext.getCurrentTenant());
+
+        filter.doFilter(new MockHttpServletRequest(), new MockHttpServletResponse(), chain);
+
+        assertThat(tenantInChain.get()).isNull();
+        assertThat(TenantContext.getCurrentTenant()).isNull();
+    }
 }
