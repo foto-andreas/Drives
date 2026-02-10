@@ -49,7 +49,7 @@ und sinnvoll erfüllt sind.
 * Prüfe den gesamten Code intensiv auf Korrektheit.
 + Wenn ein Verhalten fraglich ist, stelle Rückfragen.
 * Ergänze Kommentare, falls sinnvoll.
-* Bereinige den Code.
+* Bereinige den Code bei Fehlern.
 * Erstelle zusätliche Testfälle, die diese Probleme abdecken.
 * Es soll eine Testabdeckung von 90% erreicht werden.
 ```
