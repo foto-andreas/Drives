@@ -50,5 +50,9 @@
         </button>
       </div>
     </form>
+
+    <div *ngIf="latestDriveDate" class="latest-entry-info mt-4">
+      Letzter Eintrag vom: {{ latestDriveDate | date:'dd.MM.yyyy' }}
+    </div>
   </div>
 </div>

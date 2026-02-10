@@ -24,7 +24,8 @@ describe('DriveForm', () => {
       getLastSelectedDate: vi.fn().mockReturnValue(new Date()),
       setLastSelectedDate: vi.fn(),
       get: vi.fn().mockReturnValue(of({})),
-      save: vi.fn().mockReturnValue(of({}))
+      save: vi.fn().mockReturnValue(of({})),
+      findAll: vi.fn().mockReturnValue(of([]))
     };
 
     driveTemplateServiceMock = {
@@ -73,6 +74,14 @@ describe('DriveForm', () => {
   it('should load templates on init', () => {
     fixture.detectChanges();
     expect(driveTemplateServiceMock.findAll).toHaveBeenCalled();
+  });
+
+  it('should load latest drive date on init', () => {
+    const latestDate = new Date(2023, 10, 20);
+    driveServiceMock.findAll.mockReturnValue(of([{ date: latestDate }]));
+    fixture.detectChanges();
+    expect(driveServiceMock.findAll).toHaveBeenCalled();
+    expect((component as any).latestDriveDate).toEqual(latestDate);
   });
 
   it('should load drive for editing if id is provided', async () => {

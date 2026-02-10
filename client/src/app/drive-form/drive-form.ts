@@ -41,6 +41,7 @@ export class DriveForm implements OnInit {
   protected templates$: Observable<DriveTemplate[]>;
   protected reasons = Reason.keys();
   protected isEdit = false;
+  protected latestDriveDate: Date | null = null;
   private driveId: string | null = null;
 
   constructor(
@@ -87,6 +88,17 @@ export class DriveForm implements OnInit {
         this.driveService.setLastSelectedDate(date);
       }
     });
+
+    this.loadLatestDriveDate();
+  }
+
+  private loadLatestDriveDate(): void {
+    this.driveService.findAll().subscribe(drives => {
+      if (drives.length > 0) {
+        // Die Fahrten sind vom Backend aufsteigend sortiert
+        this.latestDriveDate = drives[drives.length - 1].date;
+      }
+    });
   }
 
   onSubmit(): void {
@@ -114,6 +126,7 @@ export class DriveForm implements OnInit {
               template: null,
               reason: null
             });
+            this.loadLatestDriveDate();
           }
         },
         error: () => {
