@@ -122,8 +122,7 @@ project-root/
 
 9. Use WebJars for service static content.
 
-10. Don't use Lombok.
-
+10. Use Lombok for concise and readable code.
 
 ### Database Schema Management
 Use Flyway for database migrations:
@@ -154,3 +153,7 @@ Use Flyway for database migrations:
 * Use .junie/guidelines.md (this file) for server code
 * ALWAYS remember that lombok is used in the code, do NOT code things lombok provides
 * NEVER downgrade JAVA-Version or other LIBRARY versions
+* Run all Unit tests after finishing a task
+* Use the latest stable versions of libraries and frameworks
+* Use meaningful and descriptive names for variables, functions, and classes
+* Use consistent indentation and formatting throughout the codebase
