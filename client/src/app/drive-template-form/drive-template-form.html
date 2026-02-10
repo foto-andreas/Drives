@@ -32,7 +32,7 @@
 
         <mat-form-field appearance="fill" class="half-width">
           <mat-label>Grund</mat-label>
-          <mat-select formControlName="reason">
+          <mat-select formControlName="reason" [panelClass]="'tall-combobox-panel'">
             @for (reason of reasons; track reason) {
               <mat-option [value]="reason">{{ Reason.toString(reason) }}</mat-option>
             }
