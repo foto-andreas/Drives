@@ -20,3 +20,17 @@ docker load -i ~/drives.tar && \
   docker compose up -d && \
   popd
 ```
+
+Doku-Prompt:
+```text
+* Prüfe den gesamten Code und erstelle eine ausführliche Dokumentation für jedes Package. 
+* Ergänze Grafiken (mit Mermaid) und Tabellen, falls sinnvoll. 
+* Gehe auf alle Besonderheiten ein. 
+* Erstelle eine Gesamtdokumentation aufoberer Ebene, die eine Zusammenfassung und Links zu den Einzel-Dokumentationen enthält. 
+```
+
+Codestyle:
+```text
+Suche die Junie-guidelines.md Dateien und kpasse den Code dahingehend an, dass diese soweit wie möglich und 
+sinnvoll erfüllt sind.
+```
