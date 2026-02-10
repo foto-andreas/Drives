@@ -1,6 +1,6 @@
 # Fahrtenbuch
 
-Fahrten buch auf Basis von Fahrt-Vorlagen und Möglichkeit, HomeOffice-Tage nachzuhalten. 
+Fahrtenbuch auf Basis von Fahrt-Vorlagen und Möglichkeit, HomeOffice-Tage nachzuhalten. 
 Es gibt einen CSV-Export (auf Basis der Filtermöglcihkeiten) für die Steuererklärung.
 
 ## Dokumentation
