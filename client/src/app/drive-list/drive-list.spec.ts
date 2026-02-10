@@ -121,6 +121,60 @@ describe('DriveList', () => {
     removeSpy.mockRestore();
   });
 
+  it('should handle CSV export with HOME reason filter', async () => {
+    (component as any).selectedYear = null;
+    (component as any).selectedMonth = null;
+    (component as any).selectedReason = 'HOME';
+    (component as any).updateFilter();
+
+    const drives = [
+      { id: '1', date: '2023-01-01', reason: 'HOME', template: { name: 'HomeOffice', drive_length: 0 } },
+      { id: '2', date: '2023-01-02', reason: 'HOME', template: { name: 'HomeOffice', drive_length: 0 } }
+    ];
+    driveServiceMock.findAll.mockReturnValue(of(drives));
+    (component as any).refresh$.next();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    let capturedCsv = '';
+    vi.stubGlobal('Blob', class {
+      constructor(content: any[]) {
+        capturedCsv = content[0];
+      }
+    });
+    vi.stubGlobal('URL', { createObjectURL: vi.fn(() => 'mock-url') });
+
+    const mockLink = {
+      setAttribute: vi.fn(),
+      click: vi.fn(),
+      style: {},
+      remove: vi.fn()
+    };
+    const originalCreateElement = document.createElement.bind(document);
+    const createElementSpy = vi.spyOn(document, 'createElement').mockImplementation((tagName) => {
+      if (tagName === 'a') return mockLink as any;
+      return originalCreateElement(tagName);
+    });
+    const appendSpy = vi.spyOn(document.body, 'appendChild').mockImplementation((n) => n);
+    const removeSpy = vi.spyOn(document.body, 'removeChild').mockImplementation((n) => n);
+
+    component.exportToCsv();
+
+    expect(capturedCsv).toContain('"Anzahl"');
+    expect(capturedCsv).toContain('"Summierung"');
+    expect(capturedCsv).not.toContain('"Länge"');
+    expect(capturedCsv).not.toContain('"Summe"');
+
+    const lines = capturedCsv.split('\n');
+    expect(lines[1]).toContain(';"1";"1"');
+    expect(lines[2]).toContain(';"1";"2"');
+
+    createElementSpy.mockRestore();
+    appendSpy.mockRestore();
+    removeSpy.mockRestore();
+    vi.unstubAllGlobals();
+  });
+
   it('should handle Swipe & Deletion', async () => {
     const mockEvent = { touches: [{ clientX: 100, clientY: 100 }], preventDefault: vi.fn() } as any;
     component.onRowTouchStart(mockEvent, '1');

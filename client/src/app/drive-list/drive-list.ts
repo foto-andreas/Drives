@@ -217,7 +217,8 @@ export class DriveList {
       const separator = ';';
       const escape = '"';
 
-      const headers = ['Datum', 'Vorlage', 'Von', 'Nach', 'Grund', 'Länge', 'Summe'];
+      const isHomeOffice = this.selectedReason === 'HOME';
+      const headers = ['Datum', 'Vorlage', 'Von', 'Nach', 'Grund', isHomeOffice ? 'Anzahl' : 'Länge', isHomeOffice ? 'Summierung' : 'Summe'];
 
       let runningTotal = 0;
       const rows = drives.map(drive => {
@@ -233,7 +234,7 @@ export class DriveList {
         const from = drive.template?.from_location || '';
         const to = drive.template?.to_location || '';
         const reason = Reason.toString(drive.reason || drive.template?.reason);
-        const length = drive.template?.drive_length || 0;
+        const length = isHomeOffice ? 1 : (drive.template?.drive_length || 0);
         runningTotal += length;
 
         return [
