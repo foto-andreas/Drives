@@ -4,6 +4,7 @@ import de.schrell.drives.drives.api.dtos.DriveResponse;
 import de.schrell.drives.drives.domain.commands.DriveCommand;
 import de.schrell.drives.drives.domain.entities.Drive;
 import de.schrell.drives.drives.domain.entities.DriveTemplate;
+import de.schrell.drives.drives.domain.entities.Reason;
 import de.schrell.drives.drives.domain.exceptions.ResourceNotFoundException;
 import de.schrell.drives.drives.domain.mappers.DriveMapper;
 import de.schrell.drives.drives.domain.repositories.DriveRepository;
@@ -29,11 +30,16 @@ public class DriveService {
     private final DriveMapper driveMapper;
 
     @Transactional(readOnly = true)
-    public List<DriveResponse> findAll() {
-        return driveRepository.findAllByOrderByDateAsc()
+    public List<DriveResponse> findAll(Integer year, Integer month, Reason reason) {
+        return driveRepository.findFiltered(year, month, reason)
                 .stream()
                 .map(driveMapper::toResponse)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<DriveResponse> findAll() {
+        return findAll(null, null, null);
     }
 
     @Transactional(readOnly = true)

@@ -27,8 +27,14 @@ export class DriveService {
     this.currentFilterSignal.set(filter);
   }
 
-  public findAll(): Observable<Drive[]> {
-    return this.http.get<DriveApiResponse[]>('/api/drives').pipe(
+  public findAll(filter?: DriveFilter | null): Observable<Drive[]> {
+    const params: Record<string, string> = {};
+    const effective = filter ?? this.currentFilter();
+    if (effective.year) params['year'] = String(effective.year);
+    if (effective.month) params['month'] = String(effective.month);
+    if (effective.reason) params['reason'] = String(effective.reason);
+    const options = Object.keys(params).length ? { params } : {};
+    return this.http.get<DriveApiResponse[]>('/api/drives', options).pipe(
       map(drives => drives.map(drive => this.toDrive(drive)))
     );
   }

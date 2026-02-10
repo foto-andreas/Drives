@@ -66,6 +66,10 @@ describe('DriveList', () => {
 
   it('should load drives on init', () => {
     expect(driveServiceMock.findAll).toHaveBeenCalled();
+    const initArgs = driveServiceMock.findAll.mock.calls[0][0];
+    expect(initArgs.year).toBe(new Date().getFullYear());
+    expect(initArgs.month).toBe(new Date().getMonth() + 1);
+    expect(initArgs.reason).toBeNull();
   });
 
   it('should handle initial load and filter', async () => {
@@ -80,6 +84,11 @@ describe('DriveList', () => {
     (component as any).filterForm.controls.year.setValue(2023);
     (component as any).filterForm.controls.month.setValue(1);
     fixture.detectChanges();
+    await fixture.whenStable();
+
+    // Erwartet: Service wurde mit dem korrekten Filter aufgerufen
+    const lastCallArgs = driveServiceMock.findAll.mock.calls.at(-1)[0];
+    expect(lastCallArgs).toEqual({ year: 2023, month: 1, reason: null });
 
     expect((component as any).drives().length).toBe(1);
   });

@@ -68,7 +68,7 @@ export class DriveList {
   });
 
   protected readonly allDrives = toSignal(
-    this.refresh$.pipe(switchMap(() => this.driveService.findAll())),
+    this.refresh$.pipe(switchMap(() => this.driveService.findAll(this.filterSignal()))),
     { initialValue: [] }
   );
 
@@ -79,16 +79,7 @@ export class DriveList {
     return Array.from(years).sort((a, b) => b - a);
   });
 
-  protected readonly drives = computed(() => {
-    const filter = this.filterSignal();
-    return this.allDrives().filter(drive => {
-      const driveDate = drive.date;
-      const yearMatch = !filter.year || driveDate.getFullYear() === filter.year;
-      const monthMatch = !filter.month || driveDate.getMonth() + 1 === filter.month;
-      const reasonMatch = !filter.reason || drive.reason === filter.reason;
-      return yearMatch && monthMatch && reasonMatch;
-    });
-  });
+  protected readonly drives = computed(() => this.allDrives());
 
   private touchStartX = 0;
   private touchStartY = 0;
@@ -111,6 +102,7 @@ export class DriveList {
         }
         this.filterSignal.set(filter);
         this.driveService.setFilter(filter);
+        this.refresh$.next();
       });
   }
 

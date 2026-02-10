@@ -33,9 +33,9 @@ class DriveControllerTest {
     @Test
     void getDrivesReturnsList() {
         DriveResponse response = new DriveResponse("1", LocalDate.now(), null, Reason.WORK);
-        when(driveService.findAll()).thenReturn(List.of(response));
+        when(driveService.findAll(null, null, null)).thenReturn(List.of(response));
 
-        List<DriveResponse> result = controller.getDrives();
+        List<DriveResponse> result = controller.getDrives(null, null, null);
 
         assertThat(result).containsExactly(response);
     }
@@ -100,5 +100,15 @@ class DriveControllerTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         verify(driveService).delete("1");
+    }
+    @Test
+    void getDrivesWithFilterDelegatesToService() {
+        DriveResponse response = new DriveResponse("1", LocalDate.of(2024,5,1), null, Reason.WORK);
+        when(driveService.findAll(2024, 5, Reason.WORK)).thenReturn(List.of(response));
+
+        List<DriveResponse> result = controller.getDrives(2024, 5, Reason.WORK);
+
+        assertThat(result).containsExactly(response);
+        verify(driveService).findAll(2024, 5, Reason.WORK);
     }
 }

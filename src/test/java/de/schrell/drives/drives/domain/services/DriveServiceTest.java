@@ -44,10 +44,10 @@ class DriveServiceTest {
         Drive drive = new Drive();
         DriveResponse response = new DriveResponse("1", LocalDate.now(), null, Reason.WORK);
 
-        when(driveRepository.findAllByOrderByDateAsc()).thenReturn(List.of(drive));
+        when(driveRepository.findFiltered(null, null, null)).thenReturn(List.of(drive));
         when(driveMapper.toResponse(drive)).thenReturn(response);
 
-        List<DriveResponse> result = driveService.findAll();
+        List<DriveResponse> result = driveService.findAll(null, null, null);
 
         assertThat(result).containsExactly(response);
     }
@@ -164,5 +164,18 @@ class DriveServiceTest {
 
         assertThatThrownBy(() -> driveService.delete("1"))
                 .isInstanceOf(ResourceNotFoundException.class);
+    }
+    @Test
+    void findAllWithFilterDelegatesToRepository() {
+        Drive drive = new Drive();
+        DriveResponse response = new DriveResponse("1", LocalDate.of(2024,5,1), null, Reason.WORK);
+
+        when(driveRepository.findFiltered(2024, 5, Reason.WORK)).thenReturn(List.of(drive));
+        when(driveMapper.toResponse(drive)).thenReturn(response);
+
+        List<DriveResponse> result = driveService.findAll(2024, 5, Reason.WORK);
+
+        assertThat(result).containsExactly(response);
+        verify(driveRepository).findFiltered(2024, 5, Reason.WORK);
     }
 }

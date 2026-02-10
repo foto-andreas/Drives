@@ -10,10 +10,21 @@ Diese Dokumentation beschreibt die REST-Schnittstellen des Fahrtenbuch-Backends.
 
 ## Fahrten (Drives)
 
-### Alle Fahrten abrufen
+### Alle Fahrten abrufen (mit serverseitiger Filterung)
 `GET /api/drives`
 
-Gibt eine Liste aller Fahrten zurück, sortiert nach Datum aufsteigend.
+Gibt eine Liste aller Fahrten zurück, sortiert nach Datum aufsteigend. Optional kann bereits serverseitig gefiltert werden.
+
+**Query-Parameter (optional):**
+- `year` (Integer): Kalenderjahr, z. B. `2024`
+- `month` (Integer): Kalendermonat (1–12). Nur wirksam, wenn `year` gesetzt ist.
+- `reason` (String): Fahrten-Grund, z. B. `WORK`, `PRIVATE`, `HOME`, `OTHER`
+
+Beispiele:
+- `/api/drives?year=2024`
+- `/api/drives?year=2024&month=5`
+- `/api/drives?reason=WORK`
+- `/api/drives?year=2024&month=5&reason=WORK`
 
 **Antwort:** `200 OK` mit einer Liste von `DriveResponse`-Objekten.
 

@@ -42,10 +42,10 @@ class DriveControllerTest {
     @Test
     void getDrivesReturnsOrderedList() {
         List<DriveResponse> drives = List.of(new DriveResponse("1", LocalDate.now(), null, null));
-        when(driveService.findAll()).thenReturn(drives);
+        when(driveService.findAll(null, null, null)).thenReturn(drives);
 
-        assertThat(driveController.getDrives()).isSameAs(drives);
-        verify(driveService).findAll();
+        assertThat(driveController.getDrives(null, null, null)).isSameAs(drives);
+        verify(driveService).findAll(null, null, null);
         verifyNoMoreInteractions(driveService);
     }
 

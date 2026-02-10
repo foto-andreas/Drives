@@ -3,6 +3,7 @@ package de.schrell.drives.drives.api.controllers;
 import de.schrell.drives.drives.api.dtos.DriveRequest;
 import de.schrell.drives.drives.api.dtos.DriveResponse;
 import de.schrell.drives.drives.domain.commands.DriveCommand;
+import de.schrell.drives.drives.domain.entities.Reason;
 import de.schrell.drives.drives.domain.services.DriveService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,8 +23,10 @@ public class DriveController {
     private final DriveService driveService;
 
     @GetMapping("/drives")
-    public List<DriveResponse> getDrives() {
-        return driveService.findAll();
+    public List<DriveResponse> getDrives(@RequestParam(required = false) Integer year,
+                                         @RequestParam(required = false) Integer month,
+                                         @RequestParam(required = false) Reason reason) {
+        return driveService.findAll(year, month, reason);
     }
 
     @GetMapping("/drives/{id}")
