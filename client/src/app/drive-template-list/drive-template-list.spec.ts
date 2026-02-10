@@ -119,4 +119,45 @@ describe('DriveTemplateList', () => {
     expect(result).toBe(true);
     confirmSpy.mockRestore();
   });
+
+  it('should render rows and react to row click and delete button', async () => {
+    // Arrange: provide data so that *ngFor renders rows
+    const templates = [
+      { id: 't1', name: 'Template 1', fromLocation: 'A', toLocation: 'B', driveLength: 10, reason: 'WORK' },
+      { id: 't2', name: 'Template 2', fromLocation: 'C', toLocation: 'D', driveLength: 5, reason: 'HOME' },
+    ];
+    driveTemplateServiceMock.findAll.mockReturnValue(of(templates));
+
+    // Trigger refresh and rendering
+    (component as any).refresh$.next();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const table: HTMLElement | null = fixture.nativeElement.querySelector('table');
+    expect(table).toBeTruthy();
+
+    // Angular Material rows can be 'mat-row' or 'mat-mdc-row' depending on version
+    const rows = table!.querySelectorAll('tr.mat-row, tr.mat-mdc-row') as NodeListOf<HTMLTableRowElement>;
+    // allow DOM to settle
+    await new Promise(r => setTimeout(r, 0));
+    expect(rows.length).toBeGreaterThan(0);
+
+    // Click on first row should navigate to edit
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate');
+    rows[0].click();
+    expect(navigateSpy).toHaveBeenCalledWith(['/driveTemplates/edit', 't1']);
+
+    // Click on delete icon button in first row
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const deleteBtn: HTMLButtonElement | null = table!.querySelector('button[color="warn"]');
+    if (deleteBtn) {
+      driveTemplateServiceMock.delete.mockReturnValue(of(undefined));
+      deleteBtn.click();
+      await new Promise(r => setTimeout(r, 50));
+      expect(driveTemplateServiceMock.delete).toHaveBeenCalled();
+    }
+    confirmSpy.mockRestore();
+  });
 });
