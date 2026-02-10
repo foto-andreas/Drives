@@ -1,12 +1,12 @@
 import { HttpErrorResponse, HttpInterceptorFn, HttpContextToken } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { catchError, throwError } from 'rxjs';
-import { NotificationService } from '../services/notification.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 export const SUPPRESS_GLOBAL_ERROR_TOAST = new HttpContextToken<boolean>(() => false);
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
-  const notifications = inject(NotificationService);
+  const snackBar = inject(MatSnackBar);
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
@@ -22,7 +22,12 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       // Wenn der Request globale Fehler-Toasts unterdrückt, hier keine Meldung anzeigen
       if (!req.context.get(SUPPRESS_GLOBAL_ERROR_TOAST)) {
         const fullMessage = `Fehler ${statusCode}: ${errorMessage}`;
-        notifications.error(fullMessage, 4000);
+        snackBar.open(fullMessage, 'Schließen', {
+          duration: 4000,
+          horizontalPosition: 'center',
+          verticalPosition: 'bottom',
+          panelClass: ['error-snackbar']
+        });
       }
 
       return throwError(() => error);

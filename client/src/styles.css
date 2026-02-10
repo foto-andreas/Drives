@@ -3,6 +3,7 @@ html, body { height: 100%; margin: 0; }
 body { font-family: Roboto, "Helvetica Neue", sans-serif; }
 
 .success-snackbar {
+  white-space: pre-wrap;
   background-color: #4caf50 !important;
   color: white !important;
 }
@@ -59,6 +60,7 @@ body { font-family: Roboto, "Helvetica Neue", sans-serif; }
 }
 
 .error-snackbar {
+  white-space: pre-wrap;
   --mdc-snackbar-container-color: #f44336;
   --mat-snack-bar-button-color: #fff;
   --mdc-snackbar-supporting-text-color: #fff;

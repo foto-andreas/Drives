@@ -7,7 +7,6 @@ import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideRouter, withHashLocation } from '@angular/router';
 import { MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
 import { provideLuxonDateAdapter } from '@angular/material-luxon-adapter';
-import { OverlayModule } from '@angular/cdk/overlay';
 import { App } from './app/app';
 import { routes } from './app/app.routes';
 import { MY_DATE_FORMATS } from './app/app.config';
@@ -20,7 +19,6 @@ bootstrapApplication(App, {
     provideRouter(routes, withHashLocation()),
     provideHttpClient(withInterceptors([errorInterceptor])),
     provideAnimations(),
-    importProvidersFrom(OverlayModule),
     { provide: LOCALE_ID, useValue: 'de-DE' },
     { provide: MAT_DATE_LOCALE, useValue: 'de-DE' },
     { provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS },

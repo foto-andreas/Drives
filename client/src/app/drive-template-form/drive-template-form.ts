@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -11,7 +11,6 @@ import { DriveTemplateService } from '../drive-template-service';
 import { DriveTemplate } from '../drive-template';
 import { Reason, ReasonKey } from '../reason';
 import { ReasonHelper } from '../reason-helper';
-import { NotificationService } from '../core/services/notification.service';
 
 @Component({
   selector: 'app-drive-template-form',
@@ -31,7 +30,7 @@ import { NotificationService } from '../core/services/notification.service';
 export class DriveTemplateForm {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
-  private readonly notifications = inject(NotificationService);
+  private readonly snackBar = inject(MatSnackBar);
   private readonly driveTemplateService = inject(DriveTemplateService);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -98,16 +97,26 @@ export class DriveTemplateForm {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
-          this.notifications.success('Vorlage erfolgreich gespeichert', 4000);
+          this.snackBar.open('Vorlage erfolgreich gespeichert', 'Schließen', {
+            duration: 4000,
+            horizontalPosition: 'center',
+            verticalPosition: 'bottom',
+            panelClass: ['success-snackbar']
+          });
           this.router.navigate(['/driveTemplates']);
         },
         error: (err) => {
           const serverMsg = err && typeof err === 'object'
             ? (err.error && typeof err.error === 'object' && err.error.message ? err.error.message : err.message)
             : '';
-          const statusText = err && err.status ? ` (Status ${err.status})` : '';
-          const full = `Fehler beim Speichern der Vorlage${serverMsg ? ': ' + serverMsg : ''}${statusText}`;
-          this.notifications.error(full, 4000);
+          const statusText = err && err.status ? `\n(Status ${err.status})` : '';
+          const full = `Fehler beim Speichern der Vorlage${serverMsg ? ': \n\n' + serverMsg : ''}${statusText}`;
+          this.snackBar.open(full, 'Schließen', {
+            duration: 4000,
+            horizontalPosition: 'center',
+            verticalPosition: 'bottom',
+            panelClass: ['error-snackbar']
+          });
         }
       });
   }
