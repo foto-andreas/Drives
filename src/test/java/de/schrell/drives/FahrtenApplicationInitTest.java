@@ -1,5 +1,7 @@
 package de.schrell.drives;
 
+import de.schrell.drives.drives.domain.repositories.DriveRepository;
+import de.schrell.drives.drives.domain.repositories.DriveTemplateRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;

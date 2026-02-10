@@ -1,17 +1,31 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatButtonModule } from '@angular/material/button';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DriveTemplateService } from '../drive-template-service';
 import { DriveTemplate } from '../drive-template';
-import { Reason } from '../reason';
+import { Reason, ReasonKey } from '../reason';
+import { ReasonHelper } from '../reason-helper';
 
 @Component({
   selector: 'app-drive-template-form',
   templateUrl: './drive-template-form.html',
   styleUrls: ['./drive-template-form.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    ReactiveFormsModule,
+    MatSnackBarModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatButtonModule,
+    RouterLink,
+  ],
 })
 export class DriveTemplateForm {
   private readonly route = inject(ActivatedRoute);
@@ -25,9 +39,9 @@ export class DriveTemplateForm {
     fromLocation: new FormControl('', [Validators.required]),
     toLocation: new FormControl('', [Validators.required]),
     driveLength: new FormControl(0, [Validators.required, Validators.min(1)]),
-    reason: new FormControl('PRIVATE', [Validators.required])
+    reason: new FormControl<ReasonKey>('PRIVATE', [Validators.required])
   });
-  protected readonly reasons = Reason.keys();
+  protected readonly reasons = ReasonHelper.keys();
   protected readonly isEdit = signal(false);
   private readonly templateId = signal<string | null>(null);
 
@@ -99,4 +113,5 @@ export class DriveTemplateForm {
   }
 
   protected readonly Reason = Reason;
+  protected readonly ReasonHelper = ReasonHelper;
 }

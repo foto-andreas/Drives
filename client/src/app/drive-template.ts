@@ -1,4 +1,4 @@
-import { Reason } from './reason';
+import { ReasonKey } from './reason';
 
 export interface DriveTemplate {
   id?: string | null;
@@ -6,5 +6,5 @@ export interface DriveTemplate {
   driveLength: number;
   fromLocation: string;
   toLocation: string;
-  reason: Reason;
+  reason: ReasonKey;
 }

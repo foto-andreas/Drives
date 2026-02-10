@@ -15,3 +15,6 @@ spring:
           google:
             client-id: dummy-id
             client-secret: dummy-secret
+  web:
+    resources:
+      static-locations: classpath:/public/browser

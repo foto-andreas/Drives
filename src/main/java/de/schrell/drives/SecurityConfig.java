@@ -23,13 +23,17 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
+        requestHandler.setCsrfRequestAttributeName(null);
         http
             .csrf(csrf -> csrf
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
+                .csrfTokenRequestHandler(requestHandler)
             )
             .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
-            .authorizeHttpRequests(authorizeRequests -> authorizeRequests.anyRequest().authenticated())
+            .authorizeHttpRequests(authorizeRequests -> authorizeRequests
+                .requestMatchers("/error", "/favicon.ico", "/*.js", "/*.css", "/*.png", "/index.html").permitAll()
+                .anyRequest().authenticated())
             .oauth2Login(withDefaults());
         return http.build();
     }

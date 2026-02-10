@@ -1,14 +1,23 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, ViewChild, inject, signal } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { FormControl, FormGroup, FormGroupDirective, Validators } from '@angular/forms';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { FormControl, FormGroup, FormGroupDirective, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatIconModule } from '@angular/material/icon';
 import { provideNativeDateAdapter } from '@angular/material/core';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { toSignal, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DriveService } from '../drive-service';
 import { DriveTemplateService } from '../drive-template-service';
 import { DriveTemplate } from '../drive-template';
-import { Reason } from '../reason';
+import { Reason, ReasonKey } from '../reason';
+import { ReasonHelper } from '../reason-helper';
 import { Drive } from '../drive';
 
 @Component({
@@ -17,6 +26,19 @@ import { Drive } from '../drive';
   templateUrl: './drive-form.html',
   styleUrls: ['./drive-form.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatSnackBarModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatInputModule,
+    MatButtonModule,
+    MatDatepickerModule,
+    MatTooltipModule,
+    MatIconModule,
+    RouterLink,
+  ],
 })
 export class DriveForm {
   @ViewChild(FormGroupDirective) private formDirective: FormGroupDirective | undefined;
@@ -31,10 +53,10 @@ export class DriveForm {
   protected readonly driveForm = new FormGroup({
     date: new FormControl<Date | null>(this.driveService.lastSelectedDate(), [Validators.required]),
     template: new FormControl<DriveTemplate | null>(null, [Validators.required]),
-    reason: new FormControl<string | null>(null),
+    reason: new FormControl<ReasonKey | null>(null),
   });
   protected readonly templates = toSignal(this.driveTemplateService.findAll(), { initialValue: [] });
-  protected readonly reasons = Reason.keys();
+  protected readonly reasons = ReasonHelper.keys();
   protected readonly isEdit = signal(false);
   protected readonly isMobile = signal(false);
   protected readonly latestDriveDate = signal<Date | null>(null);
@@ -129,20 +151,22 @@ export class DriveForm {
       });
   }
 
-  compareTemplates(t1: DriveTemplate, t2: DriveTemplate): boolean {
+  compareTemplates(t1: DriveTemplate | null, t2: DriveTemplate | null): boolean {
     return t1 && t2 ? t1.id === t2.id : t1 === t2;
   }
 
-  getTemplateLabel(template: DriveTemplate): string {
+  getTemplateLabel(template: DriveTemplate | null): string {
     if (!template) return '';
     return `${template.name} (${template.fromLocation} -> ${template.toLocation})`;
   }
 
-  getTemplateTooltip(template: DriveTemplate): string {
+  getTemplateTooltip(template: DriveTemplate | null): string {
+    if (!template) return '';
     return `Von: ${template.fromLocation}\nNach: ${template.toLocation}\nLänge: ${
       template.driveLength
-    } km\nGrund: ${Reason.toString(template.reason)}`;
+    } km\nGrund: ${ReasonHelper.toString(template.reason)}`;
   }
 
   protected readonly Reason = Reason;
+  protected readonly ReasonHelper = ReasonHelper;
 }

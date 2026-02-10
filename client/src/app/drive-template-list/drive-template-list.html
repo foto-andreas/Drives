@@ -32,7 +32,7 @@
       <ng-container matColumnDef="Grund">
         <th mat-header-cell *matHeaderCellDef>Grund</th>
         <td mat-cell *matCellDef="let element">
-          {{ Reason.toString(element.reason) }}
+          {{ ReasonHelper.toString(element.reason) }}
           <div class="delete-indicator">
             <mat-icon>delete</mat-icon>
           </div>

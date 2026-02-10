@@ -17,9 +17,6 @@ spring:
         format_sql: true
     defer-datasource-initialization: true
     show-sql: true
-  h2:
-    console:
-      enabled: true
   web:
     resources:
       static-locations: classpath:/public/browser

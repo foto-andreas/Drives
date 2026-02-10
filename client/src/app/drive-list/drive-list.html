@@ -6,7 +6,7 @@
         <mat-select formControlName="reason" [panelClass]="'tall-combobox-panel'">
           <mat-option [value]="null">Alle</mat-option>
           @for (reason of reasons; track reason) {
-            <mat-option [value]="reason">{{ Reason.toString(reason) }}</mat-option>
+            <mat-option [value]="reason">{{ ReasonHelper.toString(reason) }}</mat-option>
           }
         </mat-select>
       </mat-form-field>
@@ -77,7 +77,7 @@
       <ng-container matColumnDef="Grund">
         <th mat-header-cell *matHeaderCellDef>Grund</th>
         <td mat-cell *matCellDef="let element">
-          {{ Reason.toString(element.reason) }}
+          {{ ReasonHelper.toString(element.reason) }}
           <div class="delete-indicator">
             <mat-icon>delete</mat-icon>
           </div>

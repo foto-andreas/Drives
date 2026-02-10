@@ -147,7 +147,9 @@ Use Flyway for database migrations:
     - Import `TestcontainersConfiguration.java`
 10. **Min 80% Code Coverage**: Aim for good code coverage, but be pragmatic. Don't write useless tests just for the sake of code coverage metrics.
 
-These Guidelines come from here: https://gist.github.com/sivaprasadreddy/9751db630b819b39e5e87f5ecfb53346
+### Other
 
-Use client/.junie/guidelines.md for client code
-Use .junie/guidelines.md (this file) for server code
+* These Guidelines come from here: https://gist.github.com/sivaprasadreddy/9751db630b819b39e5e87f5ecfb53346
+* Use client/.junie/guidelines.md for client code
+* Use .junie/guidelines.md (this file) for server code
+* ALWAYS remember that lombok is used in the code, do NOT code things lombok provides

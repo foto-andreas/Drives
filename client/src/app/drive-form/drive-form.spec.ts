@@ -46,8 +46,7 @@ describe('DriveForm', () => {
     };
 
     await TestBed.configureTestingModule({
-      declarations: [DriveForm],
-      imports: [ReactiveFormsModule, RouterTestingModule, NoopAnimationsModule],
+      imports: [DriveForm, ReactiveFormsModule, RouterTestingModule, NoopAnimationsModule],
       providers: [
         { provide: DriveService, useValue: driveServiceMock },
         { provide: DriveTemplateService, useValue: driveTemplateServiceMock },
@@ -63,16 +62,21 @@ describe('DriveForm', () => {
       schemas: [NO_ERRORS_SCHEMA]
     }).compileComponents();
 
-    fixture = TestBed.createComponent(DriveForm);
-    component = fixture.componentInstance;
   });
 
+  const createComponent = () => {
+    fixture = TestBed.createComponent(DriveForm);
+    component = fixture.componentInstance;
+  };
+
   it('should create', () => {
+    createComponent();
     fixture.detectChanges();
     expect(component).toBeTruthy();
   });
 
   it('should load templates on init', () => {
+    createComponent();
     fixture.detectChanges();
     expect(driveTemplateServiceMock.findAll).toHaveBeenCalled();
   });
@@ -80,6 +84,7 @@ describe('DriveForm', () => {
   it('should load latest drive date on init', () => {
     const latestDate = new Date(2023, 10, 20);
     driveServiceMock.getLatestDriveDate.mockReturnValue(of(latestDate));
+    createComponent();
     fixture.detectChanges();
     expect(driveServiceMock.getLatestDriveDate).toHaveBeenCalled();
     expect((component as any).latestDriveDate()).toEqual(latestDate);
@@ -87,18 +92,18 @@ describe('DriveForm', () => {
 
   it('should handle empty latest drive date response', () => {
     driveServiceMock.getLatestDriveDate.mockReturnValue(of(null));
-
+    createComponent();
     fixture.detectChanges();
 
     expect((component as any).latestDriveDate()).toBeNull();
   });
 
   it('should load drive for editing if id is provided', async () => {
-    paramMapSubject.next(convertToParamMap({ id: '123' }));
-
     const driveData = { id: '123', date: new Date(), template: { id: 't1' }, reason: 'WORK' };
     driveServiceMock.get.mockReturnValue(of(driveData));
+    paramMapSubject.next(convertToParamMap({ id: '123' }));
 
+    createComponent();
     fixture.detectChanges();
     await fixture.whenStable();
 
@@ -106,6 +111,7 @@ describe('DriveForm', () => {
   });
 
   it('should update reason when template changes (not in edit mode)', async () => {
+    createComponent();
     fixture.detectChanges();
     const template = { id: 't1', reason: 'PRIVATE' } as any;
     (component as any).driveForm.controls.template.setValue(template);
@@ -113,6 +119,7 @@ describe('DriveForm', () => {
   });
 
   it('should update last selected date when date changes', async () => {
+    createComponent();
     fixture.detectChanges();
     const testDate = new Date(2023, 5, 5);
     (component as any).driveForm.controls.date.setValue(testDate);
@@ -120,6 +127,7 @@ describe('DriveForm', () => {
   });
 
   it('should save drive and navigate on submit (edit mode)', async () => {
+    createComponent();
     fixture.detectChanges();
     (component as any).isEdit.set(true);
     const router = TestBed.inject(Router);
@@ -144,6 +152,7 @@ describe('DriveForm', () => {
   });
 
   it('should reset form on submit (creation mode)', async () => {
+    createComponent();
     fixture.detectChanges();
     (component as any).isEdit.set(false);
     const formDirectiveMock = { resetForm: vi.fn() };
@@ -165,6 +174,7 @@ describe('DriveForm', () => {
   });
 
   it('should show error snackbar on save failure', async () => {
+    createComponent();
     fixture.detectChanges();
 
     (component as any).driveForm.patchValue({
@@ -181,6 +191,7 @@ describe('DriveForm', () => {
   });
 
   it('should compare templates correctly', () => {
+    createComponent();
     const t1 = { id: '1' } as any;
     const t2 = { id: '1' } as any;
     const t3 = { id: '2' } as any;
@@ -190,6 +201,7 @@ describe('DriveForm', () => {
   });
 
   it('should generate correct label text', () => {
+    createComponent();
     const template = {
       name: 'Test',
       fromLocation: 'A',
@@ -200,6 +212,7 @@ describe('DriveForm', () => {
   });
 
   it('should generate correct tooltip text', () => {
+    createComponent();
     const template = {
       name: 'Test',
       fromLocation: 'A',
@@ -216,10 +229,8 @@ describe('DriveForm', () => {
 
   it('should detect mobile state', () => {
     breakpointObserverMock.observe.mockReturnValue(of({ matches: true }));
-    // Re-create component to trigger constructor logic
-    fixture = TestBed.createComponent(DriveForm);
-    component = fixture.componentInstance;
+    createComponent();
     fixture.detectChanges();
-    expect((component as any).isMobile).toBe(true);
+    expect((component as any).isMobile()).toBe(true);
   });
 });

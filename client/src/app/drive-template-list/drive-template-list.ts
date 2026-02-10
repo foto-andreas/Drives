@@ -1,16 +1,27 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { Router } from '@angular/router';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTableModule } from '@angular/material/table';
+import { Router, RouterLink } from '@angular/router';
 import { BehaviorSubject, switchMap } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { DriveTemplateService } from '../drive-template-service';
 import { Reason } from '../reason';
+import { ReasonHelper } from '../reason-helper';
 
 @Component({
   selector: 'app-drive-template-list',
   templateUrl: './drive-template-list.html',
   styleUrls: ['./drive-template-list.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    MatSnackBarModule,
+    MatButtonModule,
+    MatIconModule,
+    MatTableModule,
+    RouterLink,
+  ],
 })
 export class DriveTemplateList {
 
@@ -121,4 +132,5 @@ export class DriveTemplateList {
   }
 
   protected readonly Reason = Reason;
+  protected readonly ReasonHelper = ReasonHelper;
 }

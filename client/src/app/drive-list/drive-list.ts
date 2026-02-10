@@ -1,19 +1,37 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTableModule } from '@angular/material/table';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { Router, RouterLink } from '@angular/router';
 import { take } from 'rxjs';
 import { toSignal, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BehaviorSubject, switchMap } from 'rxjs';
 import { DriveService } from '../drive-service';
 import { DriveFilter } from '../drive-filter';
 import { Reason } from '../reason';
+import { ReasonHelper } from '../reason-helper';
 
 @Component({
   selector: 'app-drive-list',
   templateUrl: './drive-list.html',
   styleUrls: ['./drive-list.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatSnackBarModule,
+    MatButtonModule,
+    MatIconModule,
+    MatTableModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    RouterLink,
+  ],
 })
 export class DriveList {
   private readonly driveService = inject(DriveService);
@@ -27,7 +45,7 @@ export class DriveList {
   private readonly filterSignal = signal<DriveFilter>(this.initialFilter);
 
   protected readonly displayedColumns: string[] = ['Datum', 'Template', 'Länge', 'Grund', 'Aktion'];
-  protected readonly reasons = Reason.keys();
+  protected readonly reasons = ReasonHelper.keys();
   protected readonly months = [
     { value: 1, name: 'Januar' },
     { value: 2, name: 'Februar' },
@@ -192,7 +210,7 @@ export class DriveList {
       const templateName = drive.template?.name ?? '';
       const from = drive.template?.fromLocation ?? '';
       const to = drive.template?.toLocation ?? '';
-      const reason = Reason.toString(drive.reason || drive.template?.reason);
+      const reason = ReasonHelper.toString(drive.reason || drive.template?.reason);
       const length = isHomeOffice ? 1 : drive.template?.driveLength ?? 0;
       runningTotal += length;
 
@@ -216,7 +234,7 @@ export class DriveList {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
 
-    const reasonPart = filter.reason ? Reason.toString(filter.reason) : 'Alle';
+    const reasonPart = filter.reason ? ReasonHelper.toString(filter.reason) : 'Alle';
     const yearPart = filter.year ?? 'Alle';
     const monthPart = filter.month ? this.months.find(m => m.value === filter.month)?.name : 'Alle';
     const filename = `Fahrtenbuch_${reasonPart}_${yearPart}_${monthPart}.csv`;
@@ -234,4 +252,5 @@ export class DriveList {
   }
 
   protected readonly Reason = Reason;
+  protected readonly ReasonHelper = ReasonHelper;
 }

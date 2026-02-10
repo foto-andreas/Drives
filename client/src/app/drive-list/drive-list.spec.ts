@@ -34,8 +34,7 @@ describe('DriveList', () => {
     };
 
     await TestBed.configureTestingModule({
-      declarations: [DriveList],
-      imports: [ReactiveFormsModule, RouterTestingModule],
+      imports: [DriveList, ReactiveFormsModule, RouterTestingModule],
       providers: [
         { provide: DriveService, useValue: driveServiceMock },
         { provide: MatSnackBar, useValue: snackBarMock }
@@ -59,8 +58,8 @@ describe('DriveList', () => {
 
   it('should have initial filters set to current date', () => {
     const now = new Date();
-    expect(component.filterForm.controls.year.value).toBe(now.getFullYear());
-    expect(component.filterForm.controls.month.value).toBe(now.getMonth() + 1);
+    expect((component as any).filterForm.controls.year.value).toBe(now.getFullYear());
+    expect((component as any).filterForm.controls.month.value).toBe(now.getMonth() + 1);
   });
 
   it('should load drives on init', () => {
@@ -69,18 +68,18 @@ describe('DriveList', () => {
 
   it('should handle initial load and filter', async () => {
     const drives = [
-      { id: '1', date: new Date(2023, 0, 1), reason: Reason.WORK, template: { name: 'T1' } }
+      { id: '1', date: new Date(2023, 0, 1), reason: 'WORK', template: { name: 'T1' } }
     ];
     driveServiceMock.findAll.mockReturnValue(of(drives));
     (component as any).refresh$.next();
     fixture.detectChanges();
     await fixture.whenStable();
 
-    component.filterForm.controls.year.setValue(2023);
-    component.filterForm.controls.month.setValue(1);
+    (component as any).filterForm.controls.year.setValue(2023);
+    (component as any).filterForm.controls.month.setValue(1);
     fixture.detectChanges();
 
-    expect(component.drives().length).toBe(1);
+    expect((component as any).drives().length).toBe(1);
   });
 
   it('should handle CSV export', async () => {
@@ -114,7 +113,7 @@ describe('DriveList', () => {
   });
 
   it('should handle CSV export with HOME reason filter', async () => {
-    component.filterForm.patchValue({
+    (component as any).filterForm.patchValue({
       year: null,
       month: null,
       reason: 'HOME'
@@ -175,31 +174,31 @@ describe('DriveList', () => {
     component.onRowTouchMove(moveEvent);
     expect((component as any).isActuallySwiping).toBe(true);
 
-    vi.stubGlobal('confirm', vi.fn(() => true));
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
     const endEvent = { changedTouches: [{ clientX: 40, clientY: 100 }] } as any;
     component.onRowTouchEnd(endEvent, '1');
     await new Promise(resolve => setTimeout(resolve, 100));
     expect(driveServiceMock.delete).toHaveBeenCalledWith('1');
-    vi.unstubAllGlobals();
+    confirmSpy.mockRestore();
   });
 
   it('should handle Deletion error', async () => {
-    vi.stubGlobal('confirm', vi.fn(() => true));
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
     driveServiceMock.delete.mockReturnValue(throwError(() => ({ status: 500 })));
     component.deleteDrive('1');
     expect(snackBarMock.open).toHaveBeenCalledWith('Fehler beim Löschen der Fahrt', 'OK', expect.any(Object));
-    vi.unstubAllGlobals();
+    confirmSpy.mockRestore();
   });
 
   it('should handle navigation, filters, and swipe edge cases', () => {
     const router = TestBed.inject(Router);
     const navigateSpy = vi.spyOn(router, 'navigate');
 
-    component.filterForm.patchValue({ year: 2023, month: 5, reason: 'WORK' });
+    (component as any).filterForm.patchValue({ year: 2023, month: 5, reason: 'WORK' });
     expect(driveServiceMock.setFilter).toHaveBeenCalled();
 
-    component.filterForm.patchValue({ year: null, month: 5 });
-    expect(component.filterForm.controls.month.value).toBeNull();
+    (component as any).filterForm.patchValue({ year: null, month: 5 });
+    expect((component as any).filterForm.controls.month.value).toBeNull();
 
     (component as any).isActuallySwiping = false;
     component.editDrive('1');

@@ -31,8 +31,7 @@ describe('DriveTemplateForm', () => {
     };
 
     await TestBed.configureTestingModule({
-      declarations: [DriveTemplateForm],
-      imports: [ReactiveFormsModule, RouterTestingModule, NoopAnimationsModule],
+      imports: [DriveTemplateForm, ReactiveFormsModule, RouterTestingModule, NoopAnimationsModule],
       providers: [
         { provide: DriveTemplateService, useValue: driveTemplateServiceMock },
         { provide: MatSnackBar, useValue: snackBarMock },
@@ -46,18 +45,20 @@ describe('DriveTemplateForm', () => {
       schemas: [NO_ERRORS_SCHEMA]
     }).compileComponents();
 
-    fixture = TestBed.createComponent(DriveTemplateForm);
-    component = fixture.componentInstance;
   });
 
+  const createComponent = () => {
+    fixture = TestBed.createComponent(DriveTemplateForm);
+    component = fixture.componentInstance;
+  };
+
   it('should create', () => {
+    createComponent();
     fixture.detectChanges();
     expect(component).toBeTruthy();
   });
 
   it('should load template for editing if id is provided', async () => {
-    paramMapSubject.next(convertToParamMap({ id: '123' }));
-
     const templateData = {
       id: '123',
       name: 'Test',
@@ -67,7 +68,9 @@ describe('DriveTemplateForm', () => {
       reason: 'WORK'
     };
     driveTemplateServiceMock.get.mockReturnValue(of(templateData));
+    paramMapSubject.next(convertToParamMap({ id: '123' }));
 
+    createComponent();
     fixture.detectChanges();
     await fixture.whenStable();
 
@@ -76,6 +79,7 @@ describe('DriveTemplateForm', () => {
   });
 
   it('should save template and navigate on submit', async () => {
+    createComponent();
     fixture.detectChanges();
     const router = TestBed.inject(Router);
     vi.spyOn(router, 'navigate');
@@ -96,6 +100,7 @@ describe('DriveTemplateForm', () => {
   });
 
   it('should show error snackbar on save failure', async () => {
+    createComponent();
     fixture.detectChanges();
 
     (component as any).templateForm.patchValue({
@@ -114,32 +119,36 @@ describe('DriveTemplateForm', () => {
   });
 
   it('should allow 0 length for HOME reason', async () => {
+    createComponent();
     fixture.detectChanges();
     const form = (component as any).templateForm;
 
     form.patchValue({
       name: 'Home Office',
       fromLocation: 'Home',
-      toLocation: 'Home',
-      driveLength: 0,
-      reason: 'HOME'
+      toLocation: 'Home'
     });
+    form.controls.reason.setValue('HOME');
+    form.controls.driveLength.setValue(0);
+    form.updateValueAndValidity();
 
     expect(form.valid).toBe(true);
     expect(form.get('driveLength').errors).toBeNull();
   });
 
   it('should not allow 0 length for WORK reason', async () => {
+    createComponent();
     fixture.detectChanges();
     const form = (component as any).templateForm;
 
     form.patchValue({
       name: 'Work',
       fromLocation: 'Home',
-      toLocation: 'Office',
-      driveLength: 0,
-      reason: 'WORK'
+      toLocation: 'Office'
     });
+    form.controls.reason.setValue('WORK');
+    form.controls.driveLength.setValue(0);
+    form.updateValueAndValidity();
 
     expect(form.valid).toBe(false);
     expect(form.get('driveLength').errors).toBeTruthy();
