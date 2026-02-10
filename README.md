@@ -1,7 +1,7 @@
 # Fahrtenbuch
 
 Fahrtenbuch auf Basis von Fahrt-Vorlagen und Möglichkeit, HomeOffice-Tage nachzuhalten. 
-Es gibt einen CSV-Export (auf Basis der Filtermöglcihkeiten) für die Steuererklärung.
+Es gibt einen CSV-Export (auf Basis der Filtermöglichkeiten) für die Steuererklärung.
 
 ## Dokumentation
 
@@ -17,7 +17,7 @@ runLocal.sh
 ## Deployment
 
 Der Client-Coe wird zusammen mit dem Server-Code gebaut. Die gesamte Anwendung kann als Docker-Container
-bereitgestellt werden. Wenn die Task ```dockerBuild``` nicht funktioniert, das hier benutzen:
+bereitgestellt werden. Wenn der Task ```dockerBuild``` nicht funktioniert, das hier benutzen:
 ```bash
 ./gradlew build && \
   docker build --build-arg JAR_FILE=build/libs/drives-0.0.1-SNAPSHOT.jar -t drives:0.0.1-SNAPSHOT . && \
@@ -41,9 +41,10 @@ Im Repo gibt es die folgenden Beispieldateien für ein Deployment mit Docker und
 * docker-compose.yaml
 * traefik-dynamic-drives.yaml
 * docker-drives-env.txt
+
 Die Einstellungen für die Middleware müssen per File bereitgestellt werden, 
 da es innerhalb der Docker-Labels sonst zu Race-Conditions kommt. Das zeigt sich
-dann daran, dass Middlewares nciht gefunden werden.
+dann daran, dass Middlewares nicht gefunden werden.
 
 ## Junie
 
@@ -71,7 +72,7 @@ und sinnvoll erfüllt sind.
 * Wenn ein Verhalten fraglich ist, stelle Rückfragen.
 * Ergänze Kommentare, falls sinnvoll.
 * Bereinige den Code bei Fehlern.
-* Erstelle zusätliche Testfälle, die diese Probleme abdecken.
+* Erstelle zusätzliche Testfälle, die diese Probleme abdecken.
 * Es soll eine Testabdeckung von 90% erreicht werden.
 ```
 
