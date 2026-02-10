@@ -92,6 +92,19 @@ describe('DriveForm', () => {
     expect((component as any).latestDriveDate).toEqual(latestDate);
   });
 
+  it('should ignore drives without valid date when loading latest drive date', () => {
+    const latestDate = new Date(2024, 5, 15);
+    driveServiceMock.findAll.mockReturnValue(of([
+      { date: null },
+      { date: 'invalid-date' },
+      { date: latestDate }
+    ]));
+
+    fixture.detectChanges();
+
+    expect((component as any).latestDriveDate).toEqual(latestDate);
+  });
+
   it('should load drive for editing if id is provided', async () => {
     paramMapSubject.next(convertToParamMap({ id: '123' }));
 

@@ -104,11 +104,27 @@ export class DriveForm implements OnInit {
 
   private loadLatestDriveDate(): void {
     this.driveService.findAll().subscribe(drives => {
-      if (drives.length > 0) {
-        // Die Fahrten sind vom Backend aufsteigend sortiert
-        this.latestDriveDate = drives[drives.length - 1].date;
+      const datedDrives = drives.filter(drive => !!drive.date);
+      if (datedDrives.length > 0) {
+        const latestDrive = datedDrives.reduce((latest, current) => {
+          const latestDate = this.toDate(latest.date);
+          const currentDate = this.toDate(current.date);
+          if (!latestDate) return current;
+          if (!currentDate) return latest;
+          return currentDate > latestDate ? current : latest;
+        });
+        this.latestDriveDate = this.toDate(latestDrive.date);
+      } else {
+        this.latestDriveDate = null;
       }
     });
+  }
+
+  private toDate(value: unknown): Date | null {
+    if (!value) return null;
+    if (value instanceof Date) return value;
+    const parsed = new Date(value as string);
+    return isNaN(parsed.getTime()) ? null : parsed;
   }
 
   onSubmit(): void {
