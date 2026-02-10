@@ -41,22 +41,6 @@ public class FahrtenApplication {
 			} catch (Exception e) {
 				System.err.println("Could not drop check constraints: " + e.getMessage());
 			}
-
-			//driveRepository.deleteAll();
-			//driveTemplatRepository.deleteAll();
-
-			//DriveTemplate t1 = driveTemplatRepository.save(
-			//		new DriveTemplate(null, "WK -> BP", 206, "Wermelskirchen", "Bad Pyrmont", Reason.ESTATE));
-
-			//DriveTemplate t2 = driveTemplatRepository.save(
-			//		new DriveTemplate(null, "BP -> WK", 206, "Bad Pyrmont", "Wermelskirchen", Reason.ESTATE));
-
-			//driveTemplatRepository.findAll().forEach(System.out::println);
-
-			//driveRepository.save(new Drive(null, t1, LocalDate.now(), null));
-			//driveRepository.save(new Drive(null, t2, LocalDate.now().minusDays(1), null));
-
-			//driveRepository.findAll().forEach(System.out::println);
 		};
 	}
 }
