@@ -1,13 +1,16 @@
 import 'zone.js';
 import 'zone.js/testing';
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { DriveTemplateForm } from './drive-template-form';
 import { DriveTemplateService } from '../drive-template-service';
-import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
+import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { BehaviorSubject, of, throwError } from 'rxjs';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
+import { RouterTestingModule } from '@angular/router/testing';
+import { ReactiveFormsModule } from '@angular/forms';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 
 describe('DriveTemplateForm', () => {
   let component: DriveTemplateForm;
@@ -28,9 +31,9 @@ describe('DriveTemplateForm', () => {
     };
 
     await TestBed.configureTestingModule({
-      imports: [DriveTemplateForm, NoopAnimationsModule],
+      declarations: [DriveTemplateForm],
+      imports: [ReactiveFormsModule, RouterTestingModule, NoopAnimationsModule],
       providers: [
-        provideRouter([]),
         { provide: DriveTemplateService, useValue: driveTemplateServiceMock },
         { provide: MatSnackBar, useValue: snackBarMock },
         {
@@ -39,17 +42,9 @@ describe('DriveTemplateForm', () => {
             paramMap: paramMapSubject
           }
         }
-      ]
-    })
-    .overrideComponent(DriveTemplateForm, {
-      add: {
-        providers: [
-          { provide: DriveTemplateService, useValue: driveTemplateServiceMock },
-          { provide: MatSnackBar, useValue: snackBarMock }
-        ]
-      }
-    })
-    .compileComponents();
+      ],
+      schemas: [NO_ERRORS_SCHEMA]
+    }).compileComponents();
 
     fixture = TestBed.createComponent(DriveTemplateForm);
     component = fixture.componentInstance;
@@ -66,9 +61,9 @@ describe('DriveTemplateForm', () => {
     const templateData = {
       id: '123',
       name: 'Test',
-      from_location: 'A',
-      to_location: 'B',
-      drive_length: 10,
+      fromLocation: 'A',
+      toLocation: 'B',
+      driveLength: 10,
       reason: 'WORK'
     };
     driveTemplateServiceMock.get.mockReturnValue(of(templateData));
@@ -87,9 +82,9 @@ describe('DriveTemplateForm', () => {
 
     (component as any).templateForm.patchValue({
       name: 'New Template',
-      from_location: 'A',
-      to_location: 'B',
-      drive_length: 15,
+      fromLocation: 'A',
+      toLocation: 'B',
+      driveLength: 15,
       reason: 'OTHER'
     });
 
@@ -105,9 +100,9 @@ describe('DriveTemplateForm', () => {
 
     (component as any).templateForm.patchValue({
       name: 'New Template',
-      from_location: 'A',
-      to_location: 'B',
-      drive_length: 15,
+      fromLocation: 'A',
+      toLocation: 'B',
+      driveLength: 15,
       reason: 'OTHER'
     });
 
@@ -124,14 +119,14 @@ describe('DriveTemplateForm', () => {
 
     form.patchValue({
       name: 'Home Office',
-      from_location: 'Home',
-      to_location: 'Home',
-      drive_length: 0,
+      fromLocation: 'Home',
+      toLocation: 'Home',
+      driveLength: 0,
       reason: 'HOME'
     });
 
     expect(form.valid).toBe(true);
-    expect(form.get('drive_length').errors).toBeNull();
+    expect(form.get('driveLength').errors).toBeNull();
   });
 
   it('should not allow 0 length for WORK reason', async () => {
@@ -140,13 +135,13 @@ describe('DriveTemplateForm', () => {
 
     form.patchValue({
       name: 'Work',
-      from_location: 'Home',
-      to_location: 'Office',
-      drive_length: 0,
+      fromLocation: 'Home',
+      toLocation: 'Office',
+      driveLength: 0,
       reason: 'WORK'
     });
 
     expect(form.valid).toBe(false);
-    expect(form.get('drive_length').errors).toBeTruthy();
+    expect(form.get('driveLength').errors).toBeTruthy();
   });
 });

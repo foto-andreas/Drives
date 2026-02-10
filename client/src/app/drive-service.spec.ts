@@ -30,17 +30,17 @@ describe('DriveService', () => {
   it('should store and retrieve the last selected date', () => {
     const testDate = new Date(2023, 10, 15);
     service.setLastSelectedDate(testDate);
-    expect(service.getLastSelectedDate()).toEqual(testDate);
+    expect(service.lastSelectedDate()).toEqual(testDate);
   });
 
   it('should store and retrieve the filter', () => {
     const filter = { year: 2022, month: 5, reason: 'Business' };
     service.setFilter(filter);
-    expect(service.getFilter()).toEqual(filter);
+    expect(service.currentFilter()).toEqual(filter);
   });
 
   it('should have initial filter with current year and month', () => {
-    const filter = service.getFilter();
+    const filter = service.currentFilter();
     const now = new Date();
     expect(filter.year).toBe(now.getFullYear());
     expect(filter.month).toBe(now.getMonth() + 1);
@@ -77,19 +77,22 @@ describe('DriveService', () => {
   });
 
   it('should save new via PUT', () => {
-    const drive = { name: 'test' };
+    const drive = { date: new Date(2023, 9, 15), template: null } as any;
     service.save(drive).subscribe();
     const req = httpMock.expectOne('/api/drives');
     expect(req.request.method).toBe('PUT');
-    req.flush(drive);
+    expect(req.request.body.templateId).toBeNull();
+    expect(req.request.body.date).toBe('2023-10-15');
+    req.flush({ id: '1', date: '2023-10-15', template: null, reason: null });
   });
 
   it('should save existing via POST', () => {
-    const drive = { id: '1', name: 'test' };
+    const drive = { id: '1', date: new Date(2023, 9, 15), template: null } as any;
     service.save(drive).subscribe();
     const req = httpMock.expectOne('/api/drives');
     expect(req.request.method).toBe('POST');
-    req.flush(drive);
+    expect(req.request.body.id).toBe('1');
+    req.flush({ id: '1', date: '2023-10-15', template: null, reason: null });
   });
 
   it('should delete via DELETE', () => {

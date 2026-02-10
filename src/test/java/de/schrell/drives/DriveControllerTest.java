@@ -1,8 +1,11 @@
 package de.schrell.drives;
 
-import de.schrell.drives.domain.Drive;
-import de.schrell.drives.domain.DriveTemplate;
-import de.schrell.drives.domain.Reason;
+import de.schrell.drives.drives.api.controllers.DriveController;
+import de.schrell.drives.drives.api.dtos.DriveRequest;
+import de.schrell.drives.drives.api.dtos.DriveResponse;
+import de.schrell.drives.drives.domain.commands.DriveCommand;
+import de.schrell.drives.drives.domain.entities.Reason;
+import de.schrell.drives.drives.domain.services.DriveService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,16 +13,14 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatusCode;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import java.lang.reflect.Field;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -29,108 +30,89 @@ import static org.mockito.Mockito.when;
 class DriveControllerTest {
 
     @Mock
-    private DriveRepository driveRepository;
+    private DriveService driveService;
 
     @Captor
-    private ArgumentCaptor<Drive> driveCaptor;
+    private ArgumentCaptor<DriveCommand> driveCaptor;
 
     private DriveController driveController;
 
     @BeforeEach
     void setup() {
-        driveController = new DriveController(driveRepository);
+        driveController = new DriveController(driveService);
     }
 
     @Test
     void getDrivesReturnsOrderedList() {
-        List<Drive> drives = List.of(new Drive());
-        when(driveRepository.findAllByOrderByDateAsc()).thenReturn(drives);
+        List<DriveResponse> drives = List.of(new DriveResponse("1", LocalDate.now(), null, null));
+        when(driveService.findAll()).thenReturn(drives);
 
         assertSame(drives, driveController.getDrives());
-        verify(driveRepository).findAllByOrderByDateAsc();
-        verifyNoMoreInteractions(driveRepository);
+        verify(driveService).findAll();
+        verifyNoMoreInteractions(driveService);
     }
 
     @Test
     void getDriveReturnsOptional() {
-        Drive drive = new Drive();
-        when(driveRepository.findById("42")).thenReturn(Optional.of(drive));
+        DriveResponse drive = new DriveResponse("42", LocalDate.now(), null, null);
+        when(driveService.findById("42")).thenReturn(drive);
 
-        assertEquals(Optional.of(drive), driveController.getDrive("42"));
-        verify(driveRepository).findById("42");
-        verifyNoMoreInteractions(driveRepository);
+        assertSame(drive, driveController.getDrive("42"));
+        verify(driveService).findById("42");
+        verifyNoMoreInteractions(driveService);
     }
 
     @Test
     void getLatestDriveDateReturnsNoContentWhenNull() {
-        when(driveRepository.findLatestDate()).thenReturn(null);
+        when(driveService.findLatestDate()).thenReturn(Optional.empty());
 
         ResponseEntity<LocalDate> response = driveController.getLatestDriveDate();
 
-        assertEquals(HttpStatusCode.valueOf(204), response.getStatusCode());
-        assertNull(response.getBody());
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+        assertEquals(null, response.getBody());
     }
 
     @Test
     void getLatestDriveDateReturnsOkWhenPresent() {
         LocalDate latest = LocalDate.of(2024, 6, 10);
-        when(driveRepository.findLatestDate()).thenReturn(latest);
+        when(driveService.findLatestDate()).thenReturn(Optional.of(latest));
 
         ResponseEntity<LocalDate> response = driveController.getLatestDriveDate();
 
-        assertEquals(HttpStatusCode.valueOf(200), response.getStatusCode());
+        assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(latest, response.getBody());
     }
 
     @Test
-    void addDriveNormalizesReasonWhenMatchingTemplate() throws Exception {
-        DriveTemplate template = new DriveTemplate(null, "Test", 10, "A", "B", Reason.WORK);
-        Drive drive = new Drive(null, template, LocalDate.now(), Reason.WORK);
-        when(driveRepository.save(driveCaptor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
+    void addDriveMapsRequestToCommand() {
+        DriveRequest request = new DriveRequest(null, LocalDate.of(2024, 5, 5), "template-id", Reason.WORK);
+        DriveResponse response = new DriveResponse("1", LocalDate.of(2024, 5, 5), null, Reason.WORK);
+        when(driveService.create(driveCaptor.capture())).thenReturn(response);
 
-        driveController.addDrive(drive);
+        DriveResponse result = driveController.addDrive(request);
 
-        Drive saved = driveCaptor.getValue();
-        assertNull(readReason(saved));
+        assertSame(response, result);
+        assertEquals("template-id", driveCaptor.getValue().templateId());
     }
 
     @Test
-    void updateDriveKeepsReasonWhenDifferent() throws Exception {
-        DriveTemplate template = new DriveTemplate(null, "Test", 10, "A", "B", Reason.WORK);
-        Drive drive = new Drive(null, template, LocalDate.now(), Reason.OTHER);
-        when(driveRepository.save(driveCaptor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
+    void updateDriveMapsRequestToCommand() {
+        DriveRequest request = new DriveRequest("id", LocalDate.of(2024, 6, 6), "template-id", Reason.OTHER);
+        DriveResponse response = new DriveResponse("id", LocalDate.of(2024, 6, 6), null, Reason.OTHER);
+        when(driveService.update(driveCaptor.capture())).thenReturn(response);
 
-        driveController.updateDrive(drive);
+        DriveResponse result = driveController.updateDrive(request);
 
-        Drive saved = driveCaptor.getValue();
-        assertEquals(Reason.OTHER, readReason(saved));
+        assertSame(response, result);
+        assertEquals("id", driveCaptor.getValue().id());
     }
 
     @Test
     void deleteDriveReturnsOkWhenExists() {
-        when(driveRepository.existsById("1")).thenReturn(true);
-
         ResponseEntity<Void> response = driveController.deleteDrive("1");
 
-        assertEquals(HttpStatusCode.valueOf(200), response.getStatusCode());
-        verify(driveRepository).existsById("1");
-        verify(driveRepository).deleteById("1");
-    }
-
-    @Test
-    void deleteDriveReturnsNotFoundWhenMissing() {
-        when(driveRepository.existsById("missing")).thenReturn(false);
-
-        ResponseEntity<Void> response = driveController.deleteDrive("missing");
-
-        assertEquals(HttpStatusCode.valueOf(404), response.getStatusCode());
-        verify(driveRepository).existsById("missing");
-        verifyNoMoreInteractions(driveRepository);
-    }
-
-    private Reason readReason(Drive drive) throws Exception {
-        Field field = Drive.class.getDeclaredField("reason");
-        field.setAccessible(true);
-        return (Reason) field.get(drive);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(driveService).delete("1");
+        verifyNoMoreInteractions(driveService);
     }
 }

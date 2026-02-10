@@ -1,7 +1,11 @@
 package de.schrell.drives;
 
-import de.schrell.drives.domain.DriveTemplate;
-import de.schrell.drives.domain.Reason;
+import de.schrell.drives.drives.api.controllers.DriveTemplateController;
+import de.schrell.drives.drives.api.dtos.DriveTemplateRequest;
+import de.schrell.drives.drives.api.dtos.DriveTemplateResponse;
+import de.schrell.drives.drives.domain.commands.DriveTemplateCommand;
+import de.schrell.drives.drives.domain.entities.Reason;
+import de.schrell.drives.drives.domain.services.DriveTemplateService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,14 +13,12 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatusCode;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -26,97 +28,68 @@ import static org.mockito.Mockito.when;
 class DriveTemplateControllerTest {
 
     @Mock
-    private DriveTemplateRepository driveTemplateRepository;
-
-    @Mock
-    private DriveRepository driveRepository;
+    private DriveTemplateService driveTemplateService;
 
     @Captor
-    private ArgumentCaptor<DriveTemplate> templateCaptor;
+    private ArgumentCaptor<DriveTemplateCommand> templateCaptor;
 
     private DriveTemplateController driveTemplateController;
 
     @BeforeEach
     void setup() {
-        driveTemplateController = new DriveTemplateController(driveTemplateRepository, driveRepository);
+        driveTemplateController = new DriveTemplateController(driveTemplateService);
     }
 
     @Test
     void getDriveTemplatesReturnsOrderedList() {
-        List<DriveTemplate> templates = List.of(new DriveTemplate());
-        when(driveTemplateRepository.findAllByOrderByNameAsc()).thenReturn(templates);
+        List<DriveTemplateResponse> templates = List.of(new DriveTemplateResponse("1", "Test", 5, "A", "B", Reason.WORK));
+        when(driveTemplateService.findAll()).thenReturn(templates);
 
-        assertSame(templates, driveTemplateController.getDrives());
-        verify(driveTemplateRepository).findAllByOrderByNameAsc();
-        verifyNoMoreInteractions(driveTemplateRepository);
+        assertSame(templates, driveTemplateController.getDriveTemplates());
+        verify(driveTemplateService).findAll();
+        verifyNoMoreInteractions(driveTemplateService);
     }
 
     @Test
     void getDriveTemplateReturnsOptional() {
-        DriveTemplate template = new DriveTemplate();
-        when(driveTemplateRepository.findById("99")).thenReturn(Optional.of(template));
+        DriveTemplateResponse template = new DriveTemplateResponse("99", "Test", 5, "A", "B", Reason.WORK);
+        when(driveTemplateService.findById("99")).thenReturn(template);
 
-        assertEquals(Optional.of(template), driveTemplateController.getDriveTemplate("99"));
-        verify(driveTemplateRepository).findById("99");
-        verifyNoMoreInteractions(driveTemplateRepository);
+        assertSame(template, driveTemplateController.getDriveTemplate("99"));
+        verify(driveTemplateService).findById("99");
+        verifyNoMoreInteractions(driveTemplateService);
     }
 
     @Test
-    void addDriveTemplateClearsId() {
-        DriveTemplate template = new DriveTemplate("existing", "Test", 5, "A", "B", Reason.WORK);
-        when(driveTemplateRepository.save(templateCaptor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
+    void addDriveTemplateMapsRequestToCommand() {
+        DriveTemplateRequest request = new DriveTemplateRequest(null, "Test", 5, "A", "B", Reason.WORK);
+        DriveTemplateResponse response = new DriveTemplateResponse("1", "Test", 5, "A", "B", Reason.WORK);
+        when(driveTemplateService.create(templateCaptor.capture())).thenReturn(response);
 
-        DriveTemplate saved = driveTemplateController.addDriveTemplate(template);
+        DriveTemplateResponse result = driveTemplateController.addDriveTemplate(request);
 
-        assertNull(templateCaptor.getValue().getId());
-        assertNull(saved.getId());
+        assertSame(response, result);
+        assertEquals("Test", templateCaptor.getValue().name());
     }
 
     @Test
-    void updateDriveTemplatePersists() {
-        DriveTemplate template = new DriveTemplate("id", "Test", 5, "A", "B", Reason.WORK);
-        when(driveTemplateRepository.save(template)).thenReturn(template);
+    void updateDriveTemplateMapsRequestToCommand() {
+        DriveTemplateRequest request = new DriveTemplateRequest("id", "Test", 5, "A", "B", Reason.WORK);
+        DriveTemplateResponse response = new DriveTemplateResponse("id", "Test", 5, "A", "B", Reason.WORK);
+        when(driveTemplateService.update(templateCaptor.capture())).thenReturn(response);
 
-        assertSame(template, driveTemplateController.updateDriveTemplate(template));
-        verify(driveTemplateRepository).save(template);
+        DriveTemplateResponse result = driveTemplateController.updateDriveTemplate(request);
+
+        assertSame(response, result);
+        assertEquals("id", templateCaptor.getValue().id());
     }
 
     @Test
-    void deleteDriveTemplateReturnsNotFoundWhenMissing() {
-        when(driveTemplateRepository.findById("missing")).thenReturn(Optional.empty());
-
-        ResponseEntity<Void> response = driveTemplateController.deleteDriveTemplate("missing");
-
-        assertEquals(HttpStatusCode.valueOf(404), response.getStatusCode());
-        verify(driveTemplateRepository).findById("missing");
-        verifyNoMoreInteractions(driveTemplateRepository, driveRepository);
-    }
-
-    @Test
-    void deleteDriveTemplateReturnsConflictWhenInUse() {
-        DriveTemplate template = new DriveTemplate("id", "Test", 5, "A", "B", Reason.WORK);
-        when(driveTemplateRepository.findById("id")).thenReturn(Optional.of(template));
-        when(driveRepository.countByTemplate(template)).thenReturn(2L);
-
+    void deleteDriveTemplateReturnsOk() {
         ResponseEntity<Void> response = driveTemplateController.deleteDriveTemplate("id");
 
-        assertEquals(HttpStatusCode.valueOf(409), response.getStatusCode());
-        verify(driveTemplateRepository).findById("id");
-        verify(driveRepository).countByTemplate(template);
-        verifyNoMoreInteractions(driveTemplateRepository, driveRepository);
-    }
-
-    @Test
-    void deleteDriveTemplateDeletesWhenUnused() {
-        DriveTemplate template = new DriveTemplate("id", "Test", 5, "A", "B", Reason.WORK);
-        when(driveTemplateRepository.findById("id")).thenReturn(Optional.of(template));
-        when(driveRepository.countByTemplate(template)).thenReturn(0L);
-
-        ResponseEntity<Void> response = driveTemplateController.deleteDriveTemplate("id");
-
-        assertEquals(HttpStatusCode.valueOf(200), response.getStatusCode());
-        verify(driveTemplateRepository).findById("id");
-        verify(driveRepository).countByTemplate(template);
-        verify(driveTemplateRepository).deleteById("id");
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(driveTemplateService).delete("id");
+        verifyNoMoreInteractions(driveTemplateService);
     }
 }

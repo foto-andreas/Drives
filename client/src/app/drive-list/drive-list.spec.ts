@@ -3,10 +3,13 @@ import 'zone.js/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { DriveList } from './drive-list';
 import { DriveService } from '../drive-service';
-import { provideRouter, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Reason } from '../reason';
+import { RouterTestingModule } from '@angular/router/testing';
+import { ReactiveFormsModule } from '@angular/forms';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 
 describe('DriveList', () => {
   let component: DriveList;
@@ -18,9 +21,7 @@ describe('DriveList', () => {
     driveServiceMock = {
       findAll: vi.fn().mockReturnValue(of([])),
       delete: vi.fn().mockReturnValue(of(undefined)),
-      getLastSelectedDate: vi.fn().mockReturnValue(new Date()),
-      setLastSelectedDate: vi.fn(),
-      getFilter: vi.fn().mockReturnValue({
+      currentFilter: vi.fn().mockReturnValue({
         year: new Date().getFullYear(),
         month: new Date().getMonth() + 1,
         reason: null
@@ -33,22 +34,14 @@ describe('DriveList', () => {
     };
 
     await TestBed.configureTestingModule({
-      imports: [DriveList],
+      declarations: [DriveList],
+      imports: [ReactiveFormsModule, RouterTestingModule],
       providers: [
         { provide: DriveService, useValue: driveServiceMock },
-        { provide: MatSnackBar, useValue: snackBarMock },
-        provideRouter([])
-      ]
-    })
-    .overrideComponent(DriveList, {
-      add: {
-        providers: [
-          { provide: DriveService, useValue: driveServiceMock },
-          { provide: MatSnackBar, useValue: snackBarMock }
-        ]
-      }
-    })
-    .compileComponents();
+        { provide: MatSnackBar, useValue: snackBarMock }
+      ],
+      schemas: [NO_ERRORS_SCHEMA]
+    }).compileComponents();
 
     fixture = TestBed.createComponent(DriveList);
     component = fixture.componentInstance;
@@ -66,33 +59,32 @@ describe('DriveList', () => {
 
   it('should have initial filters set to current date', () => {
     const now = new Date();
-    expect((component as any).selectedYear).toBe(now.getFullYear());
-    expect((component as any).selectedMonth).toBe(now.getMonth() + 1);
+    expect(component.filterForm.controls.year.value).toBe(now.getFullYear());
+    expect(component.filterForm.controls.month.value).toBe(now.getMonth() + 1);
   });
 
   it('should load drives on init', () => {
     expect(driveServiceMock.findAll).toHaveBeenCalled();
   });
 
-  it('should handle INITIAL Load & Filter', async () => {
+  it('should handle initial load and filter', async () => {
     const drives = [
-      { id: '1', date: '2023-01-01', kmStart: 100, kmEnd: 150, reason: Reason.WORK, template: { name: 'T1' } }
+      { id: '1', date: new Date(2023, 0, 1), reason: Reason.WORK, template: { name: 'T1' } }
     ];
     driveServiceMock.findAll.mockReturnValue(of(drives));
     (component as any).refresh$.next();
     fixture.detectChanges();
     await fixture.whenStable();
 
-    (component as any).selectedYear = 2023;
-    (component as any).selectedMonth = 1;
-    (component as any).updateFilter();
+    component.filterForm.controls.year.setValue(2023);
+    component.filterForm.controls.month.setValue(1);
     fixture.detectChanges();
 
-    component.drives$.subscribe(f => expect(f.length).toBe(1));
+    expect(component.drives().length).toBe(1);
   });
 
   it('should handle CSV export', async () => {
-    const drives = [{ id: '1', date: '2023-01-01', template: { name: 'T1', drive_length: 10 } }];
+    const drives = [{ id: '1', date: new Date(2023, 0, 1), template: { name: 'T1', driveLength: 10 } }];
     driveServiceMock.findAll.mockReturnValue(of(drives));
     (component as any).refresh$.next();
     fixture.detectChanges();
@@ -122,14 +114,15 @@ describe('DriveList', () => {
   });
 
   it('should handle CSV export with HOME reason filter', async () => {
-    (component as any).selectedYear = null;
-    (component as any).selectedMonth = null;
-    (component as any).selectedReason = 'HOME';
-    (component as any).updateFilter();
+    component.filterForm.patchValue({
+      year: null,
+      month: null,
+      reason: 'HOME'
+    });
 
     const drives = [
-      { id: '1', date: '2023-01-01', reason: 'HOME', template: { name: 'HomeOffice', drive_length: 0 } },
-      { id: '2', date: '2023-01-02', reason: 'HOME', template: { name: 'HomeOffice', drive_length: 0 } }
+      { id: '1', date: new Date(2023, 0, 1), reason: 'HOME', template: { name: 'HomeOffice', driveLength: 0 } },
+      { id: '2', date: new Date(2023, 0, 2), reason: 'HOME', template: { name: 'HomeOffice', driveLength: 0 } }
     ];
     driveServiceMock.findAll.mockReturnValue(of(drives));
     (component as any).refresh$.next();
@@ -198,23 +191,16 @@ describe('DriveList', () => {
     vi.unstubAllGlobals();
   });
 
-  it('should handle navigation, filters and swipe edge cases', () => {
+  it('should handle navigation, filters, and swipe edge cases', () => {
     const router = TestBed.inject(Router);
     const navigateSpy = vi.spyOn(router, 'navigate');
 
-    // Filters
-    vi.spyOn(component as any, 'updateFilter');
-    (component as any).selectedYear = 2023;
-    component.onYearChange();
-    expect((component as any).updateFilter).toHaveBeenCalled();
-    (component as any).selectedYear = null;
-    component.onYearChange();
-    expect((component as any).selectedMonth).toBeNull();
-    component.onMonthChange();
-    component.onReasonChange();
-    expect((component as any).updateFilter).toHaveBeenCalledTimes(4);
+    component.filterForm.patchValue({ year: 2023, month: 5, reason: 'WORK' });
+    expect(driveServiceMock.setFilter).toHaveBeenCalled();
 
-    // Navigation
+    component.filterForm.patchValue({ year: null, month: 5 });
+    expect(component.filterForm.controls.month.value).toBeNull();
+
     (component as any).isActuallySwiping = false;
     component.editDrive('1');
     expect(navigateSpy).toHaveBeenCalledWith(['/drives/edit', '1']);
@@ -224,7 +210,6 @@ describe('DriveList', () => {
     component.editDrive('1');
     expect(navigateSpy).not.toHaveBeenCalled();
 
-    // Swipe edge case
     const startEvent = { touches: [{ clientX: 100, clientY: 100 }] } as any;
     component.onRowTouchStart(startEvent, '1');
     const rightMoveEvent = { touches: [{ clientX: 150, clientY: 100 }] } as any;

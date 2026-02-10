@@ -1,15 +1,18 @@
 import 'zone.js';
 import 'zone.js/testing';
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { DriveForm } from './drive-form';
 import { DriveService } from '../drive-service';
 import { DriveTemplateService } from '../drive-template-service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
+import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { BehaviorSubject, of, throwError } from 'rxjs';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { Router } from '@angular/router';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
+import { RouterTestingModule } from '@angular/router/testing';
+import { ReactiveFormsModule } from '@angular/forms';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 
 describe('DriveForm', () => {
   let component: DriveForm;
@@ -23,7 +26,7 @@ describe('DriveForm', () => {
   beforeEach(async () => {
     paramMapSubject = new BehaviorSubject(convertToParamMap({}));
     driveServiceMock = {
-      getLastSelectedDate: vi.fn().mockReturnValue(new Date()),
+      lastSelectedDate: vi.fn().mockReturnValue(new Date()),
       setLastSelectedDate: vi.fn(),
       get: vi.fn().mockReturnValue(of({})),
       save: vi.fn().mockReturnValue(of({})),
@@ -43,9 +46,9 @@ describe('DriveForm', () => {
     };
 
     await TestBed.configureTestingModule({
-      imports: [DriveForm, NoopAnimationsModule],
+      declarations: [DriveForm],
+      imports: [ReactiveFormsModule, RouterTestingModule, NoopAnimationsModule],
       providers: [
-        provideRouter([]),
         { provide: DriveService, useValue: driveServiceMock },
         { provide: DriveTemplateService, useValue: driveTemplateServiceMock },
         { provide: MatSnackBar, useValue: snackBarMock },
@@ -56,19 +59,9 @@ describe('DriveForm', () => {
             paramMap: paramMapSubject
           }
         }
-      ]
-    })
-    .overrideComponent(DriveForm, {
-      add: {
-        providers: [
-          { provide: DriveService, useValue: driveServiceMock },
-          { provide: DriveTemplateService, useValue: driveTemplateServiceMock },
-          { provide: MatSnackBar, useValue: snackBarMock },
-          { provide: BreakpointObserver, useValue: breakpointObserverMock }
-        ]
-      }
-    })
-    .compileComponents();
+      ],
+      schemas: [NO_ERRORS_SCHEMA]
+    }).compileComponents();
 
     fixture = TestBed.createComponent(DriveForm);
     component = fixture.componentInstance;
@@ -89,7 +82,7 @@ describe('DriveForm', () => {
     driveServiceMock.getLatestDriveDate.mockReturnValue(of(latestDate));
     fixture.detectChanges();
     expect(driveServiceMock.getLatestDriveDate).toHaveBeenCalled();
-    expect((component as any).latestDriveDate).toEqual(latestDate);
+    expect((component as any).latestDriveDate()).toEqual(latestDate);
   });
 
   it('should handle empty latest drive date response', () => {
@@ -97,7 +90,7 @@ describe('DriveForm', () => {
 
     fixture.detectChanges();
 
-    expect((component as any).latestDriveDate).toBeNull();
+    expect((component as any).latestDriveDate()).toBeNull();
   });
 
   it('should load drive for editing if id is provided', async () => {
@@ -115,20 +108,20 @@ describe('DriveForm', () => {
   it('should update reason when template changes (not in edit mode)', async () => {
     fixture.detectChanges();
     const template = { id: 't1', reason: 'PRIVATE' } as any;
-    (component as any).driveForm.get('template')?.setValue(template);
-    expect((component as any).driveForm.get('reason')?.value).toBe('PRIVATE');
+    (component as any).driveForm.controls.template.setValue(template);
+    expect((component as any).driveForm.controls.reason.value).toBe('PRIVATE');
   });
 
   it('should update last selected date when date changes', async () => {
     fixture.detectChanges();
     const testDate = new Date(2023, 5, 5);
-    (component as any).driveForm.get('date')?.setValue(testDate);
+    (component as any).driveForm.controls.date.setValue(testDate);
     expect(driveServiceMock.setLastSelectedDate).toHaveBeenCalledWith(testDate);
   });
 
   it('should save drive and navigate on submit (edit mode)', async () => {
     fixture.detectChanges();
-    (component as any).isEdit = true;
+    (component as any).isEdit.set(true);
     const router = TestBed.inject(Router);
     vi.spyOn(router, 'navigate');
 
@@ -144,7 +137,7 @@ describe('DriveForm', () => {
     component.onSubmit();
 
     expect(driveServiceMock.save).toHaveBeenCalledWith(expect.objectContaining({
-      date: '2023-06-05'
+      date: testDate
     }));
     expect(snackBarMock.open).toHaveBeenCalled();
     expect(router.navigate).toHaveBeenCalledWith(['/drives']);
@@ -152,7 +145,7 @@ describe('DriveForm', () => {
 
   it('should reset form on submit (creation mode)', async () => {
     fixture.detectChanges();
-    (component as any).isEdit = false;
+    (component as any).isEdit.set(false);
     const formDirectiveMock = { resetForm: vi.fn() };
     (component as any).formDirective = formDirectiveMock;
 
@@ -199,8 +192,8 @@ describe('DriveForm', () => {
   it('should generate correct label text', () => {
     const template = {
       name: 'Test',
-      from_location: 'A',
-      to_location: 'B'
+      fromLocation: 'A',
+      toLocation: 'B'
     } as any;
     const label = component.getTemplateLabel(template);
     expect(label).toBe('Test (A -> B)');
@@ -209,9 +202,9 @@ describe('DriveForm', () => {
   it('should generate correct tooltip text', () => {
     const template = {
       name: 'Test',
-      from_location: 'A',
-      to_location: 'B',
-      drive_length: 10,
+      fromLocation: 'A',
+      toLocation: 'B',
+      driveLength: 10,
       reason: 'WORK'
     } as any;
     const tooltip = component.getTemplateTooltip(template);
