@@ -57,3 +57,9 @@ body { font-family: Roboto, "Helvetica Neue", sans-serif; }
 .tall-combobox-panel.mat-mdc-select-panel {
   max-height: 384px;
 }
+
+.error-snackbar {
+  --mdc-snackbar-container-color: #f44336;
+  --mat-snack-bar-button-color: #fff;
+  --mdc-snackbar-supporting-text-color: #fff;
+}

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -11,6 +11,7 @@ import { DriveTemplateService } from '../drive-template-service';
 import { DriveTemplate } from '../drive-template';
 import { Reason, ReasonKey } from '../reason';
 import { ReasonHelper } from '../reason-helper';
+import { NotificationService } from '../core/services/notification.service';
 
 @Component({
   selector: 'app-drive-template-form',
@@ -30,7 +31,7 @@ import { ReasonHelper } from '../reason-helper';
 export class DriveTemplateForm {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
-  private readonly snackBar = inject(MatSnackBar);
+  private readonly notifications = inject(NotificationService);
   private readonly driveTemplateService = inject(DriveTemplateService);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -97,17 +98,11 @@ export class DriveTemplateForm {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
-          this.snackBar.open('Vorlage erfolgreich gespeichert', 'OK', {
-            duration: 4000,
-            panelClass: ['success-snackbar']
-          });
+          this.notifications.success('Vorlage erfolgreich gespeichert', 4000);
           this.router.navigate(['/driveTemplates']);
         },
         error: () => {
-          this.snackBar.open('Fehler beim Speichern der Vorlage', 'OK', {
-            duration: 4000,
-            panelClass: ['error-snackbar']
-          });
+          this.notifications.error('Fehler beim Speichern der Vorlage', 4000);
         }
       });
   }
