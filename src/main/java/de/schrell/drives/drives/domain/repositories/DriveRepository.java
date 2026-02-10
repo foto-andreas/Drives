@@ -23,7 +23,7 @@ public interface DriveRepository extends JpaRepository<Drive, String> {
     @Query("select d from Drive d " +
             "where (:year is null or YEAR(d.date) = :year) " +
             "and (:month is null or MONTH(d.date) = :month) " +
-            "and (:reason is null or d.reason = :reason) " +
+            "and (:reason is null or d.reason = :reason or (d.reason is null and d.template.reason = :reason)) " +
             "order by d.date asc")
     List<Drive> findFiltered(@Param("year") Integer year,
                               @Param("month") Integer month,

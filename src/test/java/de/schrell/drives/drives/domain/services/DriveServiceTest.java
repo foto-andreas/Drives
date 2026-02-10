@@ -110,6 +110,24 @@ class DriveServiceTest {
     }
 
     @Test
+    void normalizeReasonSetsReasonToNullWhenSameAsTemplate() {
+        LocalDate date = LocalDate.now();
+        DriveTemplate template = new DriveTemplate();
+        template.setId("t1");
+        template.setReason(Reason.WORK);
+
+        DriveCommand command = new DriveCommand(null, date, "t1", Reason.WORK);
+
+        when(driveTemplateRepository.findById("t1")).thenReturn(Optional.of(template));
+        when(driveRepository.save(any(Drive.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(driveMapper.toResponse(any(Drive.class))).thenReturn(new DriveResponse("1", date, null, Reason.WORK));
+
+        driveService.create(command);
+
+        verify(driveRepository).save(argThat(drive -> drive.getReason() == null));
+    }
+
+    @Test
     void normalizeReasonKeepsReasonWhenDifferentFromTemplate() {
         LocalDate date = LocalDate.now();
         DriveCommand command = new DriveCommand(null, date, "t1", Reason.PRIVATE);
@@ -177,5 +195,20 @@ class DriveServiceTest {
 
         assertThat(result).containsExactly(response);
         verify(driveRepository).findFiltered(2024, 5, Reason.WORK);
+    }
+
+    @Test
+    void findAllWithEstateFilterReturnsDrives() {
+        Drive drive = new Drive();
+        drive.setReason(null); // Angenommen ESTATE ist im Template
+        DriveResponse response = new DriveResponse("1", LocalDate.of(2024, 5, 1), null, Reason.ESTATE);
+
+        when(driveRepository.findFiltered(2024, 5, Reason.ESTATE)).thenReturn(List.of(drive));
+        when(driveMapper.toResponse(drive)).thenReturn(response);
+
+        List<DriveResponse> result = driveService.findAll(2024, 5, Reason.ESTATE);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).reason()).isEqualTo(Reason.ESTATE);
     }
 }
