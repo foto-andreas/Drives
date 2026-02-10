@@ -11,13 +11,14 @@ import { App } from './app/app';
 import { routes } from './app/app.routes';
 import { MY_DATE_FORMATS } from './app/app.config';
 import { errorInterceptor } from './app/core/interceptors/error.interceptor';
+import { initializationInterceptor } from './app/core/interceptors/initialization.interceptor';
 
 registerLocaleData(localeDe);
 
 bootstrapApplication(App, {
   providers: [
     provideRouter(routes, withHashLocation()),
-    provideHttpClient(withInterceptors([errorInterceptor])),
+    provideHttpClient(withInterceptors([initializationInterceptor, errorInterceptor])),
     provideAnimations(),
     { provide: LOCALE_ID, useValue: 'de-DE' },
     { provide: MAT_DATE_LOCALE, useValue: 'de-DE' },

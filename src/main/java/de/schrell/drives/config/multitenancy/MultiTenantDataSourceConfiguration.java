@@ -1,17 +1,24 @@
 package de.schrell.drives.config.multitenancy;
 
 import com.zaxxer.hikari.HikariDataSource;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
 import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Configuration
+@Slf4j
 public class MultiTenantDataSourceConfiguration {
 
     private final String baseUrl;
@@ -19,16 +26,19 @@ public class MultiTenantDataSourceConfiguration {
     private final String password;
     private final String driverClassName;
     private final Map<Object, Object> resolvedDataSources = new ConcurrentHashMap<>();
+    private final DatabaseInitializationTracker initializationTracker;
 
     public MultiTenantDataSourceConfiguration(
             @Value("${spring.datasource.url}") String baseUrl,
             @Value("${spring.datasource.username}") String username,
             @Value("${spring.datasource.password}") String password,
-            @Value("${spring.datasource.driverClassName}") String driverClassName) {
+            @Value("${spring.datasource.driverClassName}") String driverClassName,
+            DatabaseInitializationTracker initializationTracker) {
         this.baseUrl = baseUrl;
         this.username = username;
         this.password = password;
         this.driverClassName = driverClassName;
+        this.initializationTracker = initializationTracker;
     }
 
     @Bean
@@ -74,6 +84,50 @@ public class MultiTenantDataSourceConfiguration {
         dataSource.setUsername(username);
         dataSource.setPassword(password);
         dataSource.setDriverClassName(driverClassName);
+        initializeSchemaIfNeeded(dataSource, tenantId);
         return dataSource;
+    }
+
+    private void initializeSchemaIfNeeded(DataSource dataSource, String tenantId) {
+        if (schemaExists(dataSource)) {
+            log.info("Database exists for " + tenantId);
+            return;
+        }
+        try (Connection connection = dataSource.getConnection(); Statement statement = connection.createStatement()) {
+            log.info("Will initialize Database for " + tenantId);
+            statement.executeUpdate("create table if not exists drive_template (" +
+                    "id varchar(255) not null, " +
+                    "name varchar(255), " +
+                    "drive_length integer not null, " +
+                    "from_location varchar(255), " +
+                    "to_location varchar(255), " +
+                    "reason integer, " +
+                    "primary key (id))");
+            statement.executeUpdate("create unique index if not exists idx_drive_template_name on drive_template (name)");
+            statement.executeUpdate("create table if not exists drive (" +
+                    "id varchar(255) not null, " +
+                    "template_id varchar(255), " +
+                    "date date, " +
+                    "reason integer, " +
+                    "primary key (id), " +
+                    "constraint fk_drive_template foreign key (template_id) references drive_template(id))");
+            initializationTracker.markInitialized(tenantId);
+            log.info("Initialized Database for " + tenantId);
+        } catch (SQLException ex) {
+            log.error("Schema-Initialisierung für Tenant {} fehlgeschlagen", tenantId, ex);
+            throw new IllegalStateException("Schema-Initialisierung fehlgeschlagen", ex);
+        }
+    }
+
+    private boolean schemaExists(DataSource dataSource) {
+        try (Connection connection = dataSource.getConnection()) {
+            DatabaseMetaData metaData = connection.getMetaData();
+            try (ResultSet tables = metaData.getTables(null, null, "DRIVE_TEMPLATE", new String[]{"TABLE"})) {
+                return tables.next();
+            }
+        } catch (SQLException ex) {
+            log.warn("Schema-Prüfung für Tenant-DataSource fehlgeschlagen", ex);
+            return true;
+        }
     }
 }

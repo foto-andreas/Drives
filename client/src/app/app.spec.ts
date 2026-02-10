@@ -3,11 +3,12 @@ import 'zone.js/testing';
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { App } from './app';
 import { provideRouter } from '@angular/router';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [App],
+      imports: [App, HttpClientTestingModule],
       providers: [provideRouter([])],
     }).compileComponents();
   });
