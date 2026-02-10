@@ -1,9 +1,9 @@
 export enum Reason {
-  PRIVATE = "privat",
   WORK = "Arbeit",
   ESTATE = "Haus",
-  OTHER = "sonstiges",
-  HOME = "HomeOffice"
+  HOME = "HomeOffice",
+  PRIVATE = "privat",
+  OTHER = "sonstiges"
 }
 
 export namespace Reason {
