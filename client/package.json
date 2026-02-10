@@ -6,7 +6,8 @@
     "start": "ng serve",
     "build": "ng build --output-path=../src/main/resources/public",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test --watch=false --runner=vitest --coverage"
+    "test": "ng test --watch=false --runner=vitest --coverage --coverage-reporters=lcov --coverage-reporters=text-summary --coverage-reporters=html",
+    "test:ci": "ng test --watch=false --runner=vitest --coverage --coverage-reporters=lcov --coverage-reporters=text-summary --coverage-reporters=html"
   },
   "prettier": {
     "printWidth": 100,
