@@ -104,24 +104,26 @@ export class DriveTemplateList {
     if (this.confirmDeletion('Vorlage')) {
       this.driveTemplateService.delete(id).subscribe({
         next: () => {
-          this.snackBar.open('Vorlage erfolgreich gelöscht', 'OK', {
+          this.snackBar.open('Vorlage erfolgreich gelöscht', 'Schließen', {
             duration: 4000,
+            horizontalPosition: 'center',
+            verticalPosition: 'bottom',
             panelClass: ['success-snackbar']
           });
           this.refresh$.next();
         },
         error: (err) => {
-          if (err.status === 409) {
-            this.snackBar.open('Diese Vorlage wird noch in Fahrten verwendet', 'OK', {
-              duration: 4000,
-              panelClass: ['error-snackbar']
-            });
-          } else {
-            this.snackBar.open('Fehler beim Löschen der Vorlage', 'OK', {
-              duration: 4000,
-              panelClass: ['error-snackbar']
-            });
-          }
+          const serverMsg = err && typeof err === 'object'
+            ? (err.error && typeof err.error === 'object' && err.error.message ? err.error.message : err.message)
+            : '';
+          const statusText = err && err.status ? `\n(Status ${err.status})` : '';
+          const full = `Fehler beim Löschen der Vorlage${serverMsg ? ': \n\n' + serverMsg : ''}${statusText}`;
+          this.snackBar.open(full, 'Schließen', {
+            duration: 4000,
+            horizontalPosition: 'center',
+            verticalPosition: 'bottom',
+            panelClass: ['error-snackbar']
+          });
         }
       });
     }

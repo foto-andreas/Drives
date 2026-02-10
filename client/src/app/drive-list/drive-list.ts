@@ -168,15 +168,24 @@ export class DriveList {
     if (this.confirmDeletion('Fahrt')) {
       this.driveService.delete(id).subscribe({
         next: () => {
-          this.snackBar.open('Fahrt erfolgreich gelöscht', 'OK', {
+          this.snackBar.open('Fahrt erfolgreich gelöscht', 'Schließen', {
             duration: 4000,
+            horizontalPosition: 'center',
+            verticalPosition: 'bottom',
             panelClass: ['success-snackbar']
           });
           this.refresh$.next();
         },
-        error: () => {
-          this.snackBar.open('Fehler beim Löschen der Fahrt', 'OK', {
+        error: (err) => {
+          const serverMsg = err && typeof err === 'object'
+            ? (err.error && typeof err.error === 'object' && err.error.message ? err.error.message : err.message)
+            : '';
+          const statusText = err && err.status ? `\n(Status ${err.status})` : '';
+          const full = `Fehler beim Löschen der Fahrt${serverMsg ? ': \n\n' + serverMsg : ''}${statusText}`;
+          this.snackBar.open(full, 'Schließen', {
             duration: 4000,
+            horizontalPosition: 'center',
+            verticalPosition: 'bottom',
             panelClass: ['error-snackbar']
           });
         }

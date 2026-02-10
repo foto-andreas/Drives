@@ -1,6 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
+import { SUPPRESS_GLOBAL_ERROR_TOAST } from './core/interceptors/error.interceptor';
 import { Drive, DriveRequest } from './drive';
 import { DriveFilter } from './drive-filter';
 
@@ -47,18 +48,20 @@ export class DriveService {
 
   public save(drive: Drive): Observable<Drive> {
     const request = this.toRequest(drive);
+    const context = new HttpContext().set(SUPPRESS_GLOBAL_ERROR_TOAST, true);
     if (!drive.id) {
-      return this.http.put<DriveApiResponse>('/api/drives', request).pipe(
+      return this.http.put<DriveApiResponse>('/api/drives', request, { context }).pipe(
         map(response => this.toDrive(response))
       );
     }
-    return this.http.post<DriveApiResponse>('/api/drives', request).pipe(
+    return this.http.post<DriveApiResponse>('/api/drives', request, { context }).pipe(
       map(response => this.toDrive(response))
     );
   }
 
   public delete(id: string): Observable<void> {
-    return this.http.delete<void>(`/api/drives/${id}`);
+    const context = new HttpContext().set(SUPPRESS_GLOBAL_ERROR_TOAST, true);
+    return this.http.delete<void>(`/api/drives/${id}`, { context });
   }
 
   public getLatestDriveDate(): Observable<Date | null> {

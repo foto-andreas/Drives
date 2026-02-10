@@ -127,8 +127,10 @@ export class DriveForm {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
-          this.snackBar.open('Fahrt erfolgreich gespeichert', 'OK', {
+          this.snackBar.open('Fahrt erfolgreich gespeichert', 'Schließen', {
             duration: 4000,
+            horizontalPosition: 'center',
+            verticalPosition: 'bottom',
             panelClass: ['success-snackbar']
           });
           if (this.isEdit()) {
@@ -142,9 +144,16 @@ export class DriveForm {
           });
           this.loadLatestDriveDate();
         },
-        error: () => {
-          this.snackBar.open('Fehler beim Speichern der Fahrt', 'OK', {
+        error: (err) => {
+          const serverMsg = err && typeof err === 'object'
+            ? (err.error && typeof err.error === 'object' && err.error.message ? err.error.message : err.message)
+            : '';
+          const statusText = err && err.status ? `\n(Status ${err.status})` : '';
+          const full = `Fehler beim Speichern der Fahrt${serverMsg ? ': \n\n' + serverMsg : ''}${statusText}`;
+          this.snackBar.open(full, 'Schließen', {
             duration: 4000,
+            horizontalPosition: 'center',
+            verticalPosition: 'bottom',
             panelClass: ['error-snackbar']
           });
         }

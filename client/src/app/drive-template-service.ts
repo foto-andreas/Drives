@@ -28,7 +28,8 @@ export class DriveTemplateService {
   }
 
   public delete(id: string): Observable<void> {
-    return this.http.delete<void>(`/api/driveTemplates/${id}`);
+    const context = new HttpContext().set(SUPPRESS_GLOBAL_ERROR_TOAST, true);
+    return this.http.delete<void>(`/api/driveTemplates/${id}`, { context });
   }
 
 }
