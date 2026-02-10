@@ -55,8 +55,7 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - Use the `providedIn: 'root'` option for singleton services
 - Use the `inject()` function instead of constructor injection
 
-* Run all Unit tests after finishing a task
 * Use the latest stable versions of libraries and frameworks
 * Use meaningful and descriptive names for variables, functions, and classes
 * Use consistent indentation and formatting throughout the codebase
-
+* Run all Unit tests after finishing a task. Check if tests are failing due to expected changes. if yes, rewrite testcode otherwise check production code again.
