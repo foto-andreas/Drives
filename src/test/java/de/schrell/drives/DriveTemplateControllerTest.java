@@ -18,11 +18,8 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class DriveTemplateControllerTest {
@@ -45,7 +42,7 @@ class DriveTemplateControllerTest {
         List<DriveTemplateResponse> templates = List.of(new DriveTemplateResponse("1", "Test", 5, "A", "B", Reason.WORK));
         when(driveTemplateService.findAll()).thenReturn(templates);
 
-        assertSame(templates, driveTemplateController.getDriveTemplates());
+        assertThat(driveTemplateController.getDriveTemplates()).isSameAs(templates);
         verify(driveTemplateService).findAll();
         verifyNoMoreInteractions(driveTemplateService);
     }
@@ -55,7 +52,7 @@ class DriveTemplateControllerTest {
         DriveTemplateResponse template = new DriveTemplateResponse("99", "Test", 5, "A", "B", Reason.WORK);
         when(driveTemplateService.findById("99")).thenReturn(template);
 
-        assertSame(template, driveTemplateController.getDriveTemplate("99"));
+        assertThat(driveTemplateController.getDriveTemplate("99")).isSameAs(template);
         verify(driveTemplateService).findById("99");
         verifyNoMoreInteractions(driveTemplateService);
     }
@@ -68,8 +65,9 @@ class DriveTemplateControllerTest {
 
         DriveTemplateResponse result = driveTemplateController.addDriveTemplate(request);
 
-        assertSame(response, result);
-        assertEquals("Test", templateCaptor.getValue().name());
+        assertThat(result).isSameAs(response);
+        assertThat(templateCaptor.getValue().name()).isEqualTo("Test");
+        assertThat(templateCaptor.getValue().driveLength()).isEqualTo(5);
     }
 
     @Test
@@ -80,15 +78,15 @@ class DriveTemplateControllerTest {
 
         DriveTemplateResponse result = driveTemplateController.updateDriveTemplate(request);
 
-        assertSame(response, result);
-        assertEquals("id", templateCaptor.getValue().id());
+        assertThat(result).isSameAs(response);
+        assertThat(templateCaptor.getValue().id()).isEqualTo("id");
     }
 
     @Test
     void deleteDriveTemplateReturnsOk() {
         ResponseEntity<Void> response = driveTemplateController.deleteDriveTemplate("id");
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         verify(driveTemplateService).delete("id");
         verifyNoMoreInteractions(driveTemplateService);
     }

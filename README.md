@@ -47,9 +47,17 @@ und sinnvoll erfüllt sind.
 ### Korrektheit:
 ```text
 * Prüfe den gesamten Code intensiv auf Korrektheit.
-+ Wenn ein Verhalten fraglich ist, stelle Rückfragen.
+* Wenn ein Verhalten fraglich ist, stelle Rückfragen.
 * Ergänze Kommentare, falls sinnvoll.
 * Bereinige den Code bei Fehlern.
 * Erstelle zusätliche Testfälle, die diese Probleme abdecken.
 * Es soll eine Testabdeckung von 90% erreicht werden.
 ```
+
+## TODOs
+* Benutzername
+  * Erstelle einen neuen Endpunkt, mit dem der Benutzername ermittelt werden kann.
+  * Zeige disen Benutzernamen in kleinerer Schrift unter der Überschrift Fahrtenbuch an.
+* Client-ID
+  * Für den produktiven Code soll die Client-ID aus der Environment-Variablen GOOGLE_CLIENT_ID ermittelt werden
+  * Für den produktiven Code soll das CLient-Secret aus der Environment-Variablen GOOGLE_CLIENT_SECRET ermittelt werden

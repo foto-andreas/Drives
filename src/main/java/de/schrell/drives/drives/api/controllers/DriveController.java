@@ -4,6 +4,7 @@ import de.schrell.drives.drives.api.dtos.DriveRequest;
 import de.schrell.drives.drives.api.dtos.DriveResponse;
 import de.schrell.drives.drives.domain.commands.DriveCommand;
 import de.schrell.drives.drives.domain.services.DriveService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -38,12 +39,12 @@ public class DriveController {
     }
 
     @PutMapping("/drives")
-    public DriveResponse addDrive(@RequestBody DriveRequest driveRequest) {
+    public DriveResponse addDrive(@RequestBody @Valid DriveRequest driveRequest) {
         return driveService.create(toCommand(driveRequest));
     }
 
     @PostMapping("/drives")
-    public DriveResponse updateDrive(@RequestBody DriveRequest driveRequest) {
+    public DriveResponse updateDrive(@RequestBody @Valid DriveRequest driveRequest) {
         return driveService.update(toCommand(driveRequest));
     }
 

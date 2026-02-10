@@ -10,9 +10,14 @@ import de.schrell.drives.drives.domain.repositories.DriveRepository;
 import de.schrell.drives.drives.domain.repositories.DriveTemplateRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+/**
+ * Service for managing drive templates.
+ * Ensures templates are not deleted if they are still in use by drives.
+ */
 @Service
 @RequiredArgsConstructor
 public class DriveTemplateService {
@@ -21,6 +26,7 @@ public class DriveTemplateService {
     private final DriveRepository driveRepository;
     private final DriveMapper driveMapper;
 
+    @Transactional(readOnly = true)
     public List<DriveTemplateResponse> findAll() {
         return driveTemplateRepository.findAllByOrderByNameAsc()
                 .stream()
@@ -28,18 +34,21 @@ public class DriveTemplateService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public DriveTemplateResponse findById(String id) {
         DriveTemplate template = driveTemplateRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Drive template with id '%s' not found".formatted(id)));
         return driveMapper.toTemplateResponse(template);
     }
 
+    @Transactional
     public DriveTemplateResponse create(DriveTemplateCommand command) {
         DriveTemplate template = new DriveTemplate();
         applyCommand(template, command);
         return driveMapper.toTemplateResponse(driveTemplateRepository.save(template));
     }
 
+    @Transactional
     public DriveTemplateResponse update(DriveTemplateCommand command) {
         if (command.id() == null) {
             throw new IllegalArgumentException("Drive template id must be provided for updates");
@@ -50,6 +59,7 @@ public class DriveTemplateService {
         return driveMapper.toTemplateResponse(driveTemplateRepository.save(template));
     }
 
+    @Transactional
     public void delete(String id) {
         DriveTemplate template = driveTemplateRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Drive template with id '%s' not found".formatted(id)));

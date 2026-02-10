@@ -10,11 +10,16 @@ import de.schrell.drives.drives.domain.repositories.DriveRepository;
 import de.schrell.drives.drives.domain.repositories.DriveTemplateRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Service for managing drives.
+ * Handles business logic, transaction management and coordination between repositories and mappers.
+ */
 @Service
 @RequiredArgsConstructor
 public class DriveService {
@@ -23,6 +28,7 @@ public class DriveService {
     private final DriveTemplateRepository driveTemplateRepository;
     private final DriveMapper driveMapper;
 
+    @Transactional(readOnly = true)
     public List<DriveResponse> findAll() {
         return driveRepository.findAllByOrderByDateAsc()
                 .stream()
@@ -30,22 +36,26 @@ public class DriveService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public DriveResponse findById(String id) {
         Drive drive = driveRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Drive with id '%s' not found".formatted(id)));
         return driveMapper.toResponse(drive);
     }
 
+    @Transactional(readOnly = true)
     public Optional<LocalDate> findLatestDate() {
         return Optional.ofNullable(driveRepository.findLatestDate());
     }
 
+    @Transactional
     public DriveResponse create(DriveCommand command) {
         Drive drive = new Drive();
         applyCommand(drive, command);
         return driveMapper.toResponse(driveRepository.save(drive));
     }
 
+    @Transactional
     public DriveResponse update(DriveCommand command) {
         if (command.id() == null) {
             throw new IllegalArgumentException("Drive id must be provided for updates");
@@ -56,6 +66,7 @@ public class DriveService {
         return driveMapper.toResponse(driveRepository.save(drive));
     }
 
+    @Transactional
     public void delete(String id) {
         if (!driveRepository.existsById(id)) {
             throw new ResourceNotFoundException("Drive with id '%s' not found".formatted(id));

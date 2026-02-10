@@ -20,11 +20,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class DriveControllerTest {
@@ -47,7 +44,7 @@ class DriveControllerTest {
         List<DriveResponse> drives = List.of(new DriveResponse("1", LocalDate.now(), null, null));
         when(driveService.findAll()).thenReturn(drives);
 
-        assertSame(drives, driveController.getDrives());
+        assertThat(driveController.getDrives()).isSameAs(drives);
         verify(driveService).findAll();
         verifyNoMoreInteractions(driveService);
     }
@@ -57,7 +54,7 @@ class DriveControllerTest {
         DriveResponse drive = new DriveResponse("42", LocalDate.now(), null, null);
         when(driveService.findById("42")).thenReturn(drive);
 
-        assertSame(drive, driveController.getDrive("42"));
+        assertThat(driveController.getDrive("42")).isSameAs(drive);
         verify(driveService).findById("42");
         verifyNoMoreInteractions(driveService);
     }
@@ -68,8 +65,8 @@ class DriveControllerTest {
 
         ResponseEntity<LocalDate> response = driveController.getLatestDriveDate();
 
-        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
-        assertEquals(null, response.getBody());
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        assertThat(response.getBody()).isNull();
     }
 
     @Test
@@ -79,8 +76,8 @@ class DriveControllerTest {
 
         ResponseEntity<LocalDate> response = driveController.getLatestDriveDate();
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(latest, response.getBody());
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isEqualTo(latest);
     }
 
     @Test
@@ -91,8 +88,9 @@ class DriveControllerTest {
 
         DriveResponse result = driveController.addDrive(request);
 
-        assertSame(response, result);
-        assertEquals("template-id", driveCaptor.getValue().templateId());
+        assertThat(result).isSameAs(response);
+        assertThat(driveCaptor.getValue().templateId()).isEqualTo("template-id");
+        assertThat(driveCaptor.getValue().date()).isEqualTo(LocalDate.of(2024, 5, 5));
     }
 
     @Test
@@ -103,15 +101,15 @@ class DriveControllerTest {
 
         DriveResponse result = driveController.updateDrive(request);
 
-        assertSame(response, result);
-        assertEquals("id", driveCaptor.getValue().id());
+        assertThat(result).isSameAs(response);
+        assertThat(driveCaptor.getValue().id()).isEqualTo("id");
     }
 
     @Test
     void deleteDriveReturnsOkWhenExists() {
         ResponseEntity<Void> response = driveController.deleteDrive("1");
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         verify(driveService).delete("1");
         verifyNoMoreInteractions(driveService);
     }

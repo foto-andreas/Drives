@@ -153,3 +153,4 @@ Use Flyway for database migrations:
 * Use client/.junie/guidelines.md for client code
 * Use .junie/guidelines.md (this file) for server code
 * ALWAYS remember that lombok is used in the code, do NOT code things lombok provides
+* NEVER downgrade JAVA-Version or other LIBRARY versions
