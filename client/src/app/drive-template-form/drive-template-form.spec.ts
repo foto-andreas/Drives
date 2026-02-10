@@ -82,9 +82,7 @@ describe('DriveTemplateForm', () => {
     createComponent();
     fixture.detectChanges();
     const router = TestBed.inject(Router);
-    const snackBar = TestBed.inject(MatSnackBar);
     vi.spyOn(router, 'navigate');
-    const openSpy = vi.spyOn(snackBar, 'open');
 
     (component as any).templateForm.patchValue({
       name: 'New Template',
@@ -106,8 +104,6 @@ describe('DriveTemplateForm', () => {
   it('should show error snackbar on save failure', async () => {
     createComponent();
     fixture.detectChanges();
-    const snackBar = TestBed.inject(MatSnackBar);
-    const openSpy = vi.spyOn(snackBar, 'open');
 
     (component as any).templateForm.patchValue({
       name: 'New Template',

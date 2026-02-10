@@ -121,6 +121,21 @@ describe('DriveTemplateList', () => {
     (component as any).isActuallySwiping = true;
     component.editTemplate('1');
     expect(navigateSpy).not.toHaveBeenCalled();
+
+    // 7. Touch move left (deltaX > 10)
+    component.onRowTouchStart(mockEvent, '2');
+    const moveLeftEvent = { touches: [{ clientX: 50, clientY: 100 }], preventDefault: vi.fn(), cancelable: true } as any;
+    component.onRowTouchMove(moveLeftEvent);
+    expect((component as any).isActuallySwiping).toBe(true);
+    expect((component as any).currentSwipeOffset).toBe(50);
+    expect(moveLeftEvent.preventDefault).toHaveBeenCalled();
+
+    // 8. Touch move vertical (deltaY > deltaX)
+    component.onRowTouchStart(mockEvent, '3');
+    const moveVerticalEvent = { touches: [{ clientX: 95, clientY: 200 }], preventDefault: vi.fn(), cancelable: true } as any;
+    component.onRowTouchMove(moveVerticalEvent);
+    expect((component as any).currentSwipeOffset).toBe(0); // Should not start swipe
+
     vi.unstubAllGlobals();
   });
 

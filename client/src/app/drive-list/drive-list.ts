@@ -8,7 +8,6 @@ import { MatTableModule } from '@angular/material/table';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { Router, RouterLink } from '@angular/router';
-import { take } from 'rxjs';
 import { toSignal, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BehaviorSubject, switchMap } from 'rxjs';
 import { DriveService } from '../drive-service';
@@ -201,7 +200,6 @@ export class DriveList {
 
     let runningTotal = 0;
     const rows = drives.map(drive => {
-      const separator = ';';
       const escape = '"';
       const date = drive.date;
       const day = String(date.getDate()).padStart(2, '0');
