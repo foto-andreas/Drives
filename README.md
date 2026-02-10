@@ -82,3 +82,19 @@ und sinnvoll erfüllt sind.
 ```
 
 ## TODOs
+
+
+## Tests & Coverage
+
+- Server-Tests und Coverage ausführen:
+  ```bash
+  ./gradlew clean test jacocoTestReport check
+  ```
+  Der `check`-Task enthält eine JaCoCo-Coverage-Verification mit Mindestabdeckung 90% (Instructions). HTML-Report: `build/reports/jacoco/test/html/index.html`.
+
+- Client-Tests (Karma) ausführen:
+  ```bash
+  (cd client && npm test)
+  ```
+
+Hinweis: Der Client-Build wird automatisch im Gradle-Build integriert (`:client:build`).
