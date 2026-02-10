@@ -3,6 +3,10 @@
 Fahrten buch auf Basis von Fahrt-Vorlagen und Möglichkeit, HomeOffice-Tage nachzuhalten. 
 Es gibt einen CSV-Export (auf Basis der Filtermöglcihkeiten) für die Steuererklärung.
 
+## Dokumentation
+
+Die ausführliche Dokumentation des Projekts (Architektur, API, Datenmodell, Frontend) befindet sich in der **[DOCUMENTATION.md](DOCUMENTATION.md)**.
+
 ## Deployment
 
 Der Client-Coe wird zusammen mit dem Server-Code gebaut. Die gesamte Anwendung kann als Docker-Container
