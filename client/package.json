@@ -6,7 +6,7 @@
     "start": "ng serve",
     "build": "ng build --output-path=../src/main/resources/public",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test --watch=false"
+    "test": "ng test --watch=false --runner=vitest --coverage"
   },
   "prettier": {
     "printWidth": 100,
