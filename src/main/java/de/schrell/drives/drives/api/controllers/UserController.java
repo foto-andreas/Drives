@@ -37,7 +37,8 @@ public class UserController {
             return Optional.ofNullable(resolveNameFromAttributes(oauth2User.getAttributes()));
         }
         if (authentication instanceof OAuth2AuthenticationToken token) {
-            Map<String, Object> attrs = token.getPrincipal().getAttributes();
+            OAuth2User principal1 = token.getPrincipal();
+            Map<String, Object> attrs = principal1 == null ? null : principal1.getAttributes();
             return Optional.ofNullable(resolveNameFromAttributes(attrs));
         }
         return Optional.ofNullable(authentication.getName());
