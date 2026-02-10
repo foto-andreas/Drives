@@ -79,6 +79,24 @@ Gibt das Datum der zeitlich aktuellsten Fahrt zurück. Wird im Frontend verwende
 
 ---
 
+## Benutzer
+
+### Angemeldeten Benutzer abrufen
+`GET /api/user`
+
+Gibt den aktuell authentifizierten Benutzernamen zurück.
+
+- Authentifizierung: erforderlich (OAuth2 Login)
+- Antwort: `200 OK` mit folgendem Schema
+
+```json
+{
+  "name": "Max Mustermann"
+}
+```
+
+---
+
 ## Fehlerbehandlung
 
 Das System verwendet eine globale Fehlerbehandlung (`GlobalExceptionHandler`), die ein einheitliches Fehlerformat zurückgibt.

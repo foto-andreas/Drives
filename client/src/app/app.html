@@ -2,7 +2,10 @@
   <button mat-icon-button (click)="sidenav.toggle()">
     <mat-icon>menu</mat-icon>
   </button>
-  <span>&nbsp;{{ title() }}</span>
+  <div class="header-text">
+    <div class="title">{{ title() }}</div>
+    <div class="subtitle" *ngIf="userName() as name">{{ name }}</div>
+  </div>
 </mat-toolbar>
 
 <mat-sidenav-container class="sidenav-container">
