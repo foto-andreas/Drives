@@ -1,0 +1,33 @@
+services:
+
+  drives-as:
+
+    container_name: drives-as
+
+    image: drives:0.0.1-SNAPSHOT
+    pull_policy: if_not_present
+
+    volumes:
+      - ./data-as:/root/data
+
+    restart: always
+
+    networks:
+      - traefik
+
+    env_file: "docker-drives-env.txt"
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
+      - "traefik.http.routers.drives-as.rule=Host(`drives-as.schrell.de`)"
+      - "traefik.http.routers.drives-as.entrypoints=websecure"
+      - "traefik.http.routers.drives-as.tls.certresolver=myresolver"
+      - "traefik.http.routers.drives-as.service=service-as"
+      - "traefik.http.services.service-as.loadbalancer.server.port=8080"
+      - "traefik.http.routers.drives-as.middlewares=drives-as-fwd@file"
+      - "autoheal=false"
+
+networks:
+  traefik:
+    external: true

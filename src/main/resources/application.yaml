@@ -1,14 +1,18 @@
 spring:
+
   sql:
     init:
       mode: always
+
   application:
     name: Fahrten
+
   datasource:
     url: jdbc:h2:file:~/data/drives
     driverClassName: org.h2.Driver
     username: sa
     password: password
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -16,10 +20,12 @@ spring:
       hibernate:
         format_sql: true
     defer-datasource-initialization: true
-    show-sql: true
+    show-sql: false
+
   web:
     resources:
       static-locations: classpath:/public/browser
+
   security:
     oauth2:
       client:
@@ -31,7 +37,7 @@ logging:
   level:
     org:
       springframework:
-        security: TRACE
+        security: INFO
 
 server:
   tomcat:

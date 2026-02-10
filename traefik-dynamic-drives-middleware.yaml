@@ -1,0 +1,7 @@
+http:
+  middlewares:
+    drives-as-fwd:
+      headers:
+        customrequestheaders:
+          X-Forwarded-For: "drives-as.schrell.de"
+          X-Forwarded-Proto: "https"

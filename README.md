@@ -37,6 +37,14 @@ docker load -i ~/drives.tar && \
   popd
 ```
 
+Im Repo gibt es die folgenden Beispieldateien für ein Deployment mit Docker und Traefik als Reverse-Proxy:
+* docker-compose.yaml
+* traefik-dynamic-drives.yaml
+* docker-drives-env.txt
+Die Einstellungen für die Middleware müssen per File bereitgestellt werden, 
+da es innerhalb der Docker-Labels sonst zu Race-Conditions kommt. Das zeigt sich
+dann daran, dass Middlewares nciht gefunden werden.
+
 ## Junie
 
 ### Doku-Prompt:
