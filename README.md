@@ -1,7 +1,8 @@
 # Fahrtenbuch
 
-Fahrtenbuch auf Basis von Fahrtvorlagen und Möglichkeit, Home-Office-Tage nachzuhalten.
-Es gibt einen CSV-Export (auf Basis der Filtermöglichkeiten) für die Steuererklärung.
+Fahrtenbuch auf Basis von Fahrtvorlagen und Möglichkeit, Home-Office-Tage nachzuhalten. Es gibt einen CSV-Export (auf Basis der Filtermöglichkeiten) für die Steuererklärung.
+
+Diese Anwendung ist zu einem Großteil mit KI erstellt. Dazu wurde IntelliJ-Ultimate mit Jetbrains-AI verwendet. Es dient einerseits als nutzbare Anwendung im persönlichen Umfeld, als auch als Lernbeispiel für die Arbeit mit KI in der Softwareentwicklung.
 
 ## Dokumentation
 
@@ -16,8 +17,7 @@ runLocal.sh
 
 ## Deployment
 
-Der Client-Code wird zusammen mit dem Server-Code gebaut. Die gesamte Anwendung kann als Docker-Container
-bereitgestellt werden. Wenn der Task ```dockerBuild``` nicht funktioniert, das hier benutzen:
+Der Client-Code wird zusammen mit dem Server-Code gebaut. Die gesamte Anwendung kann als Docker-Container bereitgestellt werden. Wenn der Task ```dockerBuild``` nicht funktioniert, das hier benutzen:
 ```bash
 ./gradlew build && \
   docker build --build-arg JAR_FILE=build/libs/drives-0.0.1-SNAPSHOT.jar -t drives:0.0.1-SNAPSHOT . && \
@@ -42,9 +42,7 @@ Im Repo gibt es die folgenden Beispieldateien für ein Deployment mit Docker und
 * traefik-dynamic-drives-middleware.yaml
 * docker-drives-env.txt
 
-Die Einstellungen für die Middleware müssen per File bereitgestellt werden, 
-da es innerhalb der Docker-Labels sonst zu Race-Conditions kommt. Das zeigt sich
-dann daran, dass Middlewares nicht gefunden werden.
+Die Einstellungen für die Middleware müssen per File bereitgestellt werden, da es innerhalb der Docker-Labels sonst zu Race-Conditions kommt. Das zeigt sich dann daran, dass Middlewares nicht gefunden werden.
 
 ## Junie
 
@@ -59,9 +57,9 @@ dann daran, dass Middlewares nicht gefunden werden.
 ```
 ### Doku-Update
 ```text
-Prüfe sämtliche Dokumentations-Dateien und Kommentare im Code auf aktuellen Stand und 
-Korrektheit. Nimm eventuelle Korrekturen und Erweiterungen vor. 
-Halte dich an die aktuelle einheitliche Struktur.
+* Prüfe sämtliche Dokumentations-Dateien und Kommentare im Code auf aktuellen Stand und Korrektheit. 
+* Nimm eventuelle Korrekturen und Erweiterungen vor. 
+* Halte dich an die aktuelle einheitliche Struktur.
 ```
 
 
