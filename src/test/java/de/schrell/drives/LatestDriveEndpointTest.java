@@ -1,20 +1,22 @@
 package de.schrell.drives;
 
-import de.schrell.drives.domain.Drive;
-import de.schrell.drives.domain.DriveTemplate;
-import de.schrell.drives.domain.Reason;
+import de.schrell.drives.drives.api.controllers.DriveController;
+import de.schrell.drives.drives.domain.entities.Drive;
+import de.schrell.drives.drives.domain.entities.DriveTemplate;
+import de.schrell.drives.drives.domain.entities.Reason;
+import de.schrell.drives.drives.domain.repositories.DriveRepository;
+import de.schrell.drives.drives.domain.repositories.DriveTemplateRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpStatusCode;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.LocalDate;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @TestPropertySource(properties = {
@@ -23,14 +25,18 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 })
 class LatestDriveEndpointTest {
 
-    @Autowired
-    private DriveController driveController;
+    private final DriveController driveController;
+    private final DriveRepository driveRepository;
+    private final DriveTemplateRepository driveTemplateRepository;
 
     @Autowired
-    private DriveRepository driveRepository;
-
-    @Autowired
-    private DriveTemplateRepository driveTemplateRepository;
+    LatestDriveEndpointTest(DriveController driveController,
+                            DriveRepository driveRepository,
+                            DriveTemplateRepository driveTemplateRepository) {
+        this.driveController = driveController;
+        this.driveRepository = driveRepository;
+        this.driveTemplateRepository = driveTemplateRepository;
+    }
 
     @BeforeEach
     void setup() {
@@ -39,7 +45,7 @@ class LatestDriveEndpointTest {
     }
 
     @Test
-    void returnsLatestDriveDate() throws Exception {
+    void returnsLatestDriveDate() {
         DriveTemplate template = driveTemplateRepository.save(
                 new DriveTemplate(null, "Test", 10, "A", "B", Reason.WORK)
         );
@@ -49,15 +55,15 @@ class LatestDriveEndpointTest {
 
         ResponseEntity<LocalDate> response = driveController.getLatestDriveDate();
 
-        assertEquals(HttpStatusCode.valueOf(200), response.getStatusCode());
-        assertEquals(LocalDate.of(2024, 6, 10), response.getBody());
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isEqualTo(LocalDate.of(2024, 6, 10));
     }
 
     @Test
-    void returnsNoContentWhenNoDrivesExist() throws Exception {
+    void returnsNoContentWhenNoDrivesExist() {
         ResponseEntity<LocalDate> response = driveController.getLatestDriveDate();
 
-        assertEquals(HttpStatusCode.valueOf(204), response.getStatusCode());
-        assertNull(response.getBody());
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        assertThat(response.getBody()).isNull();
     }
 }

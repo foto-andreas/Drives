@@ -1,11 +1,11 @@
 <div class="card my-5">
   <div class="card-body">
-    <h2>{{ isEdit ? 'Vorlage bearbeiten' : 'Neue Vorlage erstellen' }}</h2>
+    <h2>{{ isEdit() ? 'Vorlage bearbeiten' : 'Neue Vorlage erstellen' }}</h2>
     <form [formGroup]="templateForm" (ngSubmit)="onSubmit()">
       <mat-form-field appearance="fill" class="full-width">
         <mat-label>Name</mat-label>
         <input matInput formControlName="name" placeholder="z.B. Arbeitsweg">
-        @if (templateForm.get('name')?.hasError('required')) {
+        @if (templateForm.controls.name.hasError('required')) {
           <mat-error>
             Name ist erforderlich
           </mat-error>
@@ -15,19 +15,19 @@
       <div class="row">
         <mat-form-field appearance="fill" class="half-width">
           <mat-label>Von</mat-label>
-          <input matInput formControlName="from_location" placeholder="Startort">
+          <input matInput formControlName="fromLocation" placeholder="Startort">
         </mat-form-field>
 
         <mat-form-field appearance="fill" class="half-width">
           <mat-label>Nach</mat-label>
-          <input matInput formControlName="to_location" placeholder="Zielort">
+          <input matInput formControlName="toLocation" placeholder="Zielort">
         </mat-form-field>
       </div>
 
       <div class="row">
         <mat-form-field appearance="fill" class="half-width">
           <mat-label>Länge (km)</mat-label>
-          <input matInput type="number" formControlName="drive_length">
+          <input matInput type="number" formControlName="driveLength">
         </mat-form-field>
 
         <mat-form-field appearance="fill" class="half-width">

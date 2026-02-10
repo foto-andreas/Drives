@@ -1,4 +1,4 @@
-package de.schrell.drives.domain;
+package de.schrell.drives.drives.domain.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -19,9 +19,12 @@ public class DriveTemplate {
     private String id;
 
     private String name;
-    private int drive_length;
-    private String from_location;
-    private String to_location;
+    @Column(name = "drive_length")
+    private int driveLength;
+    @Column(name = "from_location")
+    private String fromLocation;
+    @Column(name = "to_location")
+    private String toLocation;
     private Reason reason;
 
 }

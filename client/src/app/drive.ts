@@ -1,11 +1,16 @@
-import {Reason} from './reason';
-import {DriveTemplate} from './drive-template';
+import { Reason } from './reason';
+import { DriveTemplate } from './drive-template';
 
-export class Drive {
+export interface Drive {
+  id?: string | null;
+  template: DriveTemplate | null;
+  date: Date;
+  reason?: Reason | null;
+}
 
-  id!: string | null;
-  template!: DriveTemplate;
-  date!: Date;
-  reason: Reason | undefined;
-
+export interface DriveRequest {
+  id?: string | null;
+  templateId: string | null;
+  date: string;
+  reason?: Reason | null;
 }

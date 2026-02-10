@@ -1,23 +1,19 @@
 package de.schrell.drives;
 
-import de.schrell.drives.domain.Drive;
-import de.schrell.drives.domain.DriveTemplate;
-import de.schrell.drives.domain.Reason;
-import org.apache.catalina.User;
+import de.schrell.drives.drives.domain.repositories.DriveRepository;
+import de.schrell.drives.drives.domain.repositories.DriveTemplateRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 @SpringBootApplication
+@Slf4j
 public class FahrtenApplication {
 
 	public static void main(String[] args) {
@@ -35,12 +31,12 @@ public class FahrtenApplication {
 				for (Map<String, Object> c : constraints) {
 					String tableName = (String) c.get("TABLE_NAME");
 					String constraintName = (String) c.get("CONSTRAINT_NAME");
-					System.out.println("Dropping check constraint " + constraintName + " from table " + tableName);
-					jdbcTemplate.execute("ALTER TABLE " + tableName + " DROP CONSTRAINT " + constraintName);
-				}
-			} catch (Exception e) {
-				System.err.println("Could not drop check constraints: " + e.getMessage());
-			}
-		};
-	}
+                    log.info("Dropping check constraint {} from table {}", constraintName, tableName);
+                    jdbcTemplate.execute("ALTER TABLE " + tableName + " DROP CONSTRAINT " + constraintName);
+                }
+            } catch (Exception e) {
+                log.warn("Could not drop check constraints", e);
+            }
+        };
+    }
 }

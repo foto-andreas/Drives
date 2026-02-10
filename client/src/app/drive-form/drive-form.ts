@@ -1,140 +1,124 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { FormsModule, ReactiveFormsModule, FormGroup, FormControl, Validators, FormGroupDirective } from '@angular/forms';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatSelectModule } from '@angular/material/select';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatTooltipModule } from '@angular/material/tooltip';
+import { ChangeDetectionStrategy, Component, DestroyRef, ViewChild, inject, signal } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { FormControl, FormGroup, FormGroupDirective, Validators } from '@angular/forms';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { provideNativeDateAdapter } from '@angular/material/core';
-import { BreakpointObserver, Breakpoints, LayoutModule } from '@angular/cdk/layout';
+import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
+import { toSignal, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DriveService } from '../drive-service';
 import { DriveTemplateService } from '../drive-template-service';
 import { DriveTemplate } from '../drive-template';
 import { Reason } from '../reason';
-import { Observable } from 'rxjs';
-import { ViewChild } from '@angular/core';
+import { Drive } from '../drive';
 
 @Component({
   selector: 'app-drive-form',
-  standalone: true,
   providers: [provideNativeDateAdapter()],
-  imports: [
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    MatSelectModule,
-    MatSnackBarModule,
-    MatDatepickerModule,
-    MatTooltipModule,
-    LayoutModule,
-    RouterLink
-  ],
   templateUrl: './drive-form.html',
-  styleUrl: './drive-form.css'
+  styleUrls: ['./drive-form.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DriveForm implements OnInit {
+export class DriveForm {
   @ViewChild(FormGroupDirective) private formDirective: FormGroupDirective | undefined;
-  protected driveForm: FormGroup;
-  protected templates$: Observable<DriveTemplate[]>;
-  protected reasons = Reason.keys();
-  protected isEdit = false;
-  protected isMobile = false;
-  protected latestDriveDate: Date | null = null;
-  private driveId: string | null = null;
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly snackBar = inject(MatSnackBar);
+  private readonly driveService = inject(DriveService);
+  private readonly driveTemplateService = inject(DriveTemplateService);
+  private readonly breakpointObserver = inject(BreakpointObserver);
+  private readonly destroyRef = inject(DestroyRef);
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private snackBar: MatSnackBar,
-    private driveService: DriveService,
-    private driveTemplateService: DriveTemplateService,
-    private breakpointObserver: BreakpointObserver
-  ) {
-    this.driveForm = new FormGroup({
-      date: new FormControl(this.driveService.getLastSelectedDate(), [Validators.required]),
-      template: new FormControl(null, [Validators.required]),
-      reason: new FormControl(null)
-    });
+  protected readonly driveForm = new FormGroup({
+    date: new FormControl<Date | null>(this.driveService.lastSelectedDate(), [Validators.required]),
+    template: new FormControl<DriveTemplate | null>(null, [Validators.required]),
+    reason: new FormControl<string | null>(null),
+  });
+  protected readonly templates = toSignal(this.driveTemplateService.findAll(), { initialValue: [] });
+  protected readonly reasons = Reason.keys();
+  protected readonly isEdit = signal(false);
+  protected readonly isMobile = signal(false);
+  protected readonly latestDriveDate = signal<Date | null>(null);
+  private readonly driveId = signal<string | null>(null);
 
-    this.templates$ = this.driveTemplateService.findAll();
+  constructor() {
+    this.breakpointObserver.observe([Breakpoints.Handset])
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(result => this.isMobile.set(result.matches));
 
-    this.breakpointObserver.observe([Breakpoints.Handset]).subscribe(result => {
-      this.isMobile = result.matches;
-    });
-  }
+    this.route.paramMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(params => {
+        const id = params.get('id');
+        this.driveId.set(id);
+        this.isEdit.set(!!id);
+        if (id) {
+          this.driveService.get(id)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(drive => {
+              this.driveForm.patchValue({
+                date: drive.date,
+                template: drive.template,
+                reason: drive.reason ?? null,
+              });
+            });
+        }
+      });
 
-  ngOnInit(): void {
-    this.route.paramMap.subscribe(params => {
-      this.driveId = params.get('id');
-      if (this.driveId) {
-        this.isEdit = true;
-        this.driveService.get(this.driveId).subscribe((drive) => {
-          this.driveForm.patchValue({
-            date: drive.date,
-            template: drive.template,
-            reason: drive.reason
-          });
-        });
-      }
-    });
+    this.driveForm.controls.template.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(template => {
+        if (template && !this.isEdit()) {
+          this.driveForm.patchValue({ reason: template.reason });
+        }
+      });
 
-    this.driveForm.get('template')?.valueChanges.subscribe(template => {
-      if (template && !this.isEdit) {
-        this.driveForm.patchValue({
-          reason: template.reason
-        });
-      }
-    });
-
-    this.driveForm.get('date')?.valueChanges.subscribe(date => {
-      if (date) {
-        this.driveService.setLastSelectedDate(date);
-      }
-    });
+    this.driveForm.controls.date.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(date => {
+        if (date) {
+          this.driveService.setLastSelectedDate(date);
+        }
+      });
 
     this.loadLatestDriveDate();
   }
 
   private loadLatestDriveDate(): void {
-    this.driveService.getLatestDriveDate().subscribe(date => {
-      this.latestDriveDate = date;
-    });
+    this.driveService.getLatestDriveDate()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(date => this.latestDriveDate.set(date));
   }
 
   onSubmit(): void {
-    if (this.driveForm.valid) {
-      const formValue = this.driveForm.value;
+    if (this.driveForm.invalid) {
+      return;
+    }
+    const formValue = this.driveForm.getRawValue();
+    const drive: Drive = {
+      id: this.driveId(),
+      date: formValue.date ?? new Date(),
+      template: formValue.template ?? null,
+      reason: formValue.reason ?? null,
+    };
 
-      const drive = {
-        id: this.driveId,
-        date: this.formatDate(formValue.date),
-        template: formValue.template,
-        reason: formValue.reason || null
-      };
-
-      this.driveService.save(drive).subscribe({
+    this.driveService.save(drive)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
         next: () => {
           this.snackBar.open('Fahrt erfolgreich gespeichert', 'OK', {
             duration: 4000,
             panelClass: ['success-snackbar']
           });
-          if (this.isEdit) {
+          if (this.isEdit()) {
             this.router.navigate(['/drives']);
-          } else {
-            this.formDirective?.resetForm({
-              date: this.driveService.getLastSelectedDate(),
-              template: null,
-              reason: null
-            });
-            this.loadLatestDriveDate();
+            return;
           }
+          this.formDirective?.resetForm({
+            date: this.driveService.lastSelectedDate(),
+            template: null,
+            reason: null,
+          });
+          this.loadLatestDriveDate();
         },
         error: () => {
           this.snackBar.open('Fehler beim Speichern der Fahrt', 'OK', {
@@ -143,7 +127,6 @@ export class DriveForm implements OnInit {
           });
         }
       });
-    }
   }
 
   compareTemplates(t1: DriveTemplate, t2: DriveTemplate): boolean {
@@ -152,29 +135,13 @@ export class DriveForm implements OnInit {
 
   getTemplateLabel(template: DriveTemplate): string {
     if (!template) return '';
-    return `${template.name} (${template.from_location} -> ${template.to_location})`;
+    return `${template.name} (${template.fromLocation} -> ${template.toLocation})`;
   }
 
   getTemplateTooltip(template: DriveTemplate): string {
-    return `Von: ${template.from_location}\nNach: ${template.to_location}\nLänge: ${
-      template.drive_length
+    return `Von: ${template.fromLocation}\nNach: ${template.toLocation}\nLänge: ${
+      template.driveLength
     } km\nGrund: ${Reason.toString(template.reason)}`;
-  }
-
-  private formatDate(date: any): string {
-    if (!date) return '';
-    if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
-      return date;
-    }
-    const d = new Date(date);
-    let month = '' + (d.getMonth() + 1);
-    let day = '' + d.getDate();
-    const year = d.getFullYear();
-
-    if (month.length < 2) month = '0' + month;
-    if (day.length < 2) day = '0' + day;
-
-    return [year, month, day].join('-');
   }
 
   protected readonly Reason = Reason;

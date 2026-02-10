@@ -7,16 +7,16 @@ export enum Reason {
 }
 
 export namespace Reason {
-  export function toString(reason: any): string {
-    if (!reason) return 'sonstiges';
+  export function toString(reason?: Reason | string | null): string {
+    if (!reason) return Reason.OTHER;
     const entry = Object.entries(Reason).find(([key, value]) => key === reason || value === reason);
     if (entry) {
       return entry[1] as string;
     }
-    return reason as string;
+    return reason;
   }
 
   export function keys(): string[] {
-    return Object.keys(Reason).filter(key => typeof (Reason as any)[key] === 'string');
+    return Object.keys(Reason);
   }
 }

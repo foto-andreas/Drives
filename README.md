@@ -28,17 +28,20 @@ docker load -i ~/drives.tar && \
 
 ### Doku-Prompt:
 ```text
-* Prüfe den gesamten Code und erstelle eine ausführliche Dokumentation für jedes Package. 
+* Erstelle eine ausführliche Dokumentation für jedes Package und jede Klasse.
+* Beschreibe Ressourcen und deren Nutzung. 
 * Ergänze Grafiken (mit Mermaid) und Tabellen, falls sinnvoll. 
 * Gehe auf alle Besonderheiten ein. 
-* Erstelle eine Gesamtdokumentation auf oberer Ebene, die eine Zusammenfassung und Links zu den Einzel-Dokumentationen enthält. 
+* Erstelle eine Gesamtdokumentation auf oberer Ebene, die eine Zusammenfassung und Links zu den Einzel-Dokumentationen enthält.
+* Die gesamte Dokumentation soll einheitlich aussehen 
 ```
 
 ### Codestyle:
 ```text
-* Suche die Junie-guidelines.md Dateien und kpasse den Code dahingehend an, dass diese soweit wie möglich 
+* Suche die Junie-guidelines.md Dateien und passe den Code dahingehend an, dass diese soweit wie möglich 
 und sinnvoll erfüllt sind. 
 * Achte darauf, dass Lombok benutzt wird und ergänze nicht die durch Lombok implizit bereitgestellten Dinge.
+* Achte auf speziell implementierte Getter und Setter. Erhalte deren Verhalten.
 ```
 
 ### Korrektheit:

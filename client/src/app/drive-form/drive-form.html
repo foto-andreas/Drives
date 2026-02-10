@@ -1,6 +1,6 @@
 <div class="card my-5">
   <div class="card-body">
-    <h2>{{ isEdit ? 'Fahrt bearbeiten' : 'Neue Fahrt erfassen' }}</h2>
+    <h2>{{ isEdit() ? 'Fahrt bearbeiten' : 'Neue Fahrt erfassen' }}</h2>
     <form [formGroup]="driveForm" (ngSubmit)="onSubmit()">
       <mat-form-field appearance="fill" class="full-width">
         <mat-label>Datum</mat-label>
@@ -8,7 +8,7 @@
         <mat-hint>DD.MM.YYYY</mat-hint>
         <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
         <mat-datepicker #picker></mat-datepicker>
-        @if (driveForm.get('date')?.hasError('required')) {
+        @if (driveForm.controls.date.hasError('required')) {
           <mat-error>Datum ist erforderlich</mat-error>
         }
       </mat-form-field>
@@ -18,11 +18,11 @@
           <mat-label>Vorlage</mat-label>
           <mat-select formControlName="template" [compareWith]="compareTemplates" [panelClass]="'tall-combobox-panel'">
             <mat-select-trigger>
-              {{ getTemplateLabel(driveForm.get('template')?.value) }}
+              {{ getTemplateLabel(driveForm.controls.template.value) }}
             </mat-select-trigger>
-            @for (template of templates$ | async; track template.id) {
+            @for (template of templates(); track template.id) {
               <mat-option [value]="template" [matTooltip]="getTemplateTooltip(template)" matTooltipClass="multi-line-tooltip">
-                @if (isMobile) {
+                @if (isMobile()) {
                   {{ template.name }}
                 } @else {
                   {{ getTemplateLabel(template) }}
@@ -30,7 +30,7 @@
               </mat-option>
             }
           </mat-select>
-          @if (driveForm.get('template')?.hasError('required')) {
+          @if (driveForm.controls.template.hasError('required')) {
             <mat-error>Vorlage ist erforderlich</mat-error>
           }
         </mat-form-field>
@@ -58,8 +58,10 @@
       </div>
     </form>
 
-    <div *ngIf="latestDriveDate" class="latest-entry-info mt-4">
-      Letzter Eintrag vom: {{ latestDriveDate | date:'dd.MM.yyyy' }}
-    </div>
+    @if (latestDriveDate(); as latest) {
+      <div class="latest-entry-info mt-4">
+        Letzter Eintrag vom: {{ latest | date:'dd.MM.yyyy' }}
+      </div>
+    }
   </div>
 </div>

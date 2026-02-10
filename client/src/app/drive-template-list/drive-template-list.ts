@@ -1,53 +1,35 @@
-import {Component, OnInit} from '@angular/core';
-import {DriveTemplateService} from '../drive-template-service';
-import {DriveTemplate} from '../drive-template';
-import {BehaviorSubject, Observable, switchMap} from 'rxjs';
-import {MatTableModule} from '@angular/material/table';
-import {MatButtonModule} from '@angular/material/button';
-import {MatIconModule} from '@angular/material/icon';
-import { Router, RouterLink } from '@angular/router';
-import {CommonModule} from '@angular/common';
-import {MatSnackBar, MatSnackBarModule} from '@angular/material/snack-bar';
-
-import {Reason} from '../reason';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
+import { BehaviorSubject, switchMap } from 'rxjs';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { DriveTemplateService } from '../drive-template-service';
+import { Reason } from '../reason';
 
 @Component({
   selector: 'app-drive-template-list',
-  imports: [
-    MatTableModule,
-    MatButtonModule,
-    MatIconModule,
-    MatSnackBarModule,
-    RouterLink,
-    CommonModule
-  ],
   templateUrl: './drive-template-list.html',
-  styleUrl: './drive-template-list.css',
+  styleUrls: ['./drive-template-list.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DriveTemplateList implements OnInit {
+export class DriveTemplateList {
 
-  private refresh$ = new BehaviorSubject<void>(undefined);
-  public driveTemplates$: Observable<DriveTemplate[]>;
-  protected displayedColumns: string[] = ['Name', 'VonNach', 'Länge', 'Grund', 'Aktion'];
+  private readonly driveTemplateService = inject(DriveTemplateService);
+  private readonly snackBar = inject(MatSnackBar);
+  private readonly router = inject(Router);
+
+  private readonly refresh$ = new BehaviorSubject<void>(undefined);
+  protected readonly driveTemplates = toSignal(
+    this.refresh$.pipe(switchMap(() => this.driveTemplateService.findAll())),
+    { initialValue: [] }
+  );
+  protected readonly displayedColumns: string[] = ['Name', 'VonNach', 'Länge', 'Grund', 'Aktion'];
 
   private touchStartX = 0;
   private touchStartY = 0;
   private isActuallySwiping = false;
   protected swipedRowId: string | null = null;
   protected currentSwipeOffset: number = 0;
-
-  constructor(
-    private driveTemplateService: DriveTemplateService,
-    private snackBar: MatSnackBar,
-    private router: Router
-  ) {
-    this.driveTemplates$ = this.refresh$.pipe(
-      switchMap(() => this.driveTemplateService.findAll())
-    );
-  }
-
-  ngOnInit(): void {
-  }
 
   editTemplate(id: string): void {
     if (this.isActuallySwiping) return;

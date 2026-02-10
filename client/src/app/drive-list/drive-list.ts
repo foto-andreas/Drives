@@ -1,50 +1,33 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { FormControl, FormGroup } from '@angular/forms';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
+import { take } from 'rxjs';
+import { toSignal, takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { BehaviorSubject, switchMap } from 'rxjs';
 import { DriveService } from '../drive-service';
-import { Drive } from '../drive';
-import { BehaviorSubject, combineLatest, map, Observable, shareReplay, switchMap, take } from 'rxjs';
-import { MatTableModule } from '@angular/material/table';
-import { CommonModule } from '@angular/common';
-import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatSelectModule } from '@angular/material/select';
-import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { Reason } from '../reason';
 import { DriveFilter } from '../drive-filter';
+import { Reason } from '../reason';
 
 @Component({
   selector: 'app-drive-list',
-  standalone: true,
-  imports: [
-    MatTableModule,
-    CommonModule,
-    MatIconModule,
-    MatButtonModule,
-    MatFormFieldModule,
-    MatSelectModule,
-    FormsModule,
-    MatSnackBarModule,
-    RouterLink
-  ],
   templateUrl: './drive-list.html',
-  styleUrl: './drive-list.css',
+  styleUrls: ['./drive-list.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DriveList {
+  private readonly driveService = inject(DriveService);
+  private readonly snackBar = inject(MatSnackBar);
+  private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
 
-  private now = new Date();
+  private readonly now = new Date();
+  private readonly refresh$ = new BehaviorSubject<void>(undefined);
+  private readonly initialFilter = this.driveService.currentFilter();
+  private readonly filterSignal = signal<DriveFilter>(this.initialFilter);
 
-  private refresh$ = new BehaviorSubject<void>(undefined);
-  private allDrives$: Observable<Drive[]>;
-  public drives$: Observable<Drive[]>;
-  protected displayedColumns: string[] = ['Datum', 'Template', 'Länge', 'Grund', 'Aktion'];
-
-  protected selectedYear: number | null;
-  protected selectedMonth: number | null;
-  protected selectedReason: string | null;
-  protected availableYears: number[] = [this.now.getFullYear()];
-  protected reasons = Reason.keys();
+  protected readonly displayedColumns: string[] = ['Datum', 'Template', 'Länge', 'Grund', 'Aktion'];
+  protected readonly reasons = Reason.keys();
   protected readonly months = [
     { value: 1, name: 'Januar' },
     { value: 2, name: 'Februar' },
@@ -60,78 +43,57 @@ export class DriveList {
     { value: 12, name: 'Dezember' }
   ];
 
-  private filterSubject: BehaviorSubject<DriveFilter>;
+  protected readonly filterForm = new FormGroup({
+    year: new FormControl<number | null>(this.initialFilter.year),
+    month: new FormControl<number | null>(this.initialFilter.month),
+    reason: new FormControl<string | null>(this.initialFilter.reason),
+  });
+
+  protected readonly allDrives = toSignal(
+    this.refresh$.pipe(switchMap(() => this.driveService.findAll())),
+    { initialValue: [] }
+  );
+
+  protected readonly availableYears = computed(() => {
+    const years = new Set<number>();
+    years.add(this.now.getFullYear());
+    this.allDrives().forEach(drive => years.add(drive.date.getFullYear()));
+    return Array.from(years).sort((a, b) => b - a);
+  });
+
+  protected readonly drives = computed(() => {
+    const filter = this.filterSignal();
+    return this.allDrives().filter(drive => {
+      const driveDate = drive.date;
+      const yearMatch = !filter.year || driveDate.getFullYear() === filter.year;
+      const monthMatch = !filter.month || driveDate.getMonth() + 1 === filter.month;
+      const reasonMatch = !filter.reason || drive.reason === filter.reason;
+      return yearMatch && monthMatch && reasonMatch;
+    });
+  });
 
   private touchStartX = 0;
   private touchStartY = 0;
   private isActuallySwiping = false;
   protected swipedRowId: string | null = null;
-  protected currentSwipeOffset: number = 0;
+  protected currentSwipeOffset = 0;
 
-  constructor(
-    private driveService: DriveService,
-    private snackBar: MatSnackBar,
-    private router: Router
-  ) {
-    const filter = this.driveService.getFilter();
-    this.selectedYear = filter.year;
-    this.selectedMonth = filter.month;
-    this.selectedReason = filter.reason;
-    this.filterSubject = new BehaviorSubject<DriveFilter>(filter);
-
-    this.allDrives$ = this.refresh$.pipe(
-      switchMap(() => this.driveService.findAll()),
-      map(drives => {
-        const years = new Set<number>();
-        years.add(this.now.getFullYear());
-        drives.forEach(d => {
-          if (d.date) {
-            years.add(new Date(d.date).getFullYear());
-          }
-        });
-        this.availableYears = Array.from(years).sort((a, b) => b - a);
-        return drives;
-      }),
-      shareReplay(1)
-    );
-
-    this.drives$ = combineLatest([this.allDrives$, this.filterSubject]).pipe(
-      map(([drives, filter]) => {
-        return drives.filter(d => {
-          if (!d.date) return false;
-          const driveDate = new Date(d.date);
-          const yearMatch = !filter.year || driveDate.getFullYear() === filter.year;
-          const monthMatch = !filter.month || (driveDate.getMonth() + 1) === filter.month;
-          const reasonMatch = !filter.reason || d.reason === filter.reason;
-          return yearMatch && monthMatch && reasonMatch;
-        });
-      })
-    );
-  }
-
-  onYearChange(): void {
-    if (this.selectedYear === null) {
-      this.selectedMonth = null;
-    }
-    this.updateFilter();
-  }
-
-  onMonthChange(): void {
-    this.updateFilter();
-  }
-
-  onReasonChange(): void {
-    this.updateFilter();
-  }
-
-  private updateFilter(): void {
-    const filter = {
-      year: this.selectedYear,
-      month: this.selectedMonth,
-      reason: this.selectedReason
-    };
-    this.driveService.setFilter(filter);
-    this.filterSubject.next(filter);
+  constructor() {
+    this.filterForm.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(value => {
+        const filter: DriveFilter = {
+          year: value.year ?? null,
+          month: value.month ?? null,
+          reason: value.reason ?? null,
+        };
+        if (!filter.year && filter.month) {
+          filter.month = null;
+          this.filterForm.controls.month.setValue(null, { emitEvent: false });
+        }
+        this.filterSignal.set(filter);
+        this.driveService.setFilter(filter);
+      });
   }
 
   editDrive(id: string): void {
@@ -213,62 +175,58 @@ export class DriveList {
   }
 
   exportToCsv(): void {
-    this.drives$.pipe(take(1)).subscribe(drives => {
+    const drives = this.drives();
+    const filter = this.filterSignal();
+    const isHomeOffice = filter.reason === 'HOME';
+    const headers = ['Datum', 'Vorlage', 'Von', 'Nach', 'Grund', isHomeOffice ? 'Anzahl' : 'Länge', isHomeOffice ? 'Summierung' : 'Summe'];
+
+    let runningTotal = 0;
+    const rows = drives.map(drive => {
       const separator = ';';
       const escape = '"';
+      const date = drive.date;
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      const dateStr = `${day}.${month}.${year}`;
+      const templateName = drive.template?.name ?? '';
+      const from = drive.template?.fromLocation ?? '';
+      const to = drive.template?.toLocation ?? '';
+      const reason = Reason.toString(drive.reason || drive.template?.reason);
+      const length = isHomeOffice ? 1 : drive.template?.driveLength ?? 0;
+      runningTotal += length;
 
-      const isHomeOffice = this.selectedReason === 'HOME';
-      const headers = ['Datum', 'Vorlage', 'Von', 'Nach', 'Grund', isHomeOffice ? 'Anzahl' : 'Länge', isHomeOffice ? 'Summierung' : 'Summe'];
-
-      let runningTotal = 0;
-      const rows = drives.map(drive => {
-        let dateStr = '';
-        if (drive.date) {
-          const d = new Date(drive.date);
-          const day = String(d.getDate()).padStart(2, '0');
-          const month = String(d.getMonth() + 1).padStart(2, '0');
-          const year = d.getFullYear();
-          dateStr = `${day}.${month}.${year}`;
-        }
-        const templateName = drive.template?.name || '';
-        const from = drive.template?.from_location || '';
-        const to = drive.template?.to_location || '';
-        const reason = Reason.toString(drive.reason || drive.template?.reason);
-        const length = isHomeOffice ? 1 : (drive.template?.drive_length || 0);
-        runningTotal += length;
-
-        return [
-          dateStr,
-          templateName,
-          from,
-          to,
-          reason,
-          length.toString().replace('.', ','),
-          runningTotal.toString().replace('.', ',')
-        ].map(val => `${escape}${val.replace(new RegExp(escape, 'g'), escape + escape)}${escape}`);
-      });
-
-      const csvContent = [
-        headers.map(h => `${escape}${h}${escape}`).join(separator),
-        ...rows.map(row => row.join(separator))
-      ].join('\n');
-
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-
-      const reasonPart = this.selectedReason ? Reason.toString(this.selectedReason) : 'Alle';
-      const yearPart = this.selectedYear || 'Alle';
-      const monthPart = this.selectedMonth ? this.months.find(m => m.value === this.selectedMonth)?.name : 'Alle';
-      const filename = `Fahrtenbuch_${reasonPart}_${yearPart}_${monthPart}.csv`;
-
-      link.setAttribute('href', url);
-      link.setAttribute('download', filename);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      return [
+        dateStr,
+        templateName,
+        from,
+        to,
+        reason,
+        length.toString().replace('.', ','),
+        runningTotal.toString().replace('.', ',')
+      ].map(val => `${escape}${val.replace(new RegExp(escape, 'g'), escape + escape)}${escape}`);
     });
+
+    const csvContent = [
+      headers.map(h => `"${h}"`).join(';'),
+      ...rows.map(row => row.join(';'))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+
+    const reasonPart = filter.reason ? Reason.toString(filter.reason) : 'Alle';
+    const yearPart = filter.year ?? 'Alle';
+    const monthPart = filter.month ? this.months.find(m => m.value === filter.month)?.name : 'Alle';
+    const filename = `Fahrtenbuch_${reasonPart}_${yearPart}_${monthPart}.csv`;
+
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 
   protected confirmDeletion(type: string): boolean {

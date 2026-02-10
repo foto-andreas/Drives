@@ -7,7 +7,7 @@
       </button>
     </div>
 
-    <table mat-table [dataSource]="driveTemplates$" class="mat-elevation-z8">
+    <table mat-table [dataSource]="driveTemplates()" class="mat-elevation-z8">
       <ng-container matColumnDef="Name">
         <th mat-header-cell *matHeaderCellDef>Name</th>
         <td mat-cell *matCellDef="let element"> {{ element.name }} </td>
@@ -17,16 +17,16 @@
         <th mat-header-cell *matHeaderCellDef>Von/Nach</th>
         <td mat-cell *matCellDef="let element">
           <div class="location-cell">
-            <span class="location-from">{{ element.from_location }}</span>
+            <span class="location-from">{{ element.fromLocation }}</span>
             <span class="location-separator"></span>
-            <span class="location-to">{{ element.to_location }}</span>
+            <span class="location-to">{{ element.toLocation }}</span>
           </div>
         </td>
       </ng-container>
 
       <ng-container matColumnDef="Länge">
         <th mat-header-cell *matHeaderCellDef>Länge</th>
-        <td mat-cell *matCellDef="let element"> {{ element.drive_length }} km </td>
+        <td mat-cell *matCellDef="let element"> {{ element.driveLength }} km </td>
       </ng-container>
 
       <ng-container matColumnDef="Grund">

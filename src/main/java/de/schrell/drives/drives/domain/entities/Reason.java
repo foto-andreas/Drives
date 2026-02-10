@@ -1,4 +1,4 @@
-package de.schrell.drives.domain;
+package de.schrell.drives.drives.domain.entities;
 
 public enum Reason {
     PRIVATE,

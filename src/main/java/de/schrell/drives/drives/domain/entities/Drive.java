@@ -1,4 +1,4 @@
-package de.schrell.drives.domain;
+package de.schrell.drives.drives.domain.entities;
 
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
@@ -22,17 +22,10 @@ public class Drive {
 
     @ManyToOne
     @JoinColumn(name = "template_id")
-    DriveTemplate template;
+    private DriveTemplate template;
 
-    LocalDate date;
+    private LocalDate date;
 
     @Nullable
-    Reason reason;
-
-    /**
-     * Getter für das Feld {@link Drive#reason}.
-     */
-    public Reason getReason() {
-        return reason == null && template != null ? template.getReason() : reason;
-    }
+    private Reason reason;
 }
