@@ -84,30 +84,35 @@ class DriveServiceTest {
     }
 
     @Test
-    void createSavesDrive() {
+    void createThrowsExceptionWhenTemplateNotFound() {
         LocalDate date = LocalDate.now();
-        DriveCommand command = new DriveCommand(null, date, "t1", Reason.WORK);
-        DriveTemplate template = new DriveTemplate();
-        template.setReason(Reason.PRIVATE);
-        
-        Drive savedDrive = new Drive();
-        DriveResponse response = new DriveResponse("1", date, null, Reason.WORK);
+        DriveCommand command = new DriveCommand(null, date, "non-existent", Reason.WORK);
 
-        when(driveTemplateRepository.findById("t1")).thenReturn(Optional.of(template));
-        when(driveRepository.save(any(Drive.class))).thenReturn(savedDrive);
-        when(driveMapper.toResponse(savedDrive)).thenReturn(response);
+        when(driveTemplateRepository.findById("non-existent")).thenReturn(Optional.empty());
 
-        DriveResponse result = driveService.create(command);
-
-        assertThat(result).isEqualTo(response);
-        verify(driveRepository).save(any(Drive.class));
+        assertThatThrownBy(() -> driveService.create(command))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("Drive template with id 'non-existent' not found");
     }
 
     @Test
-    void createNormalizesReason() {
+    void createHandlesNullTemplateId() {
         LocalDate date = LocalDate.now();
-        // Reason in command is same as in template -> should be null in entity
-        DriveCommand command = new DriveCommand(null, date, "t1", Reason.WORK);
+        DriveCommand command = new DriveCommand(null, date, null, Reason.WORK);
+        Drive savedDrive = new Drive();
+        
+        when(driveRepository.save(any(Drive.class))).thenReturn(savedDrive);
+        when(driveMapper.toResponse(savedDrive)).thenReturn(new DriveResponse("1", date, null, Reason.WORK));
+
+        driveService.create(command);
+
+        verify(driveRepository).save(argThat(drive -> drive.getTemplate() == null));
+    }
+
+    @Test
+    void normalizeReasonKeepsReasonWhenDifferentFromTemplate() {
+        LocalDate date = LocalDate.now();
+        DriveCommand command = new DriveCommand(null, date, "t1", Reason.PRIVATE);
         DriveTemplate template = new DriveTemplate();
         template.setReason(Reason.WORK);
 
@@ -115,7 +120,7 @@ class DriveServiceTest {
         
         driveService.create(command);
 
-        verify(driveRepository).save(argThat(drive -> drive.getReason() == null));
+        verify(driveRepository).save(argThat(drive -> drive.getReason() == Reason.PRIVATE));
     }
 
     @Test
