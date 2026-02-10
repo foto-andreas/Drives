@@ -16,7 +16,7 @@
       <div class="row">
         <mat-form-field appearance="fill" class="full-width">
           <mat-label>Vorlage</mat-label>
-          <mat-select formControlName="template" [compareWith]="compareTemplates">
+          <mat-select formControlName="template" [compareWith]="compareTemplates" [panelClass]="'tall-combobox-panel'">
             <mat-select-trigger>
               {{ getTemplateLabel(driveForm.get('template')?.value) }}
             </mat-select-trigger>
@@ -39,7 +39,7 @@
       <div class="row">
         <mat-form-field appearance="fill" class="full-width">
           <mat-label>Grund (Optional)</mat-label>
-          <mat-select formControlName="reason">
+          <mat-select formControlName="reason" [panelClass]="'tall-combobox-panel'">
             <mat-option [value]="null"><i>Aus Vorlage übernehmen</i></mat-option>
             @for (reason of reasons; track reason) {
               <mat-option [value]="reason">{{ Reason.toString(reason) }}</mat-option>

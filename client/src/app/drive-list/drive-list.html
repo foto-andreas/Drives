@@ -3,7 +3,7 @@
     <div class="d-flex gap-2 mb-2">
       <mat-form-field appearance="outline" class="filter-field compact-filter">
         <mat-label>Grund</mat-label>
-        <mat-select [(ngModel)]="selectedReason" (selectionChange)="onReasonChange()">
+        <mat-select [(ngModel)]="selectedReason" (selectionChange)="onReasonChange()" [panelClass]="'tall-combobox-panel'">
           <mat-option [value]="null">Alle</mat-option>
           @for (reason of reasons; track reason) {
             <mat-option [value]="reason">{{ Reason.toString(reason) }}</mat-option>
@@ -13,7 +13,7 @@
 
       <mat-form-field appearance="outline" class="filter-field compact-filter">
         <mat-label>Jahr</mat-label>
-        <mat-select [(ngModel)]="selectedYear" (selectionChange)="onYearChange()">
+        <mat-select [(ngModel)]="selectedYear" (selectionChange)="onYearChange()" [panelClass]="'tall-combobox-panel'">
           <mat-option [value]="null">Alle</mat-option>
           @for (year of availableYears; track year) {
             <mat-option [value]="year">{{ year }}</mat-option>
@@ -23,7 +23,7 @@
 
       <mat-form-field appearance="outline" class="filter-field compact-filter">
         <mat-label>Monat</mat-label>
-        <mat-select [(ngModel)]="selectedMonth" (selectionChange)="onMonthChange()" [disabled]="!selectedYear">
+        <mat-select [(ngModel)]="selectedMonth" (selectionChange)="onMonthChange()" [disabled]="!selectedYear" [panelClass]="'tall-combobox-panel'">
           <mat-option [value]="null">Alle</mat-option>
           @for (month of months; track month.value) {
             <mat-option [value]="month.value">{{ month.name }}</mat-option>
