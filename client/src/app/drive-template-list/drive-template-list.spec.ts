@@ -47,7 +47,9 @@ describe('DriveTemplateList', () => {
   });
 
   afterEach(() => {
-    fixture.destroy();
+    if (fixture) {
+      fixture.destroy();
+    }
   });
 
   it('should handle all major functionality', async () => {

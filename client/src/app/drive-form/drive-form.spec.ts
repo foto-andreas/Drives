@@ -143,6 +143,8 @@ describe('DriveForm', () => {
     driveServiceMock.save.mockReturnValue(of({}));
 
     component.onSubmit();
+    await fixture.whenStable();
+    fixture.detectChanges();
 
     expect(driveServiceMock.save).toHaveBeenCalledWith(expect.objectContaining({
       date: testDate
@@ -167,6 +169,8 @@ describe('DriveForm', () => {
     driveServiceMock.save.mockReturnValue(of({}));
 
     component.onSubmit();
+    await fixture.whenStable();
+    fixture.detectChanges();
 
     expect(driveServiceMock.save).toHaveBeenCalled();
     expect(snackBarMock.open).toHaveBeenCalled();
@@ -186,6 +190,8 @@ describe('DriveForm', () => {
     driveServiceMock.save.mockReturnValue(throwError(() => new Error('error')));
 
     component.onSubmit();
+    await fixture.whenStable();
+    fixture.detectChanges();
 
     expect(snackBarMock.open).toHaveBeenCalled();
   });

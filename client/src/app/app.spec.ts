@@ -24,8 +24,8 @@ describe('App', () => {
     await fixture.whenStable();
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    const titleSpan = Array.from(compiled.querySelectorAll('span')).find(s => s.textContent?.includes('Fahrtenbuch'));
-    expect(titleSpan).toBeTruthy();
-    expect(titleSpan?.textContent?.trim()).toBe('Fahrtenbuch');
+    const titleEl = compiled.querySelector('.title');
+    expect(titleEl).toBeTruthy();
+    expect(titleEl?.textContent?.trim()).toBe('Fahrtenbuch');
   });
 });

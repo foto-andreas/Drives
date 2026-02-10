@@ -48,7 +48,9 @@ describe('DriveList', () => {
   });
 
   afterEach(() => {
-    fixture.destroy();
+    if (fixture) {
+      fixture.destroy();
+    }
     TestBed.resetTestingModule();
   });
 
@@ -186,6 +188,8 @@ describe('DriveList', () => {
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
     driveServiceMock.delete.mockReturnValue(throwError(() => ({ status: 500 })));
     component.deleteDrive('1');
+    await fixture.whenStable();
+    fixture.detectChanges();
     expect(snackBarMock.open).toHaveBeenCalledWith('Fehler beim Löschen der Fahrt', 'OK', expect.any(Object));
     confirmSpy.mockRestore();
   });
