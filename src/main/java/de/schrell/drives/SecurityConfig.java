@@ -41,7 +41,7 @@ public class SecurityConfig {
             .addFilterAfter(initializationNotificationFilter, TenantFilter.class)
             .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
             .authorizeHttpRequests(authorizeRequests -> authorizeRequests
-                .requestMatchers("/error", "/favicon.ico", "/*.js", "/*.css", "/*.png", "/index.html").permitAll()
+                .requestMatchers("/.well-known/**", "/error", "/favicon.ico", "/*.js", "/*.css", "/*.png", "/index.html").permitAll()
                 .anyRequest().authenticated())
             .oauth2Login(withDefaults());
         return http.build();
