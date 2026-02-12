@@ -1,24 +1,61 @@
-# Architektur & Schichtenmodell (Backend)
+# Server-Architektur & Schichtenmodell
 
-Diese Anwendung folgt einem paketierten Schichtenmodell (package-by-feature, innerhalb der Module package-by-layer):
+Das Backend ist als Spring Boot Anwendung (Java 21+) konzipiert und folgt einem klassischen Schichtenmodell, um eine saubere Trennung der Verantwortlichkeiten zu gewährleisten.
 
-- API-Schicht (`...drives.api`): Controller, DTOs, Exception-Handler
-- Domain-Schicht (`...drives.domain`): Entities, Commands, Mapper, Services, Repositories
-- Konfiguration (`...config`): Security, WebConfig, Multitenancy, DataSource-Handling
+## 🏛 Schichtenmodell
 
-## Hauptkomponenten
+```mermaid
+graph TD
+    subgraph Web-Layer
+        C[Controller]
+        H[GlobalExceptionHandler]
+    end
+    subgraph Business-Logic-Layer
+        S[Services]
+    end
+    subgraph Persistence-Layer
+        R[Repositories]
+        E[Entities]
+    end
+    subgraph Integration-Layer
+        M[Mapper]
+    end
+    C --> S
+    S --> R
+    S --> M
+    R --> E
+```
 
-- DriveController/DriveTemplateController: REST-Endpunkte unter `/api`
-- DriveService/DriveTemplateService: Transaktionale Geschäftslogik
-- DriveRepository/DriveTemplateRepository: Spring Data JPA Repositories
-- DriveMapper: Konsolidierung und Fallback von Vorlagenwerten zu Fahrten
+### 1. Web-Layer (`api.controllers`, `api.handlers`)
+- **Controller:** Definieren die REST-Endpunkte und validieren eingehende Daten mittels Jakarta Validation (auf DTO-Ebene).
+- **ExceptionHandler:** Fängt Exceptions ab und wandelt sie in benutzerfreundliche HTTP-Antworten (JSON) um.
 
-## Wichtige Architekturentscheidungen
+### 2. Business-Logic-Layer (`domain.services`)
+- **Services:** Enthalten die eigentliche Fachlogik. Hier werden Transaktionsgrenzen (`@Transactional`) definiert.
+- **Validierung:** Komplexe fachliche Prüfungen (z.B. "Darf eine Vorlage gelöscht werden?") finden hier statt.
+- **Normalisierung:** Der `DriveService` bereinigt Daten vor dem Speichern (Entfernen redundanter Template-Werte).
 
-- Template ist optional: Eine Fahrt kann ohne Vorlage gespeichert werden. Ohne Vorlage sind `reason`, `fromLocation`, `toLocation`, `driveLength` Pflicht.
-- Overrides statt Duplikate: Ist eine Vorlage gesetzt, werden Felder, die identisch zur Vorlage sind, vor dem Speichern auf `null` gesetzt. Der Mapper liefert zur Anzeige/Antwort stets den effektiven Wert (Fahrt > Vorlage).
-- Abfrage-Transparenz: `DriveRepository.findFiltered(...)` nutzt einen `LEFT JOIN` auf `template`, damit Fahrten ohne Vorlage nicht aus Ergebnissen fallen.
-- Multitenancy: Pro Benutzer/Tenant eigene H2-Datei (Produktiv: PostgreSQL möglich). Schema-Initialisierung und Migration sind automatisiert.
+### 3. Persistence-Layer (`domain.repositories`, `domain.entities`)
+- **Entities:** JPA-annotierte Klassen, die das Datenbank-Schema repräsentieren.
+- **Repositories:** Spring Data JPA Interfaces für den Datenbankzugriff.
+
+### 4. Integration-Layer (`domain.mappers`)
+- **Mapper:** Verantwortlich für die Konvertierung zwischen internen Entities und externen DTOs.
+- **Fallback-Logik:** Hier ist die Logik implementiert, die entscheidet, ob ein Wert aus der Fahrt oder aus dem Template angezeigt wird.
+
+## 🔑 Kern-Konzepte
+
+### Multitenancy (Mehrbenutzerfähigkeit)
+Die Anwendung unterstützt mehrere Benutzer (Tenants) mit strikt getrennten Daten.
+1. **Identifikation:** Der Tenant wird über das OAuth2-Principal (E-Mail) ermittelt.
+2. **Isolierung:** Jeder Tenant erhält eine eigene Datenbankdatei (bei H2) bzw. ein eigenes Suffix.
+3. **Dynamik:** Die Datenbankverbindung wird "Just-in-Time" beim ersten Request des Benutzers aufgebaut und das Schema initialisiert.
+
+### Command Pattern
+Für Schreiboperationen werden dedizierte `Command`-Objekte (Records) verwendet. Dies entkoppelt die API-Struktur (DTOs) von der internen Service-Logik und ermöglicht eine saubere Validierung, bevor Daten die Entities erreichen.
+
+### Transaktionsmanagement
+Schreibzugriffe sind immer transaktional. Bei Fehlern während einer Operation (z.B. Datenbank-Constraint-Verletzung) wird ein Rollback durchgeführt, um die Datenintegrität zu wahren.
 
 ## Transaktionen
 

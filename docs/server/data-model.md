@@ -1,37 +1,75 @@
 # Datenmodell (Backend)
 
-## Entities
+Das Datenmodell ist darauf ausgelegt, Fahrten effizient zu speichern, wobei sowohl feste Vorlagen als auch flexible manuelle Eingaben unterstützt werden.
 
-### DriveTemplate
-- `id: String (UUID)`
-- `name: String` (eindeutig, Index)
-- `driveLength: int`
-- `fromLocation: String`
-- `toLocation: String`
-- `reason: Reason` (Enum)
+## 📊 Entity-Beziehung (ER-Diagramm)
 
-### Drive
-- `id: String (UUID)`
-- `template: DriveTemplate | null` (ManyToOne, optional)
-- `date: LocalDate`
-- `reason: Reason | null` (Override)
-- `fromLocation: String | null` (Override)
-- `toLocation: String | null` (Override)
-- `driveLength: Integer | null` (Override)
+```mermaid
+erDiagram
+    DRIVE_TEMPLATE ||--o{ DRIVE : "liefert Standardwerte für"
+    DRIVE_TEMPLATE {
+        string id PK
+        string name UK
+        int drive_length
+        string from_location
+        string to_location
+        int reason
+    }
+    DRIVE {
+        string id PK
+        string template_id FK
+        date date
+        int reason
+        string from_location
+        string to_location
+        int drive_length
+    }
+```
 
-> Hinweis: Bei gesetzter Vorlage werden Felder, die identisch zur Vorlage sind, vor dem Speichern auf `null` gesetzt (nur Overrides werden persistiert).
+## 📝 Entity-Details
 
-## Relationen
-- `Drive` — `DriveTemplate`: n:1 (optional)
+### 1. `DriveTemplate`
+Repräsentiert eine Vorlage für häufig wiederkehrende Fahrten (z.B. der tägliche Arbeitsweg).
 
-## Abfragen
-- `DriveRepository.findFiltered(year, month, reason)`
-  - JPQL mit `LEFT JOIN` auf `d.template t`, um auch Fahrten ohne Vorlage (`template = null`) zurückzugeben.
-  - Filterlogik:
-    - Jahr/Monat: anhand `d.date`
-    - Grund: Entweder explizit am Drive (`d.reason`) oder, falls dort `null`, über `t.reason`
+| Feld | Typ | Beschreibung |
+| :--- | :--- | :--- |
+| `id` | `String (UUID)` | Primärschlüssel. |
+| `name` | `String` | Eindeutiger Name der Vorlage (z.B. "Arbeitsweg"). |
+| `driveLength` | `int` | Standard-Länge in Kilometern. |
+| `fromLocation` | `String` | Standard-Startort. |
+| `toLocation` | `String` | Standard-Zielort. |
+| `reason` | `Reason (Enum)` | Standard-Zweck der Fahrt. |
 
-## Migrations- & Schema-Handling
-- Automatische Erstinitialisierung des Schemas je Tenant (H2-Datei pro Benutzerkennung)
-- Automatische Migration fehlender Spalten in `drive`: `from_location`, `to_location`, `drive_length`
-- Flyway-Unterstützung vorbereitet (`src/main/resources/db/migration`) – für produktive Systeme empfohlen
+### 2. `Drive`
+Repräsentiert eine konkret durchgeführte Fahrt oder einen Home-Office-Tag.
+
+| Feld | Typ | Beschreibung |
+| :--- | :--- | :--- |
+| `id` | `String (UUID)` | Primärschlüssel. |
+| `template` | `DriveTemplate` | Optionale Verknüpfung zu einer Vorlage. |
+| `date` | `LocalDate` | Datum der Fahrt. |
+| `reason` | `Reason` | Optionaler Override für den Grund. |
+| `fromLocation` | `String` | Optionaler Override für den Startort. |
+| `toLocation` | `String` | Optionaler Override für den Zielort. |
+| `driveLength` | `Integer` | Optionaler Override für die Länge. |
+
+## ⚙️ Logik & Besonderheiten
+
+### Speicherung (Normalisierung)
+Um Redundanz in der Datenbank zu vermeiden, implementiert der `DriveService` eine Bereinigungslogik:
+- Wenn ein Feld am `Drive` identisch mit dem Wert in der verknüpften `DriveTemplate` ist, wird das Feld am `Drive` auf `null` gesetzt.
+- In der Datenbank werden somit nur die Abweichungen (Overrides) gespeichert.
+
+### Auslese-Logik (Denormalisierung im Mapper)
+Beim Laden einer Fahrt sorgt der `DriveMapper` dafür, dass der Client immer die "effektiven" Werte erhält:
+1. Wenn ein Override am `Drive` existiert, wird dieser verwendet.
+2. Wenn kein Override existiert, wird der Wert aus dem verknüpften `DriveTemplate` verwendet.
+3. Wenn weder noch existiert (und kein Template vorhanden ist), wird `null` zurückgegeben.
+
+### JPQL-Besonderheit (Repository)
+In `DriveRepository.findFiltered` wird ein `LEFT JOIN` auf das Template verwendet. Dies ist kritisch, da ein Standard-Join (Inner Join) Fahrten ohne Template aus dem Ergebnis ausschließen würde.
+
+### Schema-Migration
+Das Projekt nutzt einen hybriden Ansatz:
+- **H2 (lokal):** Tabellen werden automatisch bei Bedarf erstellt (`MultiTenantDataSourceConfiguration`).
+- **Migration:** Bestehende `DRIVE`-Tabellen werden automatisch um die Spalten `from_location`, `to_location` und `drive_length` erweitert, falls sie aus einer älteren Version stammen.

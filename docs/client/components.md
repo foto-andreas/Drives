@@ -1,21 +1,59 @@
 # Komponenten (Frontend)
 
-## DriveForm
-- Formular zum Anlegen/Bearbeiten einer Fahrt
-- Template optional; ohne Vorlage sind `reason`, `fromLocation`, `toLocation`, `driveLength` Pflicht (Validatoren dynamisch)
-- Beim Wechsel auf eine Vorlage werden Formularfelder `reason`, `fromLocation`, `toLocation`, `driveLength` geleert
-- Öffnen des Grund-Selects übernimmt – falls leer – den Grund aus der Vorlage
+Detaillierte Beschreibung der zentralen UI-Bausteine der Anwendung.
 
-## DriveList
-- Liste mit Filtern (Reason/Jahr/Monat) und CSV-Export
-- Anzeige „Von/Nach/Länge“: Explizite Fahrtwerte haben Priorität vor Vorlagenwerten
-- Bei Grund `HOME` kein Pfeil zwischen Von/Nach
-- Mobile: Swipe zum Löschen
+## 📝 Formulare
 
-## DriveTemplateForm
-- Formular zum Anlegen/Bearbeiten von Vorlagen
-- `driveLength`: bei Grund `HOME` ist `0` erlaubt, sonst `>= 1`
+### 1. `DriveForm`
+Die wichtigste Komponente zur Datenerfassung.
 
-## DriveTemplateList
-- Tabelle der Vorlagen mit Bearbeiten/Löschen
-- Mobile: Swipe zum Löschen
+| Feature | Beschreibung |
+| :--- | :--- |
+| **Vorlagen-Support** | Dropdown zur Auswahl einer `DriveTemplate`. Das Feld ist seit Version 0.0.1 optional. |
+| **Dynamische Validierung** | Wenn kein Template gewählt ist, werden `reason`, `fromLocation`, `toLocation` und `driveLength` zu Pflichtfeldern (`Validators.required`). |
+| **UX: Automatisches Ausfüllen** | Beim Auswählen einer Vorlage werden manuelle Eingaben geleert. Beim Öffnen des Grund-Selects wird der Vorlagen-Grund vorgeschlagen, sofern das Feld noch leer ist. |
+| **Datumsvorbelegung** | Nutzt das `lastSelectedDate` aus dem `DriveService`, um die Erfassung mehrerer Fahrten hintereinander zu beschleunigen. |
+
+### 2. `DriveTemplateForm`
+Zur Definition von Standardwegen.
+
+| Feature | Beschreibung |
+| :--- | :--- |
+| **Validierung** | Alle Felder sind Pflichtfelder. |
+| **Längen-Logik** | Bei Auswahl von `HOME` ist eine Länge von 0 km zulässig, bei allen anderen Gründen muss die Länge >= 1 km sein. |
+
+## 📊 Listenansichten
+
+### 1. `DriveList`
+Zentrale Übersicht der Fahrten.
+
+- **Filterleiste:** Ermöglicht Filtern nach Jahr (Pflicht für Monat), Monat und Grund.
+- **Tabelle:** Zeigt Datum, Vorlagen-Name, Von/Nach (mit Pfeil-Logik), Länge und Grund.
+- **CSV-Export:** Generiert eine CSV-Datei basierend auf den aktuell sichtbaren (gefilterten) Daten.
+- **Swipe-Logic:** Implementiert `onRowTouchStart/Move/End`, um Zeilen auf Mobilgeräten nach links zu wischen (Lösch-Indikator).
+
+### 2. `DriveTemplateList`
+Verwaltung der verfügbaren Vorlagen.
+
+- Zeigt Name, Strecke und Standard-Grund.
+- Implementiert dieselbe Swipe-Geste zum Löschen wie die Fahrtenliste.
+
+## 🏗 Gemeinsame Features
+
+### Sticky Table Header & Scroll Container
+Beide Listen-Komponenten nutzen einen `.table-container` in ihrem CSS:
+```css
+.table-container {
+  max-height: 75vh; /* Mobil */
+  overflow: auto;
+}
+@media (min-width: 600px) {
+  .table-container {
+    max-height: 80vh; /* Desktop */
+  }
+}
+```
+Dies stellt sicher, dass die Tabellenüberschriften und Filter beim Scrollen sichtbar bleiben.
+
+### ReasonHelper Integration
+Alle Komponenten nutzen den `ReasonHelper`, um die technischen Enum-Keys (`WORK`, `PRIVATE`, etc.) in lokalisierte Strings ("Arbeit", "Privat") für die Anzeige umzuwandeln.

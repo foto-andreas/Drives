@@ -1,20 +1,42 @@
 # Projektdokumentation - Fahrtenbuch
 
-Diese Dokumentation bietet einen umfassenden Überblick über das Fahrtenbuch-Projekt, bestehend aus einem Spring Boot Backend und einem Angular Frontend.
+Dieses Dokument dient als Einstiegspunkt für die gesamte Dokumentation des Fahrtenbuch-Projekts. Die Anwendung ermöglicht die effiziente Erfassung von Fahrten auf Basis von Vorlagen, inklusive Unterstützung für Home-Office-Tage und CSV-Export für die Steuererklärung.
 
-## 📋 Inhaltsverzeichnis
+## 🧭 Inhaltsverzeichnis
 
-1. [Architektur-Übersicht](#-architektur-übersicht)
-2. [Server-Dokumentation (Backend)](#-server-dokumentation-backend)
-3. [Client-Dokumentation (Frontend)](#-client-dokumentation-frontend)
-4. [Deployment & Infrastruktur](#-deployment--infrastruktur)
-5. [Besonderheiten](#-besonderheiten)
+1.  [**Backend-Dokumentation (Server)**](#-backend-dokumentation-server)
+2.  [**Frontend-Dokumentation (Client)**](#-frontend-dokumentation-client)
+3.  [**Architektur & Design-Entscheidungen**](#-architektur--design-entscheidungen)
+4.  [**Besonderheiten & Workflows**](#-besonderheiten--workflows)
 
 ---
 
-## 🏗 Architektur-Übersicht
+## 🖥 Backend-Dokumentation (Server)
 
-Das Projekt ist als klassische Client-Server-Anwendung konzipiert. Das Backend stellt eine REST-API zur Verfügung, die vom Angular-Frontend konsumiert wird.
+Das Backend ist mit Spring Boot (Java 21) realisiert und verwaltet die Datenhaltung sowie die Geschäftslogik.
+
+- 🏗 **[Architektur & Schichtenmodell](docs/server/architecture.md)**: Details zum Aufbau der Anwendung und der Schichtentrennung.
+- 📊 **[Datenmodell](docs/server/data-model.md)**: ER-Diagramm und detaillierte Beschreibungen der Entities (`Drive`, `DriveTemplate`).
+- 🔌 **[API-Referenz](docs/server/api.md)**: Dokumentation der REST-Endpunkte, DTOs und Fehlerbehandlung.
+- 📦 **[Paket- & Klassenstruktur](docs/server/packages.md)**: Detaillierte Übersicht aller Java-Packages und Klassen-Verantwortlichkeiten.
+
+---
+
+## 🌐 Frontend-Dokumentation (Client)
+
+Das Frontend basiert auf Angular 19 und bietet eine moderne, reaktive Benutzeroberfläche.
+
+- 🚀 **[Übersicht & Routing](docs/client/overview.md)**: UI-Flow, Navigationsstruktur und Mobil-Optimierungen.
+- 🧱 **[Komponenten](docs/client/components.md)**: Detaillierte Beschreibung der Formulare und Listenansichten.
+- ⚙️ **[Services & State](docs/client/services.md)**: Kommunikation mit dem Backend und State-Management mittels Signals.
+- 📄 **[Datenmodelle](docs/client/models.md)**: TypeScript-Interfaces und Enums für die clientseitige Datenhaltung.
+
+---
+
+## 🏗 Architektur & Design-Entscheidungen
+
+### Schichtenmodell
+Die Anwendung folgt einem klassischen Schichtenmodell (Controller -> Service -> Repository), wobei die Fachlogik strikt in den Services gekapselt ist.
 
 ```mermaid
 graph LR
@@ -23,79 +45,27 @@ graph LR
     Spring <--> DB[(Datenbank)]
 ```
 
-- **Backend:** Spring Boot 4.x, Java 25, Spring Data JPA, Spring Security (OAuth2).
-- **Frontend:** Angular 19, TypeScript, Signals, HTML/CSS.
-- **Datenbank:** H2 (Entwicklung) / PostgreSQL (Produktion).
+### Multitenancy (Mehrbenutzerbetrieb)
+Jeder Benutzer arbeitet auf seiner eigenen Datenbank (isolierte Datenhaltung).
+- **Identifikation:** Über Google OAuth2 (E-Mail).
+- **Datenhaltung:** Pro Benutzer eine eigene H2-Datenbankdatei (oder PostgreSQL-Schema).
+- **Automatisierung:** Schema-Erstellung und Migrationen erfolgen automatisch beim ersten Login.
 
 ---
 
-## 🖥 Server-Dokumentation (Backend)
+## ✨ Besonderheiten & Workflows
 
-Detaillierte Informationen zum Backend finden Sie in den folgenden Dokumenten:
-
-- 🏛 **[Architektur & Schichtenmodell](docs/server/architecture.md)**: Erläuterung des Aufbaus und der verwendeten Patterns.
-- 📊 **[Datenmodell](docs/server/data-model.md)**: Beschreibung der Entities und deren Beziehungen (ER-Diagramm).
-- 🔌 **[API-Referenz](docs/server/api.md)**: Dokumentation der REST-Endpunkte und Datenformate.
-- 📦 **[Paket- & Klassenstruktur](docs/server/packages.md)**: Detaillierte Liste aller Pakete und Klassen.
-
----
-
-## 🌐 Client-Dokumentation (Frontend)
-
-Detaillierte Informationen zum Frontend finden Sie in den folgenden Dokumenten:
-
-- 🚀 **[Übersicht & Routing](docs/client/overview.md)**: Einführung in die Angular-Anwendung und UI-Flow.
-- 🧱 **[Komponenten](docs/client/components.md)**: Beschreibung der UI-Bausteine und deren Funktionen.
-- ⚙️ **[Services & State](docs/client/services.md)**: Details zur Geschäftslogik und dem Signal-basierten State-Management.
-- 📄 **[Datenmodelle](docs/client/models.md)**: TypeScript-Interfaces und Enums.
-
----
-
-## 🚀 Deployment & Infrastruktur
-
-Die Anwendung ist für den Betrieb in Docker-Containern optimiert.
-
-### Build-Prozess
-Der Client wird als Teil des Gradle-Build-Prozesses gebaut und die statischen Dateien werden in das JAR-File integriert.
-
-```bash
-./gradlew build
-```
-
-### Docker
-Ein Docker-Image kann mit dem bereitgestellten `Dockerfile` erstellt werden. Details zum Deployment finden sich in der [README.md](README.md).
-
----
-
-## ✨ Besonderheiten
-
-### OAuth2 Integration
-Die Anwendung nutzt Google OAuth2 zur Authentifizierung. Die Konfiguration erfolgt über Umgebungsvariablen:
-- `GOOGLE_CLIENT_ID`
-- `GOOGLE_CLIENT_SECRET`
-
-### Multitenancy & dynamische DB-URL & Migration
-- Der Tenant wird aus dem OAuth2-Benutzer abgeleitet (E-Mail-Teil vor `@`).
-- Falls kein Tenant verfügbar ist, wird `default` verwendet.
-- Die Basis-DB-URL stammt aus `spring.datasource.url`. Pro Tenant wird ein Suffix `_<tenantId>` ergänzt.
-  - Beispiel: `jdbc:h2:file:~/data/drives` → `jdbc:h2:file:~/data/drives_max`
-- Die Initialisierung erfolgt pro Tenant beim ersten Zugriff. Bei einer Initialisierung wird bei normalen Requests der Header `X-Db-Initialized: true` gesetzt. Der Endpunkt `/api/initialization-status` liefert den aktuellen Initialisierungsstatus für den aktiven Tenant.
-- **Automatische Schema-Migration:** Beim Start oder Login wird das Schema der Tenant-Datenbank automatisch geprüft und bei Bedarf erweitert (z. B. Hinzufügen neuer Spalten wie `from_location`, `to_location`, `drive_length` in der Tabelle `drive`).
-
-### Datenbank-Modell & Flexibilität bei Fahrten
-- **Vorlagen (Templates):** Fahrten können auf Vorlagen basieren, die Standardwerte für Start, Ziel, Länge und Grund liefern.
-- **Manuelle Eingabe & Überschreiben:** Seit der Erweiterung ist das Feld "Vorlage" bei einer Fahrt optional.
-  - Ohne Vorlage müssen Start (`from_location`), Ziel (`to_location`) und Länge (`drive_length`) manuell angegeben werden.
-  - Mit Vorlage können diese Felder optional gefüllt werden, um die Werte aus der Vorlage für diese spezifische Fahrt zu überschreiben.
-  - In Anzeigen und CSV-Exporten haben die explizit an der Fahrt gesetzten Werte Vorrang vor den Werten aus der Vorlage.
-
-### Datenbank & Migrationen
-- Entwicklung: H2 (Datei/In-Memory) • Produktion: PostgreSQL
-- Flyway-Migrationen liegen unter `src/main/resources/db/migration`
-- Aktuelle Einstellung: `spring.jpa.hibernate.ddl-auto=update` (siehe `src/main/resources/application.yaml`)
+### Flexibilität bei Fahrten
+Fahrten können sowohl **mit** als auch **ohne** Vorlage erfasst werden.
+- **Ohne Vorlage:** Alle fahrtrelevanten Daten (Von, Nach, Länge, Grund) müssen manuell eingegeben werden.
+- **Mit Vorlage:** Die Vorlage liefert Standardwerte. Diese können jedoch individuell pro Fahrt überschrieben werden (Overrides).
+- **Priorisierung:** In der Anzeige und im CSV-Export haben manuelle Overrides immer Vorrang vor den Vorlagenwerten.
 
 ### CSV-Export
-In der Fahrtenliste (`DriveList`) ist ein CSV-Export implementiert, der die aktuell gefilterte Ansicht exportiert. Dies ist besonders nützlich für die Steuererklärung.
+Die Anwendung bietet einen integrierten CSV-Export in der Fahrtenliste. Dieser berücksichtigt die aktuell gesetzten Filter (Jahr, Monat, Grund), was die Vorbereitung der Steuererklärung erheblich vereinfacht.
 
-### Home-Office Tracking
-Über den speziellen Grund `HOME` (Home-Office) können Tage erfasst werden, an denen nicht gefahren wurde, was ebenfalls für die steuerliche Absetzbarkeit relevant ist.
+### Home-Office Support
+Über den speziellen Grund `HOME` können Home-Office-Tage erfasst werden. Auf Mobilgeräten wird hierbei die UI angepasst (kein Richtungspfeil), und in der Vorlagen-Definition ist für diesen Fall eine Länge von 0 km zulässig.
+
+---
+> 💡 *Tipp: Weitere Informationen zum Deployment und zum Starten der Anwendung finden sich in der [README.md](README.md).*

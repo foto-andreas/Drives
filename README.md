@@ -51,6 +51,7 @@ Die Einstellungen für die Middleware müssen per File bereitgestellt werden, da
 
 ### Doku-Prompt
 ```text
+Doku-Update
 * Erstelle eine ausführliche Dokumentation für jedes Package und jede Klasse.
 * Beschreibe Ressourcen und deren Nutzung. 
 * Ergänze Grafiken (mit Mermaid) und Tabellen, falls sinnvoll. 
