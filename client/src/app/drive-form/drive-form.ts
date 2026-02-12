@@ -8,7 +8,6 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatIconModule } from '@angular/material/icon';
 import { provideNativeDateAdapter } from '@angular/material/core';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
@@ -35,7 +34,6 @@ import { Drive } from '../drive';
     MatInputModule,
     MatButtonModule,
     MatDatepickerModule,
-    MatTooltipModule,
     MatIconModule,
     RouterLink,
   ],
@@ -226,13 +224,6 @@ export class DriveForm {
   getTemplateLabel(template: DriveTemplate | null): string {
     if (!template) return '';
     return `${template.name} (${template.fromLocation} -> ${template.toLocation})`;
-  }
-
-  getTemplateTooltip(template: DriveTemplate | null): string {
-    if (!template) return '';
-    return `Von: ${template.fromLocation}\nNach: ${template.toLocation}\nLänge: ${
-      template.driveLength
-    } km\nGrund: ${ReasonHelper.toString(template.reason)}`;
   }
 
   protected readonly Reason = Reason;

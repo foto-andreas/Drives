@@ -147,14 +147,10 @@ describe('DriveForm', () => {
     expect(component.compareTemplates(null, null)).toBe(true);
   });
 
-  it('soll Template Labels und Tooltips generieren', () => {
+  it('soll Template Labels generieren', () => {
     const t: DriveTemplate = { id: '1', name: 'T1', fromLocation: 'A', toLocation: 'B', driveLength: 10, reason: 'WORK' };
     expect(component.getTemplateLabel(t)).toContain('T1 (A -> B)');
-    expect(component.getTemplateTooltip(t)).toContain('Von: A');
-    expect(component.getTemplateTooltip(t)).toContain('Länge: 10 km');
-
     expect(component.getTemplateLabel(null)).toBe('');
-    expect(component.getTemplateTooltip(null)).toBe('');
   });
 
   it('soll bei Fehler beim Speichern zusammengefasste Snackbar unten/zentriert anzeigen (Legacy Test Case)', async () => {
