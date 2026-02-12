@@ -39,3 +39,4 @@ out/
 /drives.tar
 src/main/resources/public/browser
 /runLocal.sh
+**/.DS_Store
