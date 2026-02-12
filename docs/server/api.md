@@ -1,147 +1,73 @@
-# API-Referenz (Server)
+# API-Referenz (Backend)
 
-Diese Dokumentation beschreibt die REST-Schnittstellen des Fahrtenbuch-Backends. Alle Endpunkte sind unter dem Präfix `/api` erreichbar.
+Basis-URL: `/api`
 
-## Basis-Konfiguration
-- **Root-URL:** `/api`
-- **Format:** JSON
-- **Authentifizierung:** Über Spring Security (Details siehe Architektur-Dokumentation)
-- **CORS:** Aktiviert (`@CrossOrigin`)
+## Drives
 
-## Fahrten (Drives)
+### GET `/drives`
+- Query-Parameter (optional): `year`, `month`, `reason`
+- Antwort: `DriveResponse[]`
+- Anmerkung: Ergebnisse enthalten effektive Werte – explizite Fahrtwerte haben Vorrang vor Vorlagenwerten.
 
-### Alle Fahrten abrufen (mit serverseitiger Filterung)
-`GET /api/drives`
+### GET `/drives/{id}`
+- Antwort: `DriveResponse`
 
-Gibt eine Liste aller Fahrten zurück, sortiert nach Datum aufsteigend. Optional kann bereits serverseitig gefiltert werden.
+### PUT `/drives`
+- Zweck: Neue Fahrt anlegen
+- Request-Body: `DriveRequest`
+- Validierung:
+  - Ohne `templateId`: `reason`, `fromLocation`, `toLocation`, `driveLength` sind Pflicht
 
-**Query-Parameter (optional):**
-- `year` (Integer): Kalenderjahr, z. B. `2024`
-- `month` (Integer): Kalendermonat (1–12). Nur wirksam, wenn `year` gesetzt ist.
-- `reason` (String): Fahrten-Grund, z. B. `WORK`, `PRIVATE`, `HOME`, `OTHER`
+### POST `/drives`
+- Zweck: Bestehende Fahrt aktualisieren
+- Request-Body: `DriveRequest` (mit `id`)
 
-Beispiele:
-- `/api/drives?year=2024`
-- `/api/drives?year=2024&month=5`
-- `/api/drives?reason=WORK`
-- `/api/drives?year=2024&month=5&reason=WORK`
+### DELETE `/drives/{id}`
+- Zweck: Fahrt löschen
 
-**Antwort:** `200 OK` mit einer Liste von `DriveResponse`-Objekten.
+## DriveTemplates
 
-### Einzelne Fahrt abrufen
-`GET /api/drives/{id}`
+### GET `/driveTemplates`
+- Antwort: `DriveTemplateResponse[]`
 
-**Antwort:** `200 OK` mit einem `DriveResponse`-Objekt oder `404 Not Found`.
+### GET `/driveTemplates/{id}`
+- Antwort: `DriveTemplateResponse`
 
-### Letztes Fahrtdatum abrufen
-`GET /api/latestDrive`
+### PUT `/driveTemplates`
+- Zweck: Neue Vorlage anlegen
+- Request-Body: `DriveTemplateRequest`
 
-Gibt das Datum der zeitlich aktuellsten Fahrt zurück. Wird im Frontend verwendet, um das Standarddatum für neue Einträge vorzubelegen.
+### POST `/driveTemplates`
+- Zweck: Vorlage aktualisieren
+- Request-Body: `DriveTemplateRequest` (mit `id`)
 
-**Antwort:** `200 OK` mit ISO-Datum (z.B. `"2024-05-20"`) oder `204 No Content`, wenn keine Fahrten existieren.
+### DELETE `/driveTemplates/{id}`
+- Hinweis: Löschen nur möglich, wenn keine Fahrt diese Vorlage referenziert (409 sonst)
 
-### Neue Fahrt hinzufügen
-`PUT /api/drives`
+## DTOs (Auszug)
 
-**Body:** `DriveRequest`
-**Antwort:** `200 OK` mit der erstellten Fahrt.
-
-### Fahrt aktualisieren
-`POST /api/drives`
-
-**Body:** `DriveRequest` (ID muss enthalten sein)
-**Antwort:** `200 OK` mit der aktualisierten Fahrt.
-
-### Fahrt löschen
-`DELETE /api/drives/{id}`
-
-**Antwort:** `200 OK`.
-
----
-
-## Fahrtvorlagen (DriveTemplates)
-
-### Alle Vorlagen abrufen
-`GET /api/driveTemplates`
-
-**Antwort:** `200 OK` mit einer Liste von `DriveTemplateResponse`-Objekten.
-
-### Einzelne Vorlage abrufen
-`GET /api/driveTemplates/{id}`
-
-**Antwort:** `200 OK` mit einem `DriveTemplateResponse`-Objekt.
-
-### Neue Vorlage hinzufügen
-`PUT /api/driveTemplates`
-
-**Body:** `DriveTemplateRequest`
-**Antwort:** `200 OK` mit der erstellten Vorlage.
-
-### Vorlage aktualisieren
-`POST /api/driveTemplates`
-
-**Body:** `DriveTemplateRequest` (ID muss enthalten sein)
-**Antwort:** `200 OK` mit der aktualisierten Vorlage.
-
-### Vorlage löschen
-`DELETE /api/driveTemplates/{id}`
-
-**Antwort:** `200 OK`. Falls die Vorlage noch in Fahrten verwendet wird, wird ein Fehler zurückgegeben (Abhängig von der Datenbank-Integrität/Service-Logik).
-
----
-
-## Benutzer
-
-### Angemeldeten Benutzer abrufen
-`GET /api/user`
-
-Gibt den aktuell authentifizierten Benutzernamen zurück.
-
-- Authentifizierung: erforderlich (OAuth2 Login)
-- Antwort: `200 OK` mit folgendem Schema
-
-```json
+### DriveRequest
+```
 {
-  "name": "Max Mustermann"
+  id: string | null,
+  date: LocalDate (yyyy-MM-dd),
+  templateId: string | null,
+  reason: Reason | null,
+  fromLocation: string | null,
+  toLocation: string | null,
+  driveLength: number | null
 }
 ```
 
----
-
-## Initialisierung
-
-### Initialisierungsstatus prüfen
-`GET /api/initialization-status`
-
-Gibt zurück, ob die Datenbank des aktiven Tenants in dieser Session initialisiert wurde.
-
-**Antwort:** `200 OK` mit `InitializationStatusResponse`.
-
-```json
-{
-  "initialized": true
-}
+### DriveResponse
 ```
-
-**Hinweis:** Bei normalen Requests wird zusätzlich der Header `X-Db-Initialized: true` gesetzt, sobald eine Initialisierung erfolgt ist.
-
----
-
-## Fehlerbehandlung
-
-Das System verwendet eine globale Fehlerbehandlung (`GlobalExceptionHandler`), die ein einheitliches Fehlerformat zurückgibt.
-
-| HTTP Status | Grund |
-| :--- | :--- |
-| `404 Not Found` | Ressource mit der angegebenen ID existiert nicht. |
-| `400 Bad Request` | Validierungsfehler bei den Eingabedaten. |
-| `409 Conflict` | Vorlage kann nicht gelöscht werden, da sie noch verwendet wird. |
-
-**Fehler-Payload:**
-```json
 {
-  "message": "Fehlerbeschreibung",
-  "status": 404,
-  "timestamp": "2024-05-20T12:00:00"
+  id: string,
+  date: LocalDate,
+  template: DriveTemplateResponse | null,
+  reason: Reason | null,
+  fromLocation: string | null,
+  toLocation: string | null,
+  driveLength: number | null
 }
 ```

@@ -1,39 +1,18 @@
-# Übersicht (Client)
+# Frontend-Übersicht & Routing
 
-Das Frontend des Fahrtenbuchs ist eine **Angular-Anwendung (v19)**, die als Single Page Application (SPA) konzipiert ist. Sie ermöglicht die Erfassung von Fahrten, die Verwaltung von Vorlagen und bietet Filter- sowie Exportmöglichkeiten.
+Das Angular-Frontend bietet drei Hauptansichten:
 
-## Architektur-Prinzipien
+- Fahrt anlegen/bearbeiten (`/drives/new`, `/drives/edit/:id`): Komponente `DriveForm`
+- Fahrtenliste (`/drives`): Komponente `DriveList` inkl. CSV-Export
+- Vorlagenliste/-formular (`/driveTemplates`, `/driveTemplates/new`, `/driveTemplates/edit/:id`): `DriveTemplateList`, `DriveTemplateForm`
 
-- **Komponentenbasiert:** Die UI ist in modulare Standalone-Komponenten unterteilt.
-- **Service-gesteuert:** Die gesamte Kommunikation mit dem Backend und die State-Verwaltung erfolgt über Angular-Services.
-- **Signals:** Die Anwendung nutzt Angular Signals für ein reaktives State-Management (z.B. für Filter und zuletzt gewählte Daten).
-- **Type-Safe:** Konsequente Nutzung von TypeScript-Interfaces und Enums für Datenmodelle.
+## Navigation & Layout
+- Obere `mat-toolbar` mit Burger-Menü
+- Sidenav mit Links zu Fahrten, Neue Fahrt, Vorlagen
+- Inhalt wird im `mat-sidenav-content` gerendert
 
-## Benutzeroberfläche (UI-Flow)
-
-```mermaid
-graph LR
-    Start[Start / drives/new] --> List[Fahrtenliste]
-    List --> Edit[Fahrt bearbeiten]
-    List --> Delete[Fahrt löschen]
-    List --> Templates[Vorlagenverwaltung]
-    Templates --> TemplateForm[Vorlage erstellen/bearbeiten]
-    
-    subgraph Navigation
-        Nav[Navigationsmenü]
-    end
-```
-
-## Routing-Struktur
-
-Die Routen sind in `app.routes.ts` definiert:
-
-| Pfad | Komponente | Zweck |
-| :--- | :--- | :--- |
-| `/drives` | `DriveList` | Anzeige und Filterung aller Fahrten. |
-| `/drives/new` | `DriveForm` | Erfassen einer neuen Fahrt. |
-| `/drives/edit/:id` | `DriveForm` | Bearbeiten einer bestehenden Fahrt. |
-| `/driveTemplates` | `DriveTemplateList` | Liste aller Fahrtvorlagen. |
-| `/driveTemplates/new` | `DriveTemplateForm` | Erstellen einer neuen Vorlage. |
-| `/driveTemplates/edit/:id` | `DriveTemplateForm` | Bearbeiten einer Vorlage. |
-| `/` | - | Redirect auf `/drives/new`. |
+## Mobil-Optimierungen
+- Swipe-Geste auf Zeilen zum schnellen Löschen (Bestätigungs-Dialog)
+- In Listen ist nur die Tabelle scrollbar; Header/Filter bleiben stehen
+- Pfeil „Von → Nach“ wird bei Grund `HOME` unterdrückt
+- Tooltips in Vorlagen-Combobox wurden entfernt (bessere Scrollbarkeit auf Mobilgeräten)

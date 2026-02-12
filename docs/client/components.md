@@ -1,44 +1,21 @@
-# Komponenten (Client)
+# Komponenten (Frontend)
 
-Das Frontend ist in mehrere Standalone-Komponenten unterteilt. Jede Komponente besteht typischerweise aus einer TypeScript-Klasse (`.ts`), einem HTML-Template (`.html`) und CSS-Styles (`.css`).
+## DriveForm
+- Formular zum Anlegen/Bearbeiten einer Fahrt
+- Template optional; ohne Vorlage sind `reason`, `fromLocation`, `toLocation`, `driveLength` Pflicht (Validatoren dynamisch)
+- Beim Wechsel auf eine Vorlage werden Formularfelder `reason`, `fromLocation`, `toLocation`, `driveLength` geleert
+- Öffnen des Grund-Selects übernimmt – falls leer – den Grund aus der Vorlage
 
-## Hauptkomponenten
+## DriveList
+- Liste mit Filtern (Reason/Jahr/Monat) und CSV-Export
+- Anzeige „Von/Nach/Länge“: Explizite Fahrtwerte haben Priorität vor Vorlagenwerten
+- Bei Grund `HOME` kein Pfeil zwischen Von/Nach
+- Mobile: Swipe zum Löschen
 
-### DriveList (`drive-list`)
-Die zentrale Ansicht zum Einsehen der Fahrten.
-- **Funktionen:**
-  - Tabellarische Anzeige der Fahrten.
-  - Filterung nach Jahr, Monat und Grund.
-  - CSV-Export der gefilterten Liste.
-  - Löschen von Einträgen.
-  - Verlinkung zur Bearbeitung.
+## DriveTemplateForm
+- Formular zum Anlegen/Bearbeiten von Vorlagen
+- `driveLength`: bei Grund `HOME` ist `0` erlaubt, sonst `>= 1`
 
-### DriveForm (`drive-form`)
-Das Formular zum Erfassen und Ändern von Fahrten.
-- **Funktionen:**
-  - Auswahl einer Vorlage (Dropdown).
-  - Datums-Eingabe (Vorbelegung mit dem Datum der letzten Fahrt oder heute).
-  - Manueller Override des Grundes.
-  - Validierung der Pflichtfelder.
-
-### DriveTemplateList (`drive-template-list`)
-Verwaltung der Fahrtvorlagen.
-- **Funktionen:**
-  - Auflistung aller verfügbaren Vorlagen.
-  - Button zum Erstellen neuer Vorlagen.
-  - Bearbeiten und Löschen von Vorlagen.
-
-### DriveTemplateForm (`drive-template-form`)
-Formular für Vorlagen.
-- **Eingabefelder:** Name, Länge (km), Start, Ziel, Grund.
-- **Besonderheit:** Der Name muss eindeutig sein (Backend-Validierung).
-
-### AppComponent (`app.ts`)
-Die Root-Komponente der Anwendung.
-- Enthält das globale Navigationsmenü.
-- Stellt den `router-outlet` bereit.
-
-## Gemeinsame Verhaltensweisen
-
-- **Reaktivität:** Komponenten reagieren auf Änderungen in den Services via Signals oder Observables.
-- **Benutzerführung:** Nach erfolgreichem Speichern erfolgt in der Regel eine automatische Weiterleitung zur Listenansicht.
+## DriveTemplateList
+- Tabelle der Vorlagen mit Bearbeiten/Löschen
+- Mobile: Swipe zum Löschen

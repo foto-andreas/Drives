@@ -1,53 +1,30 @@
-# Architektur (Server)
+# Architektur & Schichtenmodell (Backend)
 
-Die Backend-Architektur folgt dem Prinzip **Package-by-Feature** und ist innerhalb der Features in Schichten unterteilt.
+Diese Anwendung folgt einem paketierten Schichtenmodell (package-by-feature, innerhalb der Module package-by-layer):
 
-## Schichtenmodell
+- API-Schicht (`...drives.api`): Controller, DTOs, Exception-Handler
+- Domain-Schicht (`...drives.domain`): Entities, Commands, Mapper, Services, Repositories
+- Konfiguration (`...config`): Security, WebConfig, Multitenancy, DataSource-Handling
 
-```mermaid
-graph TD
-    API[API Layer: Controllers] --> Service[Service Layer: Business Logic]
-    Service --> Repository[Repository Layer: Data Access]
-    Repository --> DB[(H2/PostgreSQL Database)]
-    
-    subgraph Domain
-        Service
-        Repository
-        Entities[Entities & Models]
-    end
-```
+## Hauptkomponenten
 
-### 1. Web-Schicht (API)
-Verantwortlich für das Handling von HTTP-Anfragen, Validierung von Eingaben (via Jakarta Validation) und Rückgabe von standardisierten Antworten. 
-- **Technologien:** Spring Web, Spring Security.
+- DriveController/DriveTemplateController: REST-Endpunkte unter `/api`
+- DriveService/DriveTemplateService: Transaktionale Geschäftslogik
+- DriveRepository/DriveTemplateRepository: Spring Data JPA Repositories
+- DriveMapper: Konsolidierung und Fallback von Vorlagenwerten zu Fahrten
 
-### 2. Service-Schicht (Domain Services)
-Hier befindet sich die Geschäftslogik. Transaktionsgrenzen werden auf dieser Ebene definiert (`@Transactional`).
-- **Besonderheit:** Verwendung von Command-Objekten zur Entkopplung von der Web-Schicht.
+## Wichtige Architekturentscheidungen
 
-### 3. Repository-Schicht (Domain Repositories)
-Abstrahiert den Datenbankzugriff. 
-- **Technologien:** Spring Data JPA.
+- Template ist optional: Eine Fahrt kann ohne Vorlage gespeichert werden. Ohne Vorlage sind `reason`, `fromLocation`, `toLocation`, `driveLength` Pflicht.
+- Overrides statt Duplikate: Ist eine Vorlage gesetzt, werden Felder, die identisch zur Vorlage sind, vor dem Speichern auf `null` gesetzt. Der Mapper liefert zur Anzeige/Antwort stets den effektiven Wert (Fahrt > Vorlage).
+- Abfrage-Transparenz: `DriveRepository.findFiltered(...)` nutzt einen `LEFT JOIN` auf `template`, damit Fahrten ohne Vorlage nicht aus Ergebnissen fallen.
+- Multitenancy: Pro Benutzer/Tenant eigene H2-Datei (Produktiv: PostgreSQL möglich). Schema-Initialisierung und Migration sind automatisiert.
 
-## Besondere Merkmale
+## Transaktionen
 
-### Sicherheit & Authentifizierung
-Die Anwendung nutzt **OAuth2 Login** (Google). 
-- Konfiguriert in `SecurityConfig`.
-- Erfordert gültige Client-ID und Client-Secret in der Umgebung (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`).
-- CSRF-Schutz ist aktiviert und nutzt ein Cookie-basiertes Verfahren, das mit dem Angular-Frontend kompatibel ist.
+- Lesevorgänge: `@Transactional(readOnly = true)`
+- Schreibvorgänge: `@Transactional` in Services
 
-### Datenbank-Management
-Die Anwendung nutzt JPA zur Persistenz.
-- In der Entwicklung wird typischerweise eine H2-Datei-/In-Memory-Datenbank oder eine lokale PostgreSQL-Instanz genutzt.
-- Flyway-Migrationen liegen unter `src/main/resources/db/migration`.
-- Aktuelle Einstellung: `spring.jpa.hibernate.ddl-auto=update` (siehe `application.yaml`).
+## Validierung
 
-### Multitenancy & dynamische DB-URL
-- Der Tenant wird im `TenantFilter` aus dem OAuth2-Principal abgeleitet und im `TenantContext` gespeichert (E-Mail-Teil vor `@`).
-- `TenantAwareRoutingDataSource` wählt die passende DataSource je Tenant.
-- `MultiTenantDataSourceConfiguration` erzeugt DataSources dynamisch, indem die `spring.datasource.url` pro Tenant um `_<tenantId>` ergänzt wird.
-- `DatabaseInitializationTracker` merkt sich Initialisierungen pro Tenant; `InitializationNotificationFilter` setzt bei normalen Requests den Header `X-Db-Initialized: true`, wenn eine Initialisierung erfolgt ist.
-
-### Dependency Injection
-Es wird konsequent auf **Constructor Injection** gesetzt. Lombok wird verwendet, um Boilerplate-Code wie Konstruktoren, Getter und Setter zu minimieren.
+- Zentral in `DriveService.validateDrive(...)`: Ohne Vorlage sind genannte Pflichtfelder erforderlich; sonst wird reduziert gespeichert.

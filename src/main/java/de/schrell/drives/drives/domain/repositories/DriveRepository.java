@@ -13,6 +13,11 @@ import java.util.List;
 
 @Repository
 public interface DriveRepository extends JpaRepository<Drive, String> {
+    /**
+     * Liefert gefilterte Fahrten. Wichtig: LEFT JOIN auf Template, damit Fahrten ohne Vorlage (template = null)
+     * nicht aus der Ergebnisliste herausfallen. Der Grund-Filter berücksichtigt sowohl den expliziten Grund
+     * an der Fahrt als auch – falls dort null – den Grund der Vorlage.
+     */
     @Query("select d from Drive d order by d.date asc")
     List<Drive> findAllByOrderByDateAsc();
     long countByTemplate(DriveTemplate template);

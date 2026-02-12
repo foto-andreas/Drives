@@ -1,80 +1,37 @@
-# Datenmodell (Server)
-
-Dieses Dokument beschreibt das Datenmodell des Fahrtenbuch-Backends. Das Modell ist darauf optimiert, Fahrten effizient zu erfassen, wobei häufig genutzte Strecken als Vorlagen gespeichert werden können.
-
-## Entity-Relationship-Diagramm
-
-```mermaid
-classDiagram
-    class Drive {
-        +String id
-        +LocalDate date
-        +Reason reason
-        +DriveTemplate template
-    }
-    class DriveTemplate {
-        +String id
-        +String name
-        +int driveLength
-        +String fromLocation
-        +String toLocation
-        +Reason reason
-    }
-    class Reason {
-        <<enumeration>>
-        PRIVATE
-        WORK
-        ESTATE
-        OTHER
-        HOME
-    }
-    Drive "0..*" --> "1" DriveTemplate : nutzt
-    Drive ..> Reason : optionaler Grund
-    DriveTemplate ..> Reason : Standardgrund
-```
+# Datenmodell (Backend)
 
 ## Entities
 
-### Drive (Fahrt)
-Repräsentiert eine einzelne durchgeführte Fahrt.
+### DriveTemplate
+- `id: String (UUID)`
+- `name: String` (eindeutig, Index)
+- `driveLength: int`
+- `fromLocation: String`
+- `toLocation: String`
+- `reason: Reason` (Enum)
 
-| Attribut | Typ | Beschreibung |
-| :--- | :--- | :--- |
-| `id` | `String` (UUID) | Eindeutiger Identifikator der Fahrt. |
-| `date` | `LocalDate` | Datum, an dem die Fahrt stattgefunden hat. |
-| `template` | `DriveTemplate` | Die zugrunde liegende Vorlage für diese Fahrt. |
-| `reason` | `Reason` | Grund der Fahrt. Wenn dieser `null` ist, wird der Grund aus dem Template verwendet. |
+### Drive
+- `id: String (UUID)`
+- `template: DriveTemplate | null` (ManyToOne, optional)
+- `date: LocalDate`
+- `reason: Reason | null` (Override)
+- `fromLocation: String | null` (Override)
+- `toLocation: String | null` (Override)
+- `driveLength: Integer | null` (Override)
 
-### DriveTemplate (Fahrtvorlage)
-Definiert eine häufig gefahrene Strecke.
+> Hinweis: Bei gesetzter Vorlage werden Felder, die identisch zur Vorlage sind, vor dem Speichern auf `null` gesetzt (nur Overrides werden persistiert).
 
-| Attribut | Typ | Beschreibung |
-| :--- | :--- | :--- |
-| `id` | `String` (UUID) | Eindeutiger Identifikator der Vorlage. |
-| `name` | `String` | Eindeutiger Name der Vorlage (z.B. "Arbeitsweg"). |
-| `driveLength`| `int` | Länge der Strecke in Kilometern. |
-| `fromLocation`| `String` | Startpunkt der Fahrt. |
-| `toLocation` | `String` | Zielpunkt der Fahrt. |
-| `reason` | `Reason` | Standard-Grund für diese Vorlage. |
+## Relationen
+- `Drive` — `DriveTemplate`: n:1 (optional)
 
-### Reason (Enum)
-Definiert die Kategorisierung einer Fahrt.
+## Abfragen
+- `DriveRepository.findFiltered(year, month, reason)`
+  - JPQL mit `LEFT JOIN` auf `d.template t`, um auch Fahrten ohne Vorlage (`template = null`) zurückzugeben.
+  - Filterlogik:
+    - Jahr/Monat: anhand `d.date`
+    - Grund: Entweder explizit am Drive (`d.reason`) oder, falls dort `null`, über `t.reason`
 
-- `PRIVATE`: Private Fahrt.
-- `WORK`: Dienstliche Fahrt / Arbeitsweg.
-- `ESTATE`: Fahrten im Zusammenhang mit Immobilien/Vermietung.
-- `OTHER`: Sonstige Fahrten.
-- `HOME`: Home-Office Tag (Sonderfall).
-
-## Besonderheiten
-
-### Reason-Normalisierung
-In der Klasse `DriveService` findet eine Normalisierung des Grundes statt. Wenn der Grund einer Fahrt identisch mit dem Standardgrund der Vorlage ist, wird der Grund in der `Drive`-Entität auf `null` gesetzt, um Redundanz zu vermeiden.
-
-```java
-private void normalizeReason(Drive drive) {
-    if (drive.getTemplate() != null && drive.getReason() == drive.getTemplate().getReason()) {
-        drive.setReason(null);
-    }
-}
-```
+## Migrations- & Schema-Handling
+- Automatische Erstinitialisierung des Schemas je Tenant (H2-Datei pro Benutzerkennung)
+- Automatische Migration fehlender Spalten in `drive`: `from_location`, `to_location`, `drive_length`
+- Flyway-Unterstützung vorbereitet (`src/main/resources/db/migration`) – für produktive Systeme empfohlen

@@ -8,6 +8,9 @@ Diese Anwendung ist zu einem Großteil mit KI erstellt. Dazu wurde IntelliJ-Ulti
 
 Die ausführliche Dokumentation des Projekts (Architektur, API, Datenmodell, Frontend) befindet sich in der **[DOCUMENTATION.md](DOCUMENTATION.md)**.
 
+- Backend: siehe `docs/server/` (Architecture, Data-Model, API, Packages)
+- Frontend: siehe `docs/client/` (Overview, Components, Services, Models)
+
 ## Test starten
 
 Nur lokal:
@@ -95,9 +98,12 @@ und sinnvoll erfüllt sind.
   build/reports/jacoco/test/html/index.html
   ```
 
-- Client-Tests (Karma) ausführen:
+- Client-Tests (Karma/Vitest) ausführen:
   ```bash
   cd client && npm test
   ```
 
-Hinweis: Der Client-Build wird automatisch im Gradle-Build integriert (`:client:build`).
+Hinweise:
+- Der Client-Build ist in den Gradle-Build integriert (`:client:build`).
+- In Anzeige und CSV-Export werden explizite Werte der Fahrt gegenüber Vorlagenwerten priorisiert.
+- Ohne Vorlage sind im Formular Grund, Von, Nach und Länge Pflicht; bei Vorlage optional.
