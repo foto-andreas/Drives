@@ -140,21 +140,26 @@ describe('DriveTemplateForm', () => {
     expect(form.get('driveLength').errors).toBeNull();
   });
 
-  it('should not allow 0 length for WORK reason', async () => {
+  it('soll Validatoren bei Reason-Wechsel anpassen (HOME erlaubt 0 km)', async () => {
     createComponent();
     fixture.detectChanges();
-    const form = (component as any).templateForm;
+    const lengthControl = component['templateForm'].controls.driveLength;
 
-    form.patchValue({
-      name: 'Work',
-      fromLocation: 'Home',
-      toLocation: 'Office'
-    });
-    form.controls.reason.setValue('WORK');
-    form.controls.driveLength.setValue(0);
-    form.updateValueAndValidity();
+    component['templateForm'].controls.reason.setValue('HOME');
+    lengthControl.setValue(0);
+    expect(lengthControl.valid).toBe(true);
 
-    expect(form.valid).toBe(false);
-    expect(form.get('driveLength').errors).toBeTruthy();
+    component['templateForm'].controls.reason.setValue('WORK');
+    expect(lengthControl.valid).toBe(false);
+    expect(lengthControl.hasError('min')).toBe(true);
+  });
+
+  it('soll Formular zurücksetzen bei Neu-Anlage', async () => {
+    paramMapSubject.next(convertToParamMap({ id: null }));
+    createComponent();
+    fixture.detectChanges();
+
+    expect(component['templateForm'].controls.name.value).toBe('');
+    expect(component['templateForm'].controls.reason.value).toBe('PRIVATE');
   });
 });

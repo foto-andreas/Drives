@@ -228,4 +228,52 @@ class DriveServiceTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("From location is required if no template is specified");
     }
+
+    @Test
+    void createThrowsExceptionWhenNoTemplateAndReasonMissing() {
+        DriveCommand command = new DriveCommand(null, LocalDate.now(), null, null, "A", "B", 10);
+
+        assertThatThrownBy(() -> driveService.create(command))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Reason is required if no template is specified");
+    }
+
+    @Test
+    void createThrowsExceptionWhenNoTemplateAndToLocationMissing() {
+        DriveCommand command = new DriveCommand(null, LocalDate.now(), null, Reason.WORK, "A", null, 10);
+
+        assertThatThrownBy(() -> driveService.create(command))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("To location is required if no template is specified");
+    }
+
+    @Test
+    void createThrowsExceptionWhenNoTemplateAndLengthMissing() {
+        DriveCommand command = new DriveCommand(null, LocalDate.now(), null, Reason.WORK, "A", "B", null);
+
+        assertThatThrownBy(() -> driveService.create(command))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Drive length is required if no template is specified");
+    }
+
+    @Test
+    void clearRedundantFieldsWorksForLocationsAndLength() {
+        LocalDate date = LocalDate.now();
+        DriveTemplate template = new DriveTemplate("t1", "T1", 10, "A", "B", Reason.WORK);
+
+        // Command with same values as template
+        DriveCommand command = new DriveCommand(null, date, "t1", Reason.WORK, "A", "B", 10);
+
+        when(driveTemplateRepository.findById("t1")).thenReturn(Optional.of(template));
+        when(driveRepository.save(any(Drive.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(driveMapper.toResponse(any(Drive.class))).thenReturn(new DriveResponse("1", date, null, Reason.WORK, "A", "B", 10));
+
+        driveService.create(command);
+
+        verify(driveRepository).save(argThat(drive -> 
+                drive.getReason() == null && 
+                drive.getFromLocation() == null && 
+                drive.getToLocation() == null && 
+                drive.getDriveLength() == null));
+    }
 }

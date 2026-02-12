@@ -88,16 +88,20 @@ public class DriveService {
         drive.setToLocation(command.toLocation());
         drive.setDriveLength(command.driveLength());
 
-        if (drive.getTemplate() != null) {
-            validateDrive(drive);
-            clearRedundantFields(drive);
-        } else {
-            validateDrive(drive);
-        }
+        // Validate that either a template is present or all required fields are provided
+        validateDrive(drive);
 
-        normalizeReason(drive);
+        if (drive.getTemplate() != null) {
+            // If a template is present, we clear fields that are identical to the template
+            // to keep the database clean and avoid redundancy.
+            clearRedundantFields(drive);
+        }
     }
 
+    /**
+     * Validates the drive state.
+     * If no template is assigned, reason, locations and length must be provided.
+     */
     private void validateDrive(Drive drive) {
         if (drive.getTemplate() == null) {
             if (drive.getReason() == null) {
@@ -115,18 +119,23 @@ public class DriveService {
         }
     }
 
+    /**
+     * Clears fields that are identical to the template values.
+     * This ensures that we only store overrides in the drive record.
+     */
     private void clearRedundantFields(Drive drive) {
-        if (drive.getTemplate() != null) {
-            if (drive.getReason() != null && drive.getReason().equals(drive.getTemplate().getReason())) {
+        DriveTemplate template = drive.getTemplate();
+        if (template != null) {
+            if (drive.getReason() != null && drive.getReason() == template.getReason()) {
                 drive.setReason(null);
             }
-            if (drive.getFromLocation() != null && drive.getFromLocation().equals(drive.getTemplate().getFromLocation())) {
+            if (drive.getFromLocation() != null && drive.getFromLocation().equals(template.getFromLocation())) {
                 drive.setFromLocation(null);
             }
-            if (drive.getToLocation() != null && drive.getToLocation().equals(drive.getTemplate().getToLocation())) {
+            if (drive.getToLocation() != null && drive.getToLocation().equals(template.getToLocation())) {
                 drive.setToLocation(null);
             }
-            if (drive.getDriveLength() != null && drive.getDriveLength().equals(drive.getTemplate().getDriveLength())) {
+            if (drive.getDriveLength() != null && drive.getDriveLength().equals(template.getDriveLength())) {
                 drive.setDriveLength(null);
             }
         }
@@ -138,11 +147,5 @@ public class DriveService {
         }
         return driveTemplateRepository.findById(templateId)
                 .orElseThrow(() -> new ResourceNotFoundException("Drive template with id '%s' not found".formatted(templateId)));
-    }
-
-    private void normalizeReason(Drive drive) {
-        if (drive.getTemplate() != null && drive.getReason() == drive.getTemplate().getReason()) {
-            drive.setReason(null);
-        }
     }
 }

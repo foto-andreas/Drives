@@ -55,13 +55,13 @@ Die Einstellungen für die Middleware müssen per File bereitgestellt werden, da
 * Erstelle eine Gesamtdokumentation auf oberer Ebene, die eine Zusammenfassung und Links zu den Einzel-Dokumentationen enthält.
 * Die gesamte Dokumentation soll einheitlich aussehen 
 ```
+
 ### Doku-Update
 ```text
 * Prüfe sämtliche Dokumentations-Dateien und Kommentare im Code auf aktuellen Stand und Korrektheit. 
 * Nimm eventuelle Korrekturen und Erweiterungen vor. 
 * Halte dich an die aktuelle einheitliche Struktur.
 ```
-
 
 ### Codestyle
 ```text
@@ -90,11 +90,14 @@ und sinnvoll erfüllt sind.
   ```bash
   ./gradlew clean test jacocoTestReport check
   ```
-  Der `check`-Task enthält eine JaCoCo-Coverage-Verification mit Mindestabdeckung 90% (Instructions). HTML-Report: `build/reports/jacoco/test/html/index.html`.
+  Der `check`-Task enthält eine JaCoCo-Coverage-Verification mit Mindestabdeckung 90% (Instructions). HTML-Report: 
+  ```
+  build/reports/jacoco/test/html/index.html
+  ```
 
 - Client-Tests (Karma) ausführen:
   ```bash
-  (cd client && npm test)
+  cd client && npm test
   ```
 
 Hinweis: Der Client-Build wird automatisch im Gradle-Build integriert (`:client:build`).
