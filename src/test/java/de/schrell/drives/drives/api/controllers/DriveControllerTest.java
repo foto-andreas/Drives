@@ -32,7 +32,7 @@ class DriveControllerTest {
 
     @Test
     void getDrivesReturnsList() {
-        DriveResponse response = new DriveResponse("1", LocalDate.now(), null, Reason.WORK);
+        DriveResponse response = new DriveResponse("1", LocalDate.now(), null, Reason.WORK, "A", "B", 10);
         when(driveService.findAll(null, null, null)).thenReturn(List.of(response));
 
         List<DriveResponse> result = controller.getDrives(null, null, null);
@@ -42,7 +42,7 @@ class DriveControllerTest {
 
     @Test
     void getDriveByIdReturnsDrive() {
-        DriveResponse response = new DriveResponse("1", LocalDate.now(), null, Reason.WORK);
+        DriveResponse response = new DriveResponse("1", LocalDate.now(), null, Reason.WORK, "A", "B", 10);
         when(driveService.findById("1")).thenReturn(response);
 
         DriveResponse result = controller.getDrive("1");
@@ -72,26 +72,26 @@ class DriveControllerTest {
 
     @Test
     void addDriveCallsService() {
-        DriveRequest request = new DriveRequest(null, LocalDate.now(), "t1", Reason.WORK);
-        DriveResponse response = new DriveResponse("1", request.date(), null, Reason.WORK);
+        DriveRequest request = new DriveRequest(null, LocalDate.now(), "t1", Reason.WORK, "A", "B", 10);
+        DriveResponse response = new DriveResponse("1", request.date(), null, Reason.WORK, "A", "B", 10);
         when(driveService.create(any(DriveCommand.class))).thenReturn(response);
 
         DriveResponse result = controller.addDrive(request);
 
         assertThat(result).isEqualTo(response);
-        verify(driveService).create(argThat(cmd -> cmd.templateId().equals("t1")));
+        verify(driveService).create(argThat(cmd -> cmd.templateId().equals("t1") && "A".equals(cmd.fromLocation())));
     }
 
     @Test
     void updateDriveCallsService() {
-        DriveRequest request = new DriveRequest("1", LocalDate.now(), "t1", Reason.WORK);
-        DriveResponse response = new DriveResponse("1", request.date(), null, Reason.WORK);
+        DriveRequest request = new DriveRequest("1", LocalDate.now(), "t1", Reason.WORK, "A", "B", 10);
+        DriveResponse response = new DriveResponse("1", request.date(), null, Reason.WORK, "A", "B", 10);
         when(driveService.update(any(DriveCommand.class))).thenReturn(response);
 
         DriveResponse result = controller.updateDrive(request);
 
         assertThat(result).isEqualTo(response);
-        verify(driveService).update(argThat(cmd -> cmd.id().equals("1")));
+        verify(driveService).update(argThat(cmd -> cmd.id().equals("1") && "B".equals(cmd.toLocation())));
     }
 
     @Test
@@ -103,7 +103,7 @@ class DriveControllerTest {
     }
     @Test
     void getDrivesWithFilterDelegatesToService() {
-        DriveResponse response = new DriveResponse("1", LocalDate.of(2024,5,1), null, Reason.WORK);
+        DriveResponse response = new DriveResponse("1", LocalDate.of(2024,5,1), null, Reason.WORK, "A", "B", 10);
         when(driveService.findAll(2024, 5, Reason.WORK)).thenReturn(List.of(response));
 
         List<DriveResponse> result = controller.getDrives(2024, 5, Reason.WORK);

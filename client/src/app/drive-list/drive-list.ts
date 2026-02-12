@@ -207,10 +207,10 @@ export class DriveList {
       const year = date.getFullYear();
       const dateStr = `${day}.${month}.${year}`;
       const templateName = drive.template?.name ?? '';
-      const from = drive.template?.fromLocation ?? '';
-      const to = drive.template?.toLocation ?? '';
+      const from = drive.fromLocation ?? drive.template?.fromLocation ?? '';
+      const to = drive.toLocation ?? drive.template?.toLocation ?? '';
       const reason = ReasonHelper.toString(drive.reason || drive.template?.reason);
-      const length = isHomeOffice ? 1 : drive.template?.driveLength ?? 0;
+      const length = isHomeOffice ? 1 : (drive.driveLength ?? drive.template?.driveLength ?? 0);
       runningTotal += length;
 
       return [

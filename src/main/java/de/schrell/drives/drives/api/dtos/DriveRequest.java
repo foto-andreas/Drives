@@ -8,7 +8,10 @@ import java.time.LocalDate;
 public record DriveRequest(
         String id,
         @NotNull(message = "Date is required") LocalDate date,
-        @NotNull(message = "Template is required") String templateId,
-        Reason reason
+        String templateId,
+        Reason reason,
+        String fromLocation,
+        String toLocation,
+        Integer driveLength
 ) {
 }

@@ -52,8 +52,11 @@ export class DriveForm {
 
   protected readonly driveForm = new FormGroup({
     date: new FormControl<Date | null>(this.driveService.lastSelectedDate(), [Validators.required]),
-    template: new FormControl<DriveTemplate | null>(null, [Validators.required]),
+    template: new FormControl<DriveTemplate | null>(null),
     reason: new FormControl<ReasonKey | null>(null),
+    fromLocation: new FormControl<string | null>(null),
+    toLocation: new FormControl<string | null>(null),
+    driveLength: new FormControl<number | null>(null, [Validators.min(1)]),
   });
   protected readonly templates = toSignal(this.driveTemplateService.findAll(), { initialValue: [] });
   protected readonly reasons = ReasonHelper.keys();
@@ -81,6 +84,9 @@ export class DriveForm {
                 date: drive.date,
                 template: drive.template,
                 reason: drive.reason ?? null,
+                fromLocation: drive.fromLocation ?? null,
+                toLocation: drive.toLocation ?? null,
+                driveLength: drive.driveLength ?? null,
               });
             });
         }
@@ -89,10 +95,28 @@ export class DriveForm {
     this.driveForm.controls.template.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(template => {
-        if (template && !this.isEdit()) {
-          this.driveForm.patchValue({ reason: template.reason });
+        if (template) {
+          // Neue Anforderung: Wenn vorher keine Vorlage war und jetzt eine gewählt wird,
+          // soll der Grund im Formular geleert werden (nicht automatisch aus der Vorlage setzen).
+          this.driveForm.patchValue({ reason: null });
+          this.driveForm.patchValue({
+            fromLocation: null,
+            toLocation: null,
+            driveLength: null,
+          });
         }
+        this.updateValidators();
       });
+
+    this.driveForm.controls.fromLocation.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.updateValidators());
+    this.driveForm.controls.toLocation.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.updateValidators());
+    this.driveForm.controls.driveLength.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.updateValidators());
 
     this.driveForm.controls.date.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -111,6 +135,35 @@ export class DriveForm {
       .subscribe(date => this.latestDriveDate.set(date));
   }
 
+  onReasonOpened(opened: boolean): void {
+    if (!opened) return;
+    const template = this.driveForm.controls.template.value;
+    const current = this.driveForm.controls.reason.value;
+    if (template && (current === null || current === undefined)) {
+      this.driveForm.patchValue({ reason: template.reason });
+    }
+  }
+
+  private updateValidators(): void {
+    const template = this.driveForm.controls.template.value;
+    if (template) {
+      this.driveForm.controls.reason.clearValidators();
+      this.driveForm.controls.fromLocation.clearValidators();
+      this.driveForm.controls.toLocation.clearValidators();
+      this.driveForm.controls.driveLength.clearValidators();
+      this.driveForm.controls.driveLength.setValidators([Validators.min(1)]);
+    } else {
+      this.driveForm.controls.reason.setValidators([Validators.required]);
+      this.driveForm.controls.fromLocation.setValidators([Validators.required]);
+      this.driveForm.controls.toLocation.setValidators([Validators.required]);
+      this.driveForm.controls.driveLength.setValidators([Validators.required, Validators.min(1)]);
+    }
+    this.driveForm.controls.reason.updateValueAndValidity({ emitEvent: false });
+    this.driveForm.controls.fromLocation.updateValueAndValidity({ emitEvent: false });
+    this.driveForm.controls.toLocation.updateValueAndValidity({ emitEvent: false });
+    this.driveForm.controls.driveLength.updateValueAndValidity({ emitEvent: false });
+  }
+
   onSubmit(): void {
     if (this.driveForm.invalid) {
       return;
@@ -121,6 +174,9 @@ export class DriveForm {
       date: formValue.date ?? new Date(),
       template: formValue.template ?? null,
       reason: formValue.reason ?? null,
+      fromLocation: formValue.fromLocation ?? null,
+      toLocation: formValue.toLocation ?? null,
+      driveLength: formValue.driveLength ?? null,
     };
 
     this.driveService.save(drive)
@@ -141,6 +197,9 @@ export class DriveForm {
             date: this.driveService.lastSelectedDate(),
             template: null,
             reason: null,
+            fromLocation: null,
+            toLocation: null,
+            driveLength: null,
           });
           this.loadLatestDriveDate();
         },

@@ -84,11 +84,56 @@ public class DriveService {
         drive.setDate(command.date());
         drive.setReason(command.reason());
         drive.setTemplate(resolveTemplate(command.templateId()));
+        drive.setFromLocation(command.fromLocation());
+        drive.setToLocation(command.toLocation());
+        drive.setDriveLength(command.driveLength());
+
+        if (drive.getTemplate() != null) {
+            validateDrive(drive);
+            clearRedundantFields(drive);
+        } else {
+            validateDrive(drive);
+        }
+
         normalizeReason(drive);
     }
 
+    private void validateDrive(Drive drive) {
+        if (drive.getTemplate() == null) {
+            if (drive.getReason() == null) {
+                throw new IllegalArgumentException("Reason is required if no template is specified");
+            }
+            if (drive.getFromLocation() == null || drive.getFromLocation().isBlank()) {
+                throw new IllegalArgumentException("From location is required if no template is specified");
+            }
+            if (drive.getToLocation() == null || drive.getToLocation().isBlank()) {
+                throw new IllegalArgumentException("To location is required if no template is specified");
+            }
+            if (drive.getDriveLength() == null) {
+                throw new IllegalArgumentException("Drive length is required if no template is specified");
+            }
+        }
+    }
+
+    private void clearRedundantFields(Drive drive) {
+        if (drive.getTemplate() != null) {
+            if (drive.getReason() != null && drive.getReason().equals(drive.getTemplate().getReason())) {
+                drive.setReason(null);
+            }
+            if (drive.getFromLocation() != null && drive.getFromLocation().equals(drive.getTemplate().getFromLocation())) {
+                drive.setFromLocation(null);
+            }
+            if (drive.getToLocation() != null && drive.getToLocation().equals(drive.getTemplate().getToLocation())) {
+                drive.setToLocation(null);
+            }
+            if (drive.getDriveLength() != null && drive.getDriveLength().equals(drive.getTemplate().getDriveLength())) {
+                drive.setDriveLength(null);
+            }
+        }
+    }
+
     private DriveTemplate resolveTemplate(String templateId) {
-        if (templateId == null) {
+        if (templateId == null || templateId.isBlank()) {
             return null;
         }
         return driveTemplateRepository.findById(templateId)

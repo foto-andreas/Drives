@@ -76,6 +76,9 @@ export class DriveService {
       templateId: drive.template?.id ?? null,
       date: this.toDateString(drive.date),
       reason: drive.reason ?? null,
+      fromLocation: drive.fromLocation ?? null,
+      toLocation: drive.toLocation ?? null,
+      driveLength: drive.driveLength ?? null,
     };
   }
 
@@ -85,6 +88,9 @@ export class DriveService {
       template: response.template ?? null,
       date: this.parseDate(response.date),
       reason: response.reason ?? null,
+      fromLocation: response.fromLocation ?? null,
+      toLocation: response.toLocation ?? null,
+      driveLength: response.driveLength ?? null,
     };
   }
 

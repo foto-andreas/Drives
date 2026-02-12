@@ -62,7 +62,10 @@ public class DriveController {
                 driveRequest.id(),
                 driveRequest.date(),
                 driveRequest.templateId(),
-                driveRequest.reason()
+                driveRequest.reason(),
+                driveRequest.fromLocation(),
+                driveRequest.toLocation(),
+                driveRequest.driveLength()
         );
     }
 }

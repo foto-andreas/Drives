@@ -59,9 +59,11 @@
           <div class="template-info">
             <div class="template-name">{{ element.template?.name }}</div>
             <div class="location-cell">
-              <span class="location-from">{{ element.template?.fromLocation }}</span>
-              <span class="location-separator"></span>
-              <span class="location-to">{{ element.template?.toLocation }}</span>
+              <span class="location-from">{{ element.fromLocation ?? element.template?.fromLocation }}</span>
+              @if ((element.reason || element.template?.reason) !== 'HOME') {
+                <span class="location-separator"></span>
+              }
+              <span class="location-to">{{ element.toLocation ?? element.template?.toLocation }}</span>
             </div>
           </div>
         </td>
@@ -70,14 +72,14 @@
       <!-- Länge Column -->
       <ng-container matColumnDef="Länge">
         <th mat-header-cell *matHeaderCellDef>Länge</th>
-        <td mat-cell *matCellDef="let element"> {{ element.template?.driveLength }} km </td>
+        <td mat-cell *matCellDef="let element"> {{ (element.driveLength ?? element.template?.driveLength) }} km </td>
       </ng-container>
 
       <!-- Grund Column -->
       <ng-container matColumnDef="Grund">
         <th mat-header-cell *matHeaderCellDef>Grund</th>
         <td mat-cell *matCellDef="let element">
-          {{ ReasonHelper.toString(element.reason) }}
+          {{ ReasonHelper.toString(element.reason || element.template?.reason) }}
           <div class="delete-indicator">
             <mat-icon>delete</mat-icon>
           </div>

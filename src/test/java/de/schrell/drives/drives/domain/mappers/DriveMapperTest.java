@@ -37,31 +37,36 @@ class DriveMapperTest {
     @Test
     void toResponseFallsBackToTemplateReason() {
         DriveTemplate template = new DriveTemplate(null, "Test", 10, "A", "B", Reason.WORK);
-        Drive drive = new Drive(null, template, LocalDate.of(2024, 5, 5), null);
+        Drive drive = new Drive(null, template, LocalDate.of(2024, 5, 5), null, null, null, null);
 
         DriveResponse response = driveMapper.toResponse(drive);
 
         assertThat(response.reason()).isEqualTo(Reason.WORK);
+        assertThat(response.fromLocation()).isEqualTo("A");
     }
 
     @Test
     void toResponsePrefersExplicitReason() {
         DriveTemplate template = new DriveTemplate(null, "Test", 10, "A", "B", Reason.WORK);
-        Drive drive = new Drive(null, template, LocalDate.of(2024, 5, 5), Reason.OTHER);
+        Drive drive = new Drive(null, template, LocalDate.of(2024, 5, 5), Reason.OTHER, "C", "D", 20);
 
         DriveResponse response = driveMapper.toResponse(drive);
 
         assertThat(response.reason()).isEqualTo(Reason.OTHER);
+        assertThat(response.fromLocation()).isEqualTo("C");
+        assertThat(response.toLocation()).isEqualTo("D");
+        assertThat(response.driveLength()).isEqualTo(20);
     }
 
     @Test
     void toResponseHandlesMissingTemplate() {
-        Drive drive = new Drive(null, null, LocalDate.of(2024, 5, 5), null);
+        Drive drive = new Drive(null, null, LocalDate.of(2024, 5, 5), null, "X", "Y", 15);
 
         DriveResponse response = driveMapper.toResponse(drive);
 
         assertThat(response.template()).isNull();
         assertThat(response.reason()).isNull();
+        assertThat(response.fromLocation()).isEqualTo("X");
     }
 
     @Test

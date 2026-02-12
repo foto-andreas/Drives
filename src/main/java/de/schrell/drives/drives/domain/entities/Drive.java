@@ -22,10 +22,23 @@ public class Drive {
 
     @ManyToOne
     @JoinColumn(name = "template_id")
+    @Nullable
     private DriveTemplate template;
 
     private LocalDate date;
 
     @Nullable
     private Reason reason;
+
+    @Nullable
+    @Column(name = "from_location")
+    private String fromLocation;
+
+    @Nullable
+    @Column(name = "to_location")
+    private String toLocation;
+
+    @Nullable
+    @Column(name = "drive_length")
+    private Integer driveLength;
 }

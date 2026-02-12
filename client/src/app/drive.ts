@@ -6,6 +6,9 @@ export interface Drive {
   template: DriveTemplate | null;
   date: Date;
   reason?: ReasonKey | null;
+  fromLocation?: string | null;
+  toLocation?: string | null;
+  driveLength?: number | null;
 }
 
 export interface DriveRequest {
@@ -13,4 +16,7 @@ export interface DriveRequest {
   templateId: string | null;
   date: string;
   reason?: ReasonKey | null;
+  fromLocation?: string | null;
+  toLocation?: string | null;
+  driveLength?: number | null;
 }

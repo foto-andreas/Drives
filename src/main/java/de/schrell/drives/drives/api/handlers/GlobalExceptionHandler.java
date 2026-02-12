@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.OffsetDateTime;
 import java.util.stream.Collectors;
@@ -50,5 +51,11 @@ public class GlobalExceptionHandler {
     private ResponseEntity<ErrorResponse> buildResponse(HttpStatus status, String message, HttpServletRequest request) {
         ErrorResponse response = new ErrorResponse(status.value(), message, request.getRequestURI(), OffsetDateTime.now());
         return ResponseEntity.status(status).body(response);
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<Object> handleNoResourceFoundException(NoResourceFoundException ex) {
+        // Verhindert den 500er und gibt einen sauberen 404 zurück
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 }

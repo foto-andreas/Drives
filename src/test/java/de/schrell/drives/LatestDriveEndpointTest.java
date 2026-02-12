@@ -50,8 +50,8 @@ class LatestDriveEndpointTest {
                 new DriveTemplate(null, "Test", 10, "A", "B", Reason.WORK)
         );
 
-        driveRepository.save(new Drive(null, template, LocalDate.of(2024, 5, 1), null));
-        driveRepository.save(new Drive(null, template, LocalDate.of(2024, 6, 10), null));
+        driveRepository.save(new Drive(null, template, LocalDate.of(2024, 5, 1), null, null, null, null));
+        driveRepository.save(new Drive(null, template, LocalDate.of(2024, 6, 10), null, null, null, null));
 
         ResponseEntity<LocalDate> response = driveController.getLatestDriveDate();
 

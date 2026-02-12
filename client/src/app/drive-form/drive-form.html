@@ -20,6 +20,7 @@
             <mat-select-trigger>
               {{ getTemplateLabel(driveForm.controls.template.value) }}
             </mat-select-trigger>
+            <mat-option [value]="null"><i>Keine Vorlage</i></mat-option>
             @for (template of templates(); track template.id) {
               <mat-option [value]="template" [matTooltip]="getTemplateTooltip(template)" matTooltipClass="multi-line-tooltip">
                 @if (isMobile()) {
@@ -38,13 +39,49 @@
 
       <div class="row">
         <mat-form-field appearance="fill" class="full-width">
-          <mat-label>Grund (Optional)</mat-label>
-          <mat-select formControlName="reason" [panelClass]="'tall-combobox-panel'">
+          <mat-label>Grund</mat-label>
+          <mat-select formControlName="reason" [panelClass]="'tall-combobox-panel'" (openedChange)="onReasonOpened($event)">
             <mat-option [value]="null"><i>Aus Vorlage übernehmen</i></mat-option>
             @for (reason of reasons; track reason) {
               <mat-option [value]="reason">{{ ReasonHelper.toString(reason) }}</mat-option>
             }
           </mat-select>
+          @if (driveForm.controls.reason.hasError('required') && !driveForm.controls.template.value) {
+            <mat-error>Grund ist erforderlich, wenn keine Vorlage gewählt ist</mat-error>
+          }
+        </mat-form-field>
+      </div>
+
+      <div class="row">
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Von</mat-label>
+          <input matInput formControlName="fromLocation" [placeholder]="driveForm.controls.template.value?.fromLocation ?? ''">
+          @if (driveForm.controls.fromLocation.hasError('required')) {
+            <mat-error>Startort ist erforderlich</mat-error>
+          }
+        </mat-form-field>
+      </div>
+
+      <div class="row">
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Nach</mat-label>
+          <input matInput formControlName="toLocation" [placeholder]="driveForm.controls.template.value?.toLocation ?? ''">
+          @if (driveForm.controls.toLocation.hasError('required')) {
+            <mat-error>Zielort ist erforderlich</mat-error>
+          }
+        </mat-form-field>
+      </div>
+
+      <div class="row">
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Länge (km)</mat-label>
+          <input matInput type="number" formControlName="driveLength" [placeholder]="driveForm.controls.template.value?.driveLength?.toString() ?? ''">
+          @if (driveForm.controls.driveLength.hasError('required')) {
+            <mat-error>Länge ist erforderlich</mat-error>
+          }
+          @if (driveForm.controls.driveLength.hasError('min')) {
+            <mat-error>Länge muss mindestens 1 sein</mat-error>
+          }
         </mat-form-field>
       </div>
 

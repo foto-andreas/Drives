@@ -42,7 +42,7 @@ class DriveServiceTest {
     @Test
     void findAllReturnsDrives() {
         Drive drive = new Drive();
-        DriveResponse response = new DriveResponse("1", LocalDate.now(), null, Reason.WORK);
+        DriveResponse response = new DriveResponse("1", LocalDate.now(), null, Reason.WORK, "A", "B", 10);
 
         when(driveRepository.findFiltered(null, null, null)).thenReturn(List.of(drive));
         when(driveMapper.toResponse(drive)).thenReturn(response);
@@ -55,7 +55,7 @@ class DriveServiceTest {
     @Test
     void findByIdReturnsDrive() {
         Drive drive = new Drive();
-        DriveResponse response = new DriveResponse("1", LocalDate.now(), null, Reason.WORK);
+        DriveResponse response = new DriveResponse("1", LocalDate.now(), null, Reason.WORK, "A", "B", 10);
 
         when(driveRepository.findById("1")).thenReturn(Optional.of(drive));
         when(driveMapper.toResponse(drive)).thenReturn(response);
@@ -86,7 +86,7 @@ class DriveServiceTest {
     @Test
     void createThrowsExceptionWhenTemplateNotFound() {
         LocalDate date = LocalDate.now();
-        DriveCommand command = new DriveCommand(null, date, "non-existent", Reason.WORK);
+        DriveCommand command = new DriveCommand(null, date, "non-existent", Reason.WORK, "A", "B", 10);
 
         when(driveTemplateRepository.findById("non-existent")).thenReturn(Optional.empty());
 
@@ -98,11 +98,11 @@ class DriveServiceTest {
     @Test
     void createHandlesNullTemplateId() {
         LocalDate date = LocalDate.now();
-        DriveCommand command = new DriveCommand(null, date, null, Reason.WORK);
+        DriveCommand command = new DriveCommand(null, date, null, Reason.WORK, "A", "B", 10);
         Drive savedDrive = new Drive();
         
         when(driveRepository.save(any(Drive.class))).thenReturn(savedDrive);
-        when(driveMapper.toResponse(savedDrive)).thenReturn(new DriveResponse("1", date, null, Reason.WORK));
+        when(driveMapper.toResponse(savedDrive)).thenReturn(new DriveResponse("1", date, null, Reason.WORK, "A", "B", 10));
 
         driveService.create(command);
 
@@ -115,43 +115,51 @@ class DriveServiceTest {
         DriveTemplate template = new DriveTemplate();
         template.setId("t1");
         template.setReason(Reason.WORK);
+        template.setFromLocation("A");
+        template.setToLocation("B");
+        template.setDriveLength(10);
 
-        DriveCommand command = new DriveCommand(null, date, "t1", Reason.WORK);
+        DriveCommand command = new DriveCommand(null, date, "t1", Reason.WORK, "A", "B", 10);
 
         when(driveTemplateRepository.findById("t1")).thenReturn(Optional.of(template));
         when(driveRepository.save(any(Drive.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        when(driveMapper.toResponse(any(Drive.class))).thenReturn(new DriveResponse("1", date, null, Reason.WORK));
+        when(driveMapper.toResponse(any(Drive.class))).thenReturn(new DriveResponse("1", date, null, Reason.WORK, "A", "B", 10));
 
         driveService.create(command);
 
-        verify(driveRepository).save(argThat(drive -> drive.getReason() == null));
+        verify(driveRepository).save(argThat(drive -> drive.getReason() == null && drive.getFromLocation() == null));
     }
 
     @Test
     void normalizeReasonKeepsReasonWhenDifferentFromTemplate() {
         LocalDate date = LocalDate.now();
-        DriveCommand command = new DriveCommand(null, date, "t1", Reason.PRIVATE);
+        DriveCommand command = new DriveCommand(null, date, "t1", Reason.PRIVATE, "C", "D", 20);
         DriveTemplate template = new DriveTemplate();
         template.setReason(Reason.WORK);
+        template.setFromLocation("A");
+        template.setToLocation("B");
+        template.setDriveLength(10);
 
         when(driveTemplateRepository.findById("t1")).thenReturn(Optional.of(template));
         
         driveService.create(command);
 
-        verify(driveRepository).save(argThat(drive -> drive.getReason() == Reason.PRIVATE));
+        verify(driveRepository).save(argThat(drive -> drive.getReason() == Reason.PRIVATE && "C".equals(drive.getFromLocation())));
     }
 
     @Test
     void updateSavesExistingDrive() {
         LocalDate date = LocalDate.now();
-        DriveCommand command = new DriveCommand("1", date, "t1", Reason.OTHER);
+        DriveCommand command = new DriveCommand("1", date, "t1", Reason.OTHER, "A", "B", 10);
         Drive existingDrive = new Drive();
         DriveTemplate template = new DriveTemplate();
+        template.setReason(Reason.WORK);
+        template.setFromLocation("X");
 
         when(driveRepository.findById("1")).thenReturn(Optional.of(existingDrive));
         when(driveTemplateRepository.findById("t1")).thenReturn(Optional.of(template));
         when(driveRepository.save(existingDrive)).thenReturn(existingDrive);
-        when(driveMapper.toResponse(existingDrive)).thenReturn(new DriveResponse("1", date, null, Reason.OTHER));
+        when(driveMapper.toResponse(existingDrive)).thenReturn(new DriveResponse("1", date, null, Reason.OTHER, "A", "B", 10));
 
         DriveResponse result = driveService.update(command);
 
@@ -161,7 +169,7 @@ class DriveServiceTest {
 
     @Test
     void updateThrowsExceptionWhenIdMissing() {
-        DriveCommand command = new DriveCommand(null, LocalDate.now(), "t1", Reason.WORK);
+        DriveCommand command = new DriveCommand(null, LocalDate.now(), "t1", Reason.WORK, "A", "B", 10);
 
         assertThatThrownBy(() -> driveService.update(command))
                 .isInstanceOf(IllegalArgumentException.class);
@@ -186,7 +194,7 @@ class DriveServiceTest {
     @Test
     void findAllWithFilterDelegatesToRepository() {
         Drive drive = new Drive();
-        DriveResponse response = new DriveResponse("1", LocalDate.of(2024,5,1), null, Reason.WORK);
+        DriveResponse response = new DriveResponse("1", LocalDate.of(2024,5,1), null, Reason.WORK, "A", "B", 10);
 
         when(driveRepository.findFiltered(2024, 5, Reason.WORK)).thenReturn(List.of(drive));
         when(driveMapper.toResponse(drive)).thenReturn(response);
@@ -201,7 +209,7 @@ class DriveServiceTest {
     void findAllWithEstateFilterReturnsDrives() {
         Drive drive = new Drive();
         drive.setReason(null); // Angenommen ESTATE ist im Template
-        DriveResponse response = new DriveResponse("1", LocalDate.of(2024, 5, 1), null, Reason.ESTATE);
+        DriveResponse response = new DriveResponse("1", LocalDate.of(2024, 5, 1), null, Reason.ESTATE, "A", "B", 10);
 
         when(driveRepository.findFiltered(2024, 5, Reason.ESTATE)).thenReturn(List.of(drive));
         when(driveMapper.toResponse(drive)).thenReturn(response);
@@ -210,5 +218,14 @@ class DriveServiceTest {
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).reason()).isEqualTo(Reason.ESTATE);
+    }
+
+    @Test
+    void createThrowsExceptionWhenNoTemplateAndFieldsMissing() {
+        DriveCommand command = new DriveCommand(null, LocalDate.now(), null, Reason.WORK, null, null, null);
+
+        assertThatThrownBy(() -> driveService.create(command))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("From location is required if no template is specified");
     }
 }

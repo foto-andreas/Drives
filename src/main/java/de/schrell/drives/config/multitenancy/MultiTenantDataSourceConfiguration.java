@@ -91,6 +91,7 @@ public class MultiTenantDataSourceConfiguration {
     private void initializeSchemaIfNeeded(DataSource dataSource, String tenantId) {
         if (schemaExists(dataSource)) {
             log.info("Database exists for " + tenantId);
+            migrateSchemaIfNeeded(dataSource, tenantId);
             return;
         }
         try (Connection connection = dataSource.getConnection(); Statement statement = connection.createStatement()) {
@@ -109,6 +110,9 @@ public class MultiTenantDataSourceConfiguration {
                     "template_id varchar(255), " +
                     "date date, " +
                     "reason integer, " +
+                    "from_location varchar(255), " +
+                    "to_location varchar(255), " +
+                    "drive_length integer, " +
                     "primary key (id), " +
                     "constraint fk_drive_template foreign key (template_id) references drive_template(id))");
             initializationTracker.markInitialized(tenantId);
@@ -116,6 +120,43 @@ public class MultiTenantDataSourceConfiguration {
         } catch (SQLException ex) {
             log.error("Schema-Initialisierung für Tenant {} fehlgeschlagen", tenantId, ex);
             throw new IllegalStateException("Schema-Initialisierung fehlgeschlagen", ex);
+        }
+    }
+
+    private void migrateSchemaIfNeeded(DataSource dataSource, String tenantId) {
+        log.info("Will migrate Database for " + tenantId);
+        try (Connection connection = dataSource.getConnection()) {
+            DatabaseMetaData metaData = connection.getMetaData();
+            boolean fromExists = false;
+            boolean toExists = false;
+            boolean lengthExists = false;
+
+            try (ResultSet columns = metaData.getColumns(null, null, "DRIVE", null)) {
+                while (columns.next()) {
+                    String columnName = columns.getString("COLUMN_NAME");
+                    if ("FROM_LOCATION".equalsIgnoreCase(columnName)) fromExists = true;
+                    if ("TO_LOCATION".equalsIgnoreCase(columnName)) toExists = true;
+                    if ("DRIVE_LENGTH".equalsIgnoreCase(columnName)) lengthExists = true;
+                }
+            }
+
+            try (Statement statement = connection.createStatement()) {
+                if (!fromExists) {
+                    statement.executeUpdate("ALTER TABLE drive ADD COLUMN from_location varchar(255)");
+                    log.info("Added from_location to drive table for " + tenantId);
+                }
+                if (!toExists) {
+                    statement.executeUpdate("ALTER TABLE drive ADD COLUMN to_location varchar(255)");
+                    log.info("Added to_location to drive table for " + tenantId);
+                }
+                if (!lengthExists) {
+                    statement.executeUpdate("ALTER TABLE drive ADD COLUMN drive_length integer");
+                    log.info("Added drive_length to drive table for " + tenantId);
+                }
+            }
+        } catch (SQLException ex) {
+            log.error("Schema-Migration für Tenant {} fehlgeschlagen", tenantId, ex);
+            throw new IllegalStateException("Schema-Migration fehlgeschlagen", ex);
         }
     }
 

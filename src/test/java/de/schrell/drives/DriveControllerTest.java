@@ -41,7 +41,7 @@ class DriveControllerTest {
 
     @Test
     void getDrivesReturnsOrderedList() {
-        List<DriveResponse> drives = List.of(new DriveResponse("1", LocalDate.now(), null, null));
+        List<DriveResponse> drives = List.of(new DriveResponse("1", LocalDate.now(), null, null, "A", "B", 10));
         when(driveService.findAll(null, null, null)).thenReturn(drives);
 
         assertThat(driveController.getDrives(null, null, null)).isSameAs(drives);
@@ -51,7 +51,7 @@ class DriveControllerTest {
 
     @Test
     void getDriveReturnsOptional() {
-        DriveResponse drive = new DriveResponse("42", LocalDate.now(), null, null);
+        DriveResponse drive = new DriveResponse("42", LocalDate.now(), null, null, "A", "B", 10);
         when(driveService.findById("42")).thenReturn(drive);
 
         assertThat(driveController.getDrive("42")).isSameAs(drive);
@@ -82,8 +82,8 @@ class DriveControllerTest {
 
     @Test
     void addDriveMapsRequestToCommand() {
-        DriveRequest request = new DriveRequest(null, LocalDate.of(2024, 5, 5), "template-id", Reason.WORK);
-        DriveResponse response = new DriveResponse("1", LocalDate.of(2024, 5, 5), null, Reason.WORK);
+        DriveRequest request = new DriveRequest(null, LocalDate.of(2024, 5, 5), "template-id", Reason.WORK, "A", "B", 10);
+        DriveResponse response = new DriveResponse("1", LocalDate.of(2024, 5, 5), null, Reason.WORK, "A", "B", 10);
         when(driveService.create(driveCaptor.capture())).thenReturn(response);
 
         DriveResponse result = driveController.addDrive(request);
@@ -91,12 +91,13 @@ class DriveControllerTest {
         assertThat(result).isSameAs(response);
         assertThat(driveCaptor.getValue().templateId()).isEqualTo("template-id");
         assertThat(driveCaptor.getValue().date()).isEqualTo(LocalDate.of(2024, 5, 5));
+        assertThat(driveCaptor.getValue().fromLocation()).isEqualTo("A");
     }
 
     @Test
     void updateDriveMapsRequestToCommand() {
-        DriveRequest request = new DriveRequest("id", LocalDate.of(2024, 6, 6), "template-id", Reason.OTHER);
-        DriveResponse response = new DriveResponse("id", LocalDate.of(2024, 6, 6), null, Reason.OTHER);
+        DriveRequest request = new DriveRequest("id", LocalDate.of(2024, 6, 6), "template-id", Reason.OTHER, "A", "B", 10);
+        DriveResponse response = new DriveResponse("id", LocalDate.of(2024, 6, 6), null, Reason.OTHER, "A", "B", 10);
         when(driveService.update(driveCaptor.capture())).thenReturn(response);
 
         DriveResponse result = driveController.updateDrive(request);

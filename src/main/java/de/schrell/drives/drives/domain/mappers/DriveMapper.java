@@ -18,7 +18,10 @@ public class DriveMapper {
                 drive.getId(),
                 drive.getDate(),
                 toTemplateResponse(drive.getTemplate()),
-                resolveReason(drive)
+                resolveReason(drive),
+                resolveFromLocation(drive),
+                resolveToLocation(drive),
+                resolveDriveLength(drive)
         );
     }
 
@@ -44,5 +47,35 @@ public class DriveMapper {
             return null;
         }
         return drive.getTemplate().getReason();
+    }
+
+    private String resolveFromLocation(Drive drive) {
+        if (drive.getFromLocation() != null) {
+            return drive.getFromLocation();
+        }
+        if (drive.getTemplate() == null) {
+            return null;
+        }
+        return drive.getTemplate().getFromLocation();
+    }
+
+    private String resolveToLocation(Drive drive) {
+        if (drive.getToLocation() != null) {
+            return drive.getToLocation();
+        }
+        if (drive.getTemplate() == null) {
+            return null;
+        }
+        return drive.getTemplate().getToLocation();
+    }
+
+    private Integer resolveDriveLength(Drive drive) {
+        if (drive.getDriveLength() != null) {
+            return drive.getDriveLength();
+        }
+        if (drive.getTemplate() == null) {
+            return null;
+        }
+        return drive.getTemplate().getDriveLength();
     }
 }

@@ -9,6 +9,7 @@ import { provideRouter, Router } from '@angular/router';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { signal } from '@angular/core';
 import { DriveTemplate } from '../drive-template';
+import { Validators } from '@angular/forms';
 
 class DriveServiceMock {
   lastSelectedDate = signal(new Date());
@@ -70,9 +71,17 @@ describe('DriveForm', () => {
     expect(component['driveForm'].controls.date.value).toBeInstanceOf(Date);
   });
 
-  it('soll Template-Änderungen verarbeiten und Reason setzen wenn nicht im Edit-Modus', () => {
+  it('soll Template-Änderungen verarbeiten und Reason leeren, wenn eine Vorlage gewählt wird', () => {
     const template: DriveTemplate = { id: '1', name: 'T1', fromLocation: 'A', toLocation: 'B', driveLength: 10, reason: 'WORK' };
+    component['driveForm'].patchValue({ reason: 'PRIVATE' });
     component['driveForm'].patchValue({ template });
+    expect(component['driveForm'].controls.reason.value).toBeNull();
+  });
+
+  it('soll beim Öffnen des Grund-Selects Reason aus der Vorlage übernehmen, wenn leer', () => {
+    const template: DriveTemplate = { id: '1', name: 'T1', fromLocation: 'A', toLocation: 'B', driveLength: 10, reason: 'WORK' };
+    component['driveForm'].patchValue({ template, reason: null });
+    (component as any).onReasonOpened(true);
     expect(component['driveForm'].controls.reason.value).toBe('WORK');
   });
 
@@ -177,5 +186,40 @@ describe('DriveForm', () => {
     expect(args[2].horizontalPosition).toBe('center');
     expect(args[2].verticalPosition).toBe('bottom');
     expect(args[2].panelClass).toContain('error-snackbar');
+  });
+  it('soll Validatoren aktualisieren wenn kein Template ausgewählt ist', () => {
+    component['driveForm'].controls.template.setValue(null);
+    fixture.detectChanges();
+
+    expect(component['driveForm'].controls.reason.hasValidator(Validators.required)).toBe(true);
+    expect(component['driveForm'].controls.fromLocation.hasValidator(Validators.required)).toBe(true);
+    expect(component['driveForm'].controls.toLocation.hasValidator(Validators.required)).toBe(true);
+    expect(component['driveForm'].controls.driveLength.hasValidator(Validators.required)).toBe(true);
+  });
+
+  it('soll Validatoren entfernen wenn ein Template ausgewählt ist', () => {
+    const template: DriveTemplate = { id: '1', name: 'T1', fromLocation: 'A', toLocation: 'B', driveLength: 10, reason: 'WORK' };
+    component['driveForm'].controls.template.setValue(template);
+    fixture.detectChanges();
+
+    expect(component['driveForm'].controls.reason.hasValidator(Validators.required)).toBe(false);
+    expect(component['driveForm'].controls.fromLocation.hasValidator(Validators.required)).toBe(false);
+    expect(component['driveForm'].controls.toLocation.hasValidator(Validators.required)).toBe(false);
+    expect(component['driveForm'].controls.driveLength.hasValidator(Validators.required)).toBe(false);
+  });
+
+  it('soll Felder leeren wenn ein Template ausgewählt wird', () => {
+    component['driveForm'].patchValue({
+      fromLocation: 'A',
+      toLocation: 'B',
+      driveLength: 10
+    });
+    const template: DriveTemplate = { id: '1', name: 'T1', fromLocation: 'X', toLocation: 'Y', driveLength: 20, reason: 'WORK' };
+    component['driveForm'].controls.template.setValue(template);
+    fixture.detectChanges();
+
+    expect(component['driveForm'].controls.fromLocation.value).toBeNull();
+    expect(component['driveForm'].controls.toLocation.value).toBeNull();
+    expect(component['driveForm'].controls.driveLength.value).toBeNull();
   });
 });

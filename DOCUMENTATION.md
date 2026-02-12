@@ -74,12 +74,20 @@ Die Anwendung nutzt Google OAuth2 zur Authentifizierung. Die Konfiguration erfol
 - `GOOGLE_CLIENT_ID`
 - `GOOGLE_CLIENT_SECRET`
 
-### Multitenancy & dynamische DB-URL
+### Multitenancy & dynamische DB-URL & Migration
 - Der Tenant wird aus dem OAuth2-Benutzer abgeleitet (E-Mail-Teil vor `@`).
 - Falls kein Tenant verfügbar ist, wird `default` verwendet.
 - Die Basis-DB-URL stammt aus `spring.datasource.url`. Pro Tenant wird ein Suffix `_<tenantId>` ergänzt.
   - Beispiel: `jdbc:h2:file:~/data/drives` → `jdbc:h2:file:~/data/drives_max`
 - Die Initialisierung erfolgt pro Tenant beim ersten Zugriff. Bei einer Initialisierung wird bei normalen Requests der Header `X-Db-Initialized: true` gesetzt. Der Endpunkt `/api/initialization-status` liefert den aktuellen Initialisierungsstatus für den aktiven Tenant.
+- **Automatische Schema-Migration:** Beim Start oder Login wird das Schema der Tenant-Datenbank automatisch geprüft und bei Bedarf erweitert (z. B. Hinzufügen neuer Spalten wie `from_location`, `to_location`, `drive_length` in der Tabelle `drive`).
+
+### Datenbank-Modell & Flexibilität bei Fahrten
+- **Vorlagen (Templates):** Fahrten können auf Vorlagen basieren, die Standardwerte für Start, Ziel, Länge und Grund liefern.
+- **Manuelle Eingabe & Überschreiben:** Seit der Erweiterung ist das Feld "Vorlage" bei einer Fahrt optional.
+  - Ohne Vorlage müssen Start (`from_location`), Ziel (`to_location`) und Länge (`drive_length`) manuell angegeben werden.
+  - Mit Vorlage können diese Felder optional gefüllt werden, um die Werte aus der Vorlage für diese spezifische Fahrt zu überschreiben.
+  - In Anzeigen und CSV-Exporten haben die explizit an der Fahrt gesetzten Werte Vorrang vor den Werten aus der Vorlage.
 
 ### Datenbank & Migrationen
 - Entwicklung: H2 (Datei/In-Memory) • Produktion: PostgreSQL
