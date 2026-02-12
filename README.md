@@ -87,6 +87,7 @@ und sinnvoll erfüllt sind.
 
 ## TODOs
 
+* GitHub-Workflows
 
 ## Tests & Coverage
 
