@@ -22,7 +22,7 @@
             </mat-select-trigger>
             <mat-option [value]="null"><i>Keine Vorlage</i></mat-option>
             @for (template of templates(); track template.id) {
-              <mat-option [value]="template" [matTooltip]="getTemplateTooltip(template)" matTooltipClass="multi-line-tooltip">
+              <mat-option [value]="template" [matTooltip]="isMobile() ? '' : getTemplateTooltip(template)" matTooltipClass="multi-line-tooltip">
                 @if (isMobile()) {
                   {{ template.name }}
                 } @else {
