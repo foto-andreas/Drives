@@ -49,5 +49,17 @@
     "esbuild": "^0.27.3",
     "jsdom": "^28.0.0",
     "typescript": "~5.9.3"
+  },
+  "optionalDependencies": {
+    "@nx/nx-darwin-arm64": "22.5.0",
+    "@nx/nx-darwin-x64": "22.5.0",
+    "@nx/nx-freebsd-x64": "22.5.0",
+    "@nx/nx-linux-arm-gnueabihf": "22.5.0",
+    "@nx/nx-linux-arm64-gnu": "22.5.0",
+    "@nx/nx-linux-arm64-musl": "22.5.0",
+    "@nx/nx-linux-x64-gnu": "22.5.0",
+    "@nx/nx-linux-x64-musl": "22.5.0",
+    "@nx/nx-win32-arm64-msvc": "22.5.0",
+    "@nx/nx-win32-x64-msvc": "22.5.0"
   }
 }
