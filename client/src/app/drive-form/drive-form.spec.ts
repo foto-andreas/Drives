@@ -4,6 +4,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { DriveForm } from './drive-form';
 import { DriveService } from '../drive-service';
 import { DriveTemplateService } from '../drive-template-service';
+import { UserService } from '../user-service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { provideRouter, Router } from '@angular/router';
 import { BreakpointObserver } from '@angular/cdk/layout';
@@ -30,17 +31,24 @@ class BreakpointObserverMock {
   observe = vi.fn().mockReturnValue(of({ matches: false }));
 }
 
+class UserServiceMock {
+  name = signal<string | null>('Test User');
+  version = signal<string | null>('1.0.0');
+}
+
 describe('DriveForm', () => {
   let component: DriveForm;
   let fixture: ComponentFixture<DriveForm>;
   let driveServiceMock: DriveServiceMock;
   let driveTemplateServiceMock: DriveTemplateServiceMock;
+  let userServiceMock: UserServiceMock;
   let snackBarMock: { open: any };
   let router: Router;
 
   beforeEach(async () => {
     driveServiceMock = new DriveServiceMock();
     driveTemplateServiceMock = new DriveTemplateServiceMock();
+    userServiceMock = new UserServiceMock();
     snackBarMock = { open: vi.fn() };
 
     await TestBed.configureTestingModule({
@@ -48,6 +56,7 @@ describe('DriveForm', () => {
       providers: [
         { provide: DriveService, useValue: driveServiceMock },
         { provide: DriveTemplateService, useValue: driveTemplateServiceMock },
+        { provide: UserService, useValue: userServiceMock },
         { provide: BreakpointObserver, useClass: BreakpointObserverMock },
         provideRouter([])
       ]

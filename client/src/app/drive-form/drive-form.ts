@@ -14,6 +14,7 @@ import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { toSignal, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DriveService } from '../drive-service';
 import { DriveTemplateService } from '../drive-template-service';
+import { UserService } from '../user-service';
 import { DriveTemplate } from '../drive-template';
 import { Reason, ReasonKey } from '../reason';
 import { ReasonHelper } from '../reason-helper';
@@ -45,6 +46,7 @@ export class DriveForm {
   private readonly snackBar = inject(MatSnackBar);
   private readonly driveService = inject(DriveService);
   private readonly driveTemplateService = inject(DriveTemplateService);
+  private readonly userService = inject(UserService);
   private readonly breakpointObserver = inject(BreakpointObserver);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -74,6 +76,7 @@ export class DriveForm {
   protected readonly isEdit = signal(false);
   protected readonly isMobile = signal(false);
   protected readonly latestDriveDate = signal<Date | null>(null);
+  protected readonly appVersion = this.userService.version;
   private readonly driveId = signal<string | null>(null);
 
   constructor() {

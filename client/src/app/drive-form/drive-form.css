@@ -22,8 +22,14 @@ h2 {
   color: #666;
   font-size: 0.9em;
   font-style: italic;
-  border-top: 1px solid #eee;
   padding-top: 16px;
+}
+
+.version-info {
+  color: #666;
+  font-size: 0.9em;
+  font-style: italic;
+  padding-top: 4px;
 }
 
 ::ng-deep .multi-line-tooltip {

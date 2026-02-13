@@ -100,5 +100,11 @@
         Letzter Eintrag vom: {{ latest | date:'dd.MM.yyyy' }}
       </div>
     }
+
+    @if (appVersion()) {
+      <div class="version-info mt-4">
+        Version: {{ appVersion() }}
+      </div>
+    }
   </div>
 </div>

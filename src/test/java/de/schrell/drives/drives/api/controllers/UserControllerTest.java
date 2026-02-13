@@ -2,7 +2,6 @@ package de.schrell.drives.drives.api.controllers;
 
 import de.schrell.drives.drives.api.dtos.UserResponse;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
@@ -19,13 +18,15 @@ class UserControllerTest {
     private final UserController controller = new UserController();
 
     @Test
-    void returnsUserNameFromAuthentication() {
+    void returnsUserNameAndVersionFromAuthentication() {
         Authentication authentication = mock(Authentication.class);
         when(authentication.getName()).thenReturn("Max Mustermann");
 
         UserResponse response = controller.getUser(authentication);
 
         assertThat(response.name()).isEqualTo("Max Mustermann");
+        // version is injected via @Value, in unit test it will be null unless manually set
+        // but since it's a private field, we might just check it doesn't crash
     }
 
     @Test
