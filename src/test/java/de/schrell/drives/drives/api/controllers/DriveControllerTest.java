@@ -71,6 +71,26 @@ class DriveControllerTest {
     }
 
     @Test
+    void getLatestDriveInfoReturnsOkWhenPresent() {
+        DriveResponse response = new DriveResponse("1", LocalDate.now(), null, Reason.WORK, "A", "B", 10);
+        when(driveService.findLatestDrive()).thenReturn(Optional.of(response));
+
+        ResponseEntity<DriveResponse> result = controller.getLatestDrive();
+
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(result.getBody()).isEqualTo(response);
+    }
+
+    @Test
+    void getLatestDriveInfoReturnsNoContentWhenEmpty() {
+        when(driveService.findLatestDrive()).thenReturn(Optional.empty());
+
+        ResponseEntity<DriveResponse> result = controller.getLatestDrive();
+
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+    }
+
+    @Test
     void addDriveCallsService() {
         DriveRequest request = new DriveRequest(null, LocalDate.now(), "t1", Reason.WORK, "A", "B", 10);
         DriveResponse response = new DriveResponse("1", request.date(), null, Reason.WORK, "A", "B", 10);

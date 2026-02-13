@@ -41,6 +41,13 @@ public class DriveController {
                 .orElseGet(() -> ResponseEntity.noContent().build());
     }
 
+    @GetMapping("/latestDriveInfo")
+    public ResponseEntity<DriveResponse> getLatestDrive() {
+        return driveService.findLatestDrive()
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.noContent().build());
+    }
+
     @PutMapping("/drives")
     public DriveResponse addDrive(@RequestBody @Valid DriveRequest driveRequest) {
         return driveService.create(toCommand(driveRequest));

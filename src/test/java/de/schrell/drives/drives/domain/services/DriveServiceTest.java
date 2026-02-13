@@ -84,6 +84,28 @@ class DriveServiceTest {
     }
 
     @Test
+    void findLatestDriveReturnsDrive() {
+        Drive drive = new Drive();
+        DriveResponse response = new DriveResponse("1", LocalDate.now(), null, Reason.WORK, "A", "B", 10);
+
+        when(driveRepository.findLatestDrive()).thenReturn(List.of(drive));
+        when(driveMapper.toResponse(drive)).thenReturn(response);
+
+        Optional<DriveResponse> result = driveService.findLatestDrive();
+
+        assertThat(result).contains(response);
+    }
+
+    @Test
+    void findLatestDriveReturnsEmptyWhenNoDrives() {
+        when(driveRepository.findLatestDrive()).thenReturn(List.of());
+
+        Optional<DriveResponse> result = driveService.findLatestDrive();
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
     void createThrowsExceptionWhenTemplateNotFound() {
         LocalDate date = LocalDate.now();
         DriveCommand command = new DriveCommand(null, date, "non-existent", Reason.WORK, "A", "B", 10);

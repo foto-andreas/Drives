@@ -25,6 +25,9 @@ public interface DriveRepository extends JpaRepository<Drive, String> {
     @Query("select max(d.date) from Drive d")
     LocalDate findLatestDate();
 
+    @Query("select d from Drive d order by d.date desc, d.id desc")
+    List<Drive> findLatestDrive();
+
     @Query("select d from Drive d left join d.template t " +
             "where (:year is null or YEAR(d.date) = :year) " +
             "and (:month is null or MONTH(d.date) = :month) " +

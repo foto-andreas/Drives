@@ -54,6 +54,13 @@ public class DriveService {
         return Optional.ofNullable(driveRepository.findLatestDate());
     }
 
+    @Transactional(readOnly = true)
+    public Optional<DriveResponse> findLatestDrive() {
+        return driveRepository.findLatestDrive().stream()
+                .findFirst()
+                .map(driveMapper::toResponse);
+    }
+
     @Transactional
     public DriveResponse create(DriveCommand command) {
         Drive drive = new Drive();

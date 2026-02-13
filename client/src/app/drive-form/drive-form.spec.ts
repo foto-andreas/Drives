@@ -13,8 +13,11 @@ import { Validators } from '@angular/forms';
 
 class DriveServiceMock {
   lastSelectedDate = signal(new Date());
+  lastToLocation = signal<string | null>(null);
   setLastSelectedDate = vi.fn();
+  setLastToLocation = vi.fn().mockImplementation((val) => this.lastToLocation.set(val));
   getLatestDriveDate = vi.fn().mockReturnValue(of(new Date()));
+  getLatestDrive = vi.fn().mockReturnValue(of(null));
   save = vi.fn().mockReturnValue(of({}));
   get = vi.fn();
 }
@@ -217,5 +220,68 @@ describe('DriveForm', () => {
     expect(component['driveForm'].controls.fromLocation.value).toBeNull();
     expect(component['driveForm'].controls.toLocation.value).toBeNull();
     expect(component['driveForm'].controls.driveLength.value).toBeNull();
+  });
+
+  describe('Intelligente Vorlagensortierung', () => {
+    it('soll lastToLocation initial vom Server laden, wenn noch nicht gesetzt', () => {
+      const latestDrive = { toLocation: 'Zielort-Server' } as any;
+      driveServiceMock.getLatestDrive.mockReturnValue(of(latestDrive));
+      driveServiceMock.lastToLocation.set(null);
+
+      // Komponente neu erstellen um Konstruktor-Logik zu triggern
+      fixture = TestBed.createComponent(DriveForm);
+      component = fixture.componentInstance;
+      fixture.detectChanges();
+
+      expect(driveServiceMock.getLatestDrive).toHaveBeenCalled();
+      expect(driveServiceMock.setLastToLocation).toHaveBeenCalledWith('Zielort-Server');
+    });
+
+    it('soll lastToLocation aus dem Template der letzten Fahrt laden, wenn kein expliziter Zielort gesetzt ist', () => {
+      const latestDrive = { toLocation: null, template: { toLocation: 'Template-Zielort' } } as any;
+      driveServiceMock.getLatestDrive.mockReturnValue(of(latestDrive));
+      driveServiceMock.lastToLocation.set(null);
+
+      fixture = TestBed.createComponent(DriveForm);
+      component = fixture.componentInstance;
+      fixture.detectChanges();
+
+      expect(driveServiceMock.setLastToLocation).toHaveBeenCalledWith('Template-Zielort');
+    });
+
+    it('soll Vorlagen sortieren: Treffer (fromLocation == lastToLocation) zuerst', () => {
+      const t1 = { id: '1', fromLocation: 'A', name: 'T1' } as any;
+      const t2 = { id: '2', fromLocation: 'B', name: 'T2' } as any;
+      const t3 = { id: '3', fromLocation: 'A', name: 'T3' } as any;
+
+      driveTemplateServiceMock.findAll.mockReturnValue(of([t1, t2, t3]));
+      driveServiceMock.lastToLocation.set('B');
+
+      // Erneutes Erstellen um Signal-Initialisierung sicherzustellen
+      fixture = TestBed.createComponent(DriveForm);
+      component = fixture.componentInstance;
+      fixture.detectChanges();
+
+      const sortedTemplates = component['templates']();
+      expect(sortedTemplates[0].id).toBe('2'); // B matches lastToLocation
+      expect(['1', '3']).toContain(sortedTemplates[1].id);
+      expect(['1', '3']).toContain(sortedTemplates[2].id);
+    });
+
+    it('soll bei fehlendem lastToLocation die ursprüngliche Reihenfolge beibehalten', () => {
+      const t1 = { id: '1', fromLocation: 'A' } as any;
+      const t2 = { id: '2', fromLocation: 'B' } as any;
+
+      driveTemplateServiceMock.findAll.mockReturnValue(of([t1, t2]));
+      driveServiceMock.lastToLocation.set(null);
+
+      fixture = TestBed.createComponent(DriveForm);
+      component = fixture.componentInstance;
+      fixture.detectChanges();
+
+      const sortedTemplates = component['templates']();
+      expect(sortedTemplates[0].id).toBe('1');
+      expect(sortedTemplates[1].id).toBe('2');
+    });
   });
 });

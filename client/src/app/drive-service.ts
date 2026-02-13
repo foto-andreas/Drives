@@ -11,6 +11,7 @@ import { DriveFilter } from './drive-filter';
 export class DriveService {
   private readonly http = inject(HttpClient);
   private readonly lastSelectedDateSignal = signal<Date>(new Date());
+  private readonly lastToLocationSignal = signal<string | null>(null);
   private readonly currentFilterSignal = signal<DriveFilter>({
     year: new Date().getFullYear(),
     month: new Date().getMonth() + 1,
@@ -18,10 +19,15 @@ export class DriveService {
   });
 
   public readonly lastSelectedDate = this.lastSelectedDateSignal.asReadonly();
+  public readonly lastToLocation = this.lastToLocationSignal.asReadonly();
   public readonly currentFilter = this.currentFilterSignal.asReadonly();
 
   public setLastSelectedDate(date: Date): void {
     this.lastSelectedDateSignal.set(date);
+  }
+
+  public setLastToLocation(toLocation: string | null): void {
+    this.lastToLocationSignal.set(toLocation);
   }
 
   public setFilter(filter: DriveFilter): void {
@@ -51,12 +57,25 @@ export class DriveService {
     const context = new HttpContext().set(SUPPRESS_GLOBAL_ERROR_TOAST, true);
     if (!drive.id) {
       return this.http.put<DriveApiResponse>('/api/drives', request, { context }).pipe(
-        map(response => this.toDrive(response))
+        map(response => this.toDrive(response)),
+        map(savedDrive => {
+          this.updateLastToLocation(savedDrive);
+          return savedDrive;
+        })
       );
     }
     return this.http.post<DriveApiResponse>('/api/drives', request, { context }).pipe(
-      map(response => this.toDrive(response))
+      map(response => this.toDrive(response)),
+      map(savedDrive => {
+        this.updateLastToLocation(savedDrive);
+        return savedDrive;
+      })
     );
+  }
+
+  private updateLastToLocation(drive: Drive): void {
+    const toLocation = drive.toLocation || drive.template?.toLocation || null;
+    this.setLastToLocation(toLocation);
   }
 
   public delete(id: string): Observable<void> {
@@ -67,6 +86,12 @@ export class DriveService {
   public getLatestDriveDate(): Observable<Date | null> {
     return this.http.get<string | null>('/api/latestDrive').pipe(
       map(dateStr => (dateStr ? this.parseDate(dateStr) : null))
+    );
+  }
+
+  public getLatestDrive(): Observable<Drive | null> {
+    return this.http.get<DriveApiResponse | null>('/api/latestDriveInfo').pipe(
+      map(response => response ? this.toDrive(response) : null)
     );
   }
 

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, ViewChild, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, ViewChild, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormControl, FormGroup, FormGroupDirective, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -56,7 +56,20 @@ export class DriveForm {
     toLocation: new FormControl<string | null>(null),
     driveLength: new FormControl<number | null>(null, [Validators.min(1)]),
   });
-  protected readonly templates = toSignal(this.driveTemplateService.findAll(), { initialValue: [] });
+  private readonly allTemplates = toSignal(this.driveTemplateService.findAll(), { initialValue: [] });
+  protected readonly templates = computed(() => {
+    const templates = this.allTemplates();
+    const lastTo = this.driveService.lastToLocation();
+    if (!lastTo) return templates;
+
+    return [...templates].sort((a, b) => {
+      const aMatches = a.fromLocation === lastTo;
+      const bMatches = b.fromLocation === lastTo;
+      if (aMatches && !bMatches) return -1;
+      if (!aMatches && bMatches) return 1;
+      return 0;
+    });
+  });
   protected readonly reasons = ReasonHelper.keys();
   protected readonly isEdit = signal(false);
   protected readonly isMobile = signal(false);
@@ -67,6 +80,15 @@ export class DriveForm {
     this.breakpointObserver.observe([Breakpoints.Handset])
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(result => this.isMobile.set(result.matches));
+
+    if (!this.driveService.lastToLocation()) {
+      this.driveService.getLatestDrive().subscribe(drive => {
+        if (drive) {
+          const toLocation = drive.toLocation || drive.template?.toLocation || null;
+          this.driveService.setLastToLocation(toLocation);
+        }
+      });
+    }
 
     this.route.paramMap
       .pipe(takeUntilDestroyed(this.destroyRef))
