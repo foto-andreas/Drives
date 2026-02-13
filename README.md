@@ -57,11 +57,7 @@ Doku-Update
 * Ergänze Grafiken (mit Mermaid) und Tabellen, falls sinnvoll. 
 * Gehe auf alle Besonderheiten ein. 
 * Erstelle eine Gesamtdokumentation auf oberer Ebene, die eine Zusammenfassung und Links zu den Einzel-Dokumentationen enthält.
-* Die gesamte Dokumentation soll einheitlich aussehen 
-```
-
-### Doku-Update
-```text
+* Die gesamte Dokumentation soll einheitlich aussehen
 * Prüfe sämtliche Dokumentations-Dateien und Kommentare im Code auf aktuellen Stand und Korrektheit. 
 * Nimm eventuelle Korrekturen und Erweiterungen vor. 
 * Halte dich an die aktuelle einheitliche Struktur.
