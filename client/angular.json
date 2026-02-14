@@ -6,7 +6,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "client": {
+    "drives": {
       "projectType": "application",
       "schematics": {},
       "root": "",
