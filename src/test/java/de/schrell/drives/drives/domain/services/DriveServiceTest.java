@@ -298,4 +298,15 @@ class DriveServiceTest {
                 drive.getToLocation() == null && 
                 drive.getDriveLength() == null));
     }
+
+    @Test
+    void findYearsReturnsYearsFromRepository() {
+        List<Integer> years = List.of(2025, 2024);
+        when(driveRepository.findDistinctYears()).thenReturn(years);
+
+        List<Integer> result = driveService.findYears();
+
+        assertThat(result).isEqualTo(years);
+        verify(driveRepository).findDistinctYears();
+    }
 }

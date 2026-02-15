@@ -61,6 +61,11 @@ public class DriveService {
                 .map(driveMapper::toResponse);
     }
 
+    @Transactional(readOnly = true)
+    public List<Integer> findYears() {
+        return driveRepository.findDistinctYears();
+    }
+
     @Transactional
     public DriveResponse create(DriveCommand command) {
         Drive drive = new Drive();

@@ -95,6 +95,10 @@ export class DriveService {
     );
   }
 
+  public getYears(): Observable<number[]> {
+    return this.http.get<number[]>('/api/drives/years');
+  }
+
   private toRequest(drive: Drive): DriveRequest {
     return {
       id: drive.id ?? null,

@@ -9,7 +9,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { Router, RouterLink } from '@angular/router';
 import { toSignal, takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { BehaviorSubject, switchMap } from 'rxjs';
+import { BehaviorSubject, map, switchMap } from 'rxjs';
 import { DriveService } from '../drive-service';
 import { DriveFilter } from '../drive-filter';
 import { Reason } from '../reason';
@@ -71,12 +71,17 @@ export class DriveList {
     { initialValue: [] }
   );
 
-  protected readonly availableYears = computed(() => {
-    const years = new Set<number>();
-    years.add(this.now.getFullYear());
-    this.allDrives().forEach(drive => years.add(drive.date.getFullYear()));
-    return Array.from(years).sort((a, b) => b - a);
-  });
+  protected readonly availableYears = toSignal(
+    this.refresh$.pipe(
+      switchMap(() => this.driveService.getYears()),
+      map(years => {
+        const yearSet = new Set(years);
+        yearSet.add(new Date().getFullYear());
+        return Array.from(yearSet).sort((a, b) => b - a);
+      })
+    ),
+    { initialValue: [new Date().getFullYear()] }
+  );
 
   protected readonly drives = computed(() => this.allDrives());
 

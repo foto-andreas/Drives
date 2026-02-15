@@ -11,6 +11,7 @@ class DriveServiceMock {
   public currentFilter = signal({ year: 2026, month: 2, reason: null });
   public setFilter = vi.fn();
   public findAll = vi.fn().mockReturnValue(of([]));
+  public getYears = vi.fn().mockReturnValue(of([2026, 2025]));
   public delete = vi.fn().mockReturnValue(of({}));
 }
 

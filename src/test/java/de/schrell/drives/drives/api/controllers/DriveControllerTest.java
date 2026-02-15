@@ -131,4 +131,15 @@ class DriveControllerTest {
         assertThat(result).containsExactly(response);
         verify(driveService).findAll(2024, 5, Reason.WORK);
     }
+
+    @Test
+    void getYearsReturnsListFromService() {
+        List<Integer> years = List.of(2025, 2024);
+        when(driveService.findYears()).thenReturn(years);
+
+        List<Integer> result = controller.getYears();
+
+        assertThat(result).isEqualTo(years);
+        verify(driveService).findYears();
+    }
 }

@@ -36,4 +36,7 @@ public interface DriveRepository extends JpaRepository<Drive, String> {
     List<Drive> findFiltered(@Param("year") Integer year,
                               @Param("month") Integer month,
                               @Param("reason") Reason reason);
+
+    @Query("select distinct YEAR(d.date) from Drive d order by YEAR(d.date) desc")
+    List<Integer> findDistinctYears();
 }

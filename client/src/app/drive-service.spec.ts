@@ -104,4 +104,14 @@ describe('DriveService', () => {
     expect(req.request.method).toBe('DELETE');
     req.flush(null);
   });
+
+  it('should get years via GET', () => {
+    const mockYears = [2024, 2023];
+    service.getYears().subscribe(years => {
+      expect(years).toEqual(mockYears);
+    });
+    const req = httpMock.expectOne('/api/drives/years');
+    expect(req.request.method).toBe('GET');
+    req.flush(mockYears);
+  });
 });

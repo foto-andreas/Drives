@@ -48,6 +48,11 @@ public class DriveController {
                 .orElseGet(() -> ResponseEntity.noContent().build());
     }
 
+    @GetMapping("/drives/years")
+    public List<Integer> getYears() {
+        return driveService.findYears();
+    }
+
     @PutMapping("/drives")
     public DriveResponse addDrive(@RequestBody @Valid DriveRequest driveRequest) {
         return driveService.create(toCommand(driveRequest));
