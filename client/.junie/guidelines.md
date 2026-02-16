@@ -59,3 +59,4 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 * Use meaningful and descriptive names for variables, functions, and classes
 * Use consistent indentation and formatting throughout the codebase
 * IMPORTANT: Run all Unit tests after finishing a task. Check if tests are failing due to expected changes. if yes, rewrite testcode otherwise check production code again. Use "-runner=vitest"
+* Use karma, NOT vite NOR vitest

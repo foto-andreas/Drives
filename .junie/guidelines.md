@@ -157,4 +157,4 @@ Use Flyway for database migrations:
 * Use the latest stable versions of libraries and frameworks
 * Use meaningful and descriptive names for variables, functions, and classes
 * Use consistent indentation and formatting throughout the codebase
-* Use karma, NOT vite NOR vitest
+* IMPORTANT: Run all Unit tests after finishing a task. Check if tests are failing due to expected changes. if yes, rewrite testcode otherwise check production code again. Use "-runner=vitest"
