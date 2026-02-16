@@ -1,7 +1,7 @@
 app:
   version: 1.0.1
   ocr:
-    tesseract-path: /Users/andreas/tesseract
+    tesseract-path: ${TESSERACT_PATH:/Users/andreas/tesseract}
     language: deu
     library-path: "/opt/homebrew/lib"
     crop-width-ratio: 0.6
