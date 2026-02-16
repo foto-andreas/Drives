@@ -167,9 +167,9 @@ public class MultiTenantDataSourceConfiguration {
                 return tables.next();
             }
         } catch (SQLException ex) {
-            log.warn("Schema-Prüfung für Tenant-DataSource fehlgeschlagen", ex);
+            log.warn("Schema-Prüfung für Tenant-DataSource fehlgeschlagen: {}", ex.getMessage());
             return true;
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             log.error("Unerwarteter Fehler bei der Schema-Prüfung", ex);
             return true;
         }
