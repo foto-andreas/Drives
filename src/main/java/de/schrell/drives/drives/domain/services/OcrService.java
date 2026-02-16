@@ -75,11 +75,11 @@ public class OcrService {
         ITesseract tesseract = new Tesseract();
         tesseract.setDatapath(properties.getTesseractPath());
         tesseract.setLanguage(properties.getLanguage());
-        tesseract.setTessVariable("tessedit_char_whitelist", "0123456789");
-        tesseract.setTessVariable("classify_bln_numeric_mode", "1");
-        tesseract.setTessVariable("load_system_dawg", "0");
-        tesseract.setTessVariable("load_freq_dawg", "0");
-        tesseract.setTessVariable("user_defined_dpi", "300");
+        tesseract.setVariable("tessedit_char_whitelist", "0123456789");
+        tesseract.setVariable("classify_bln_numeric_mode", "1");
+        tesseract.setVariable("load_system_dawg", "0");
+        tesseract.setVariable("load_freq_dawg", "0");
+        tesseract.setVariable("user_defined_dpi", "300");
         tesseract.setPageSegMode(TessAPI.TessPageSegMode.PSM_SINGLE_LINE);
         tesseract.setOcrEngineMode(TessAPI.TessOcrEngineMode.OEM_LSTM_ONLY);
         try {
@@ -111,12 +111,11 @@ public class OcrService {
             return source;
         }
         double scale = (double) maxWidth / width;
-        int targetWidth = maxWidth;
         int targetHeight = (int) Math.round(height * scale);
-        BufferedImage resized = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_RGB);
+        BufferedImage resized = new BufferedImage(maxWidth, targetHeight, BufferedImage.TYPE_INT_RGB);
         Graphics2D g2d = resized.createGraphics();
         g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-        g2d.drawImage(source, 0, 0, targetWidth, targetHeight, null);
+        g2d.drawImage(source, 0, 0, maxWidth, targetHeight, null);
         g2d.dispose();
         return resized;
     }
