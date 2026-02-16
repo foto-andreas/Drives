@@ -25,16 +25,18 @@ class MultiTenantDataSourceConfigurationPrivateMethodsTest {
                 tracker
         );
 
-        HikariDataSource dataSource = (HikariDataSource) ReflectionTestUtils.invokeMethod(
+        try (HikariDataSource dataSource = ReflectionTestUtils.invokeMethod(
                 cfg,
                 "createDataSource",
                 "tenant42"
-        );
+        )) {
 
-        assertThat(dataSource.getJdbcUrl()).isEqualTo("jdbc:h2:mem:drives_tenant42");
-        assertThat(dataSource.getUsername()).isEqualTo("sa");
-        assertThat(dataSource.getPassword()).isEqualTo("password");
-        assertThat(dataSource.getDriverClassName()).isEqualTo("org.h2.Driver");
+            assert dataSource != null;
+            assertThat(dataSource.getJdbcUrl()).isEqualTo("jdbc:h2:mem:drives_tenant42");
+            assertThat(dataSource.getUsername()).isEqualTo("sa");
+            assertThat(dataSource.getPassword()).isEqualTo("password");
+            assertThat(dataSource.getDriverClassName()).isEqualTo("org.h2.Driver");
+        }
         verify(tracker).markInitialized("tenant42");
     }
 
@@ -52,7 +54,7 @@ class MultiTenantDataSourceConfigurationPrivateMethodsTest {
         DataSource dataSource = mock(DataSource.class);
         when(dataSource.getConnection()).thenThrow(new SQLException("boom"));
 
-        boolean exists = ReflectionTestUtils.invokeMethod(cfg, "schemaExists", dataSource);
+        boolean exists = Boolean.TRUE.equals(ReflectionTestUtils.invokeMethod(cfg, "schemaExists", dataSource));
 
         assertThat(exists).isTrue();
     }
