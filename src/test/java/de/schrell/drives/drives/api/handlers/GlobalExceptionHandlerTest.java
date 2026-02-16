@@ -57,7 +57,7 @@ class GlobalExceptionHandlerTest {
 
     @Test
     void handleUnexpectedReturns500() {
-        Exception ex = new Exception("Boom");
+        RuntimeException ex = new RuntimeException("Unexpected runtime error");
         when(request.getRequestURI()).thenReturn("/api/test");
 
         ResponseEntity<ErrorResponse> response = handler.handleUnexpected(ex, request);

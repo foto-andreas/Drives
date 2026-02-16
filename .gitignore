@@ -40,3 +40,4 @@ out/
 src/main/resources/public/browser
 /runLocal.sh
 **/.DS_Store
+/.output.txt
