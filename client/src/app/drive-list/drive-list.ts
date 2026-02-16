@@ -92,6 +92,8 @@ export class DriveList {
   protected currentSwipeOffset = 0;
 
   constructor() {
+    this.updateMonthDisabledState(this.filterForm.controls.year.value);
+
     this.filterForm.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(value => {
@@ -104,10 +106,19 @@ export class DriveList {
           filter.month = null;
           this.filterForm.controls.month.setValue(null, { emitEvent: false });
         }
+        this.updateMonthDisabledState(filter.year);
         this.filterSignal.set(filter);
         this.driveService.setFilter(filter);
         this.refresh$.next();
       });
+  }
+
+  private updateMonthDisabledState(year: number | null): void {
+    if (year) {
+      this.filterForm.controls.month.enable({ emitEvent: false });
+    } else {
+      this.filterForm.controls.month.disable({ emitEvent: false });
+    }
   }
 
   editDrive(id: string): void {

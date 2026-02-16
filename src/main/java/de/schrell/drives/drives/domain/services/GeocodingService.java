@@ -85,7 +85,7 @@ public class GeocodingService {
     ) {
     }
 
-    private String formatAddress(Address address) {
+    String formatAddress(Address address) {
         String streetName = firstNonBlank(
                 address.road(),
                 address.pedestrian(),

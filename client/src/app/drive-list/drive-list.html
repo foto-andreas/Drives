@@ -23,7 +23,7 @@
 
       <mat-form-field appearance="outline" class="filter-field compact-filter">
         <mat-label>Monat</mat-label>
-        <mat-select formControlName="month" [disabled]="!filterForm.controls.year.value" [panelClass]="'tall-combobox-panel'">
+        <mat-select formControlName="month" [panelClass]="'tall-combobox-panel'">
           <mat-option [value]="null">Alle</mat-option>
           @for (month of months; track month.value) {
             <mat-option [value]="month.value">{{ month.name }}</mat-option>
