@@ -1,5 +1,22 @@
 app:
   version: 1.0.1
+  ocr:
+    tesseract-path: /Users/andreas/tesseract
+    language: deu
+    library-path: "/opt/homebrew/lib"
+    crop-width-ratio: 0.6
+    crop-height-ratio: 0.35
+    crop-min-height: 200
+    max-width: 1600
+    white-min-brightness: 200
+    white-max-delta: 40
+    min-white-pixels: 500
+    roi-padding: 12
+  geocoding:
+    base-url: https://nominatim.openstreetmap.org/reverse
+    user-agent: "fahrtenbuch/1.0 (contact: as@schrell.de)"
+    email: "as@schrell.de"
+    accept-language: "de"
 
 spring:
 
@@ -28,6 +45,15 @@ spring:
   web:
     resources:
       static-locations: classpath:/public/browser
+
+  flyway:
+    baseline-on-migrate: true
+    baseline-version: 0
+
+  servlet:
+    multipart:
+      max-file-size: 200MB
+      max-request-size: 200MB
 
   security:
     oauth2:

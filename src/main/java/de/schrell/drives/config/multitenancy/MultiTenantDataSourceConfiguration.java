@@ -115,6 +115,16 @@ public class MultiTenantDataSourceConfiguration {
                     "drive_length integer, " +
                     "primary key (id), " +
                     "constraint fk_drive_template foreign key (template_id) references drive_template(id))");
+            statement.executeUpdate("create table if not exists scan_entry (" +
+                    "id varchar(255) not null, " +
+                    "type varchar(10) not null, " +
+                    "timestamp timestamp with time zone not null, " +
+                    "latitude double not null, " +
+                    "longitude double not null, " +
+                    "address varchar(1024), " +
+                    "km_stand integer not null, " +
+                    "primary key (id))");
+            statement.executeUpdate("create index if not exists idx_scan_entry_timestamp on scan_entry (timestamp)");
             initializationTracker.markInitialized(tenantId);
             log.info("Initialized Database for " + tenantId);
         } catch (SQLException ex) {
@@ -130,6 +140,7 @@ public class MultiTenantDataSourceConfiguration {
             boolean fromExists = false;
             boolean toExists = false;
             boolean lengthExists = false;
+            boolean scanEntryExists = false;
 
             try (ResultSet columns = metaData.getColumns(null, null, "DRIVE", null)) {
                 while (columns.next()) {
@@ -138,6 +149,9 @@ public class MultiTenantDataSourceConfiguration {
                     if ("TO_LOCATION".equalsIgnoreCase(columnName)) toExists = true;
                     if ("DRIVE_LENGTH".equalsIgnoreCase(columnName)) lengthExists = true;
                 }
+            }
+            try (ResultSet tables = metaData.getTables(null, null, "SCAN_ENTRY", new String[]{"TABLE"})) {
+                scanEntryExists = tables.next();
             }
 
             try (Statement statement = connection.createStatement()) {
@@ -152,6 +166,19 @@ public class MultiTenantDataSourceConfiguration {
                 if (!lengthExists) {
                     statement.executeUpdate("ALTER TABLE drive ADD COLUMN drive_length integer");
                     log.info("Added drive_length to drive table for " + tenantId);
+                }
+                if (!scanEntryExists) {
+                    statement.executeUpdate("create table if not exists scan_entry (" +
+                            "id varchar(255) not null, " +
+                            "type varchar(10) not null, " +
+                            "timestamp timestamp with time zone not null, " +
+                            "latitude double not null, " +
+                            "longitude double not null, " +
+                            "address varchar(1024), " +
+                            "km_stand integer not null, " +
+                            "primary key (id))");
+                    statement.executeUpdate("create index if not exists idx_scan_entry_timestamp on scan_entry (timestamp)");
+                    log.info("Added scan_entry table for " + tenantId);
                 }
             }
         } catch (SQLException ex) {

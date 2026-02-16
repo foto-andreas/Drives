@@ -2,6 +2,11 @@ FROM eclipse-temurin:25-jdk
 
 VOLUME /tmp
 
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends tesseract-ocr tesseract-ocr-deu \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
 ARG JAR_FILE
 COPY ${JAR_FILE} app.jar
 

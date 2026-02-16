@@ -1,0 +1,47 @@
+.scan-section {
+  margin-top: 24px;
+  padding: 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #fafafa;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.meta {
+  font-size: 12px;
+  color: #555;
+  display: grid;
+  gap: 4px;
+}
+
+.actions {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.length-info {
+  font-size: 14px;
+  color: #333;
+}
+
+.hidden-input {
+  display: none;
+}

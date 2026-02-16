@@ -1,0 +1,71 @@
+<div class="card my-5">
+  <div class="card-body">
+    <h2>Scannen</h2>
+
+    <form [formGroup]="scanForm">
+      <div class="scan-section">
+      <div class="section-header">
+        <button mat-raised-button color="primary" type="button" (click)="capture('START')" [disabled]="isUploading()">
+          Start
+        </button>
+        <input #startFileInput type="file" class="hidden-input" accept="image/*" capture="environment"
+               (change)="onFileSelected($event, 'START')">
+      </div>
+
+      <div class="fields">
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>KM-Stand Start</mat-label>
+          <input matInput type="number" formControlName="startKm">
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Adresse Start</mat-label>
+          <input matInput formControlName="startAddress">
+        </mat-form-field>
+
+        <div class="meta">
+          <div>Uhrzeit: {{ startEntry()?.timestamp | date:'dd.MM.yyyy HH:mm:ss' }}</div>
+          <div>GPS: {{ startEntry()?.latitude?.toFixed(6) }}, {{ startEntry()?.longitude?.toFixed(6) }}</div>
+        </div>
+      </div>
+    </div>
+
+      <div class="scan-section">
+      <div class="section-header">
+        <button mat-raised-button color="accent" type="button" (click)="capture('ZIEL')" [disabled]="isUploading()">
+          Ziel
+        </button>
+        <input #endFileInput type="file" class="hidden-input" accept="image/*" capture="environment"
+               (change)="onFileSelected($event, 'ZIEL')">
+      </div>
+
+      <div class="fields">
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>KM-Stand Ziel</mat-label>
+          <input matInput type="number" formControlName="endKm">
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Adresse Ziel</mat-label>
+          <input matInput formControlName="endAddress">
+        </mat-form-field>
+
+        <div class="meta">
+          <div>Uhrzeit: {{ endEntry()?.timestamp | date:'dd.MM.yyyy HH:mm:ss' }}</div>
+          <div>GPS: {{ endEntry()?.latitude?.toFixed(6) }}, {{ endEntry()?.longitude?.toFixed(6) }}</div>
+        </div>
+      </div>
+    </div>
+
+      <div class="actions">
+      <button mat-raised-button color="primary" type="button" (click)="commitDrive()"
+              [disabled]="!canCommit()">
+        Fahrt uebernehmen
+      </button>
+      @if (driveLength() !== null) {
+        <div class="length-info">Streckenlaenge: {{ driveLength() }} km</div>
+      }
+    </div>
+    </form>
+  </div>
+</div>

@@ -15,6 +15,10 @@
         <mat-icon matListItemIcon>add_road</mat-icon>
         <span matListItemTitle>Fahrt eintragen</span>
       </a>
+      <a mat-list-item routerLink="/scan" (click)="sidenav.close()" *ngIf="isMobile()">
+        <mat-icon matListItemIcon>photo_camera</mat-icon>
+        <span matListItemTitle>Scannen</span>
+      </a>
       <a mat-list-item routerLink="/drives" (click)="sidenav.close()">
         <mat-icon matListItemIcon>directions_car</mat-icon>
         <span matListItemTitle>Fahrten</span>
