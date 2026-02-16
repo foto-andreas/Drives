@@ -143,4 +143,25 @@ class ScanEntryServiceTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("KM-Stand am Ziel muss groesser");
     }
+
+    @Test
+    void commitDriveFallsBackToCoordinatesWhenAddressesMissing() {
+        OffsetDateTime startTs = OffsetDateTime.parse("2025-01-01T08:30:00Z");
+        OffsetDateTime endTs = OffsetDateTime.parse("2025-01-01T09:30:00Z");
+        ScanEntry start = new ScanEntry("s1", ScanType.START, startTs, 51.5, 9.2, null, 1000);
+        ScanEntry end = new ScanEntry("e1", ScanType.ZIEL, endTs, 51.6, 9.3, null, 1010);
+
+        when(scanEntryRepository.findById("s1")).thenReturn(Optional.of(start));
+        when(scanEntryRepository.findById("e1")).thenReturn(Optional.of(end));
+        when(driveService.create(any(DriveCommand.class))).thenAnswer(invocation -> {
+            DriveCommand command = invocation.getArgument(0);
+            return new DriveResponse("d1", command.date(), null, Reason.OTHER, command.fromLocation(), command.toLocation(), command.driveLength());
+        });
+
+        DriveResponse result = scanEntryService.commitDrive("s1", "e1", null, null, null, null);
+
+        assertThat(result.fromLocation()).isEqualTo("51.500000, 9.200000");
+        assertThat(result.toLocation()).isEqualTo("51.600000, 9.300000");
+        assertThat(result.driveLength()).isEqualTo(10);
+    }
 }

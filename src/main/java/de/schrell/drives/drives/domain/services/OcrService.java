@@ -285,4 +285,24 @@ public class OcrService {
                 .max(Comparator.comparingInt(String::length))
                 .map(Integer::parseInt);
     }
+
+    BufferedImage preprocessForTest(BufferedImage source) {
+        return preprocess(source);
+    }
+
+    Optional<Integer> extractBestNumberForTest(String text) {
+        return extractBestNumber(text);
+    }
+
+    Optional<BufferedImage> findWhiteTextRoiForTest(BufferedImage source) {
+        return findWhiteTextRoi(source);
+    }
+
+    BufferedImage ensureBlackTextOnWhiteForTest(BufferedImage source) {
+        return ensureBlackTextOnWhite(source);
+    }
+
+    int otsuThresholdForTest(BufferedImage source) {
+        return otsuThreshold(source);
+    }
 }

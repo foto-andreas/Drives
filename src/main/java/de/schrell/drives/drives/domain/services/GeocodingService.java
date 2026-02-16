@@ -22,7 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 public class GeocodingService {
 
     private final GeocodingProperties properties;
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
 
     public Optional<String> reverseGeocode(double latitude, double longitude) {
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(properties.getBaseUrl())

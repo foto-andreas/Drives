@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.OffsetDateTime;
+import java.util.Locale;
 import java.util.Optional;
 
 @Service
@@ -136,7 +137,7 @@ public class ScanEntryService {
         if (latitude == null || longitude == null) {
             return "";
         }
-        return String.format("%.6f, %.6f", latitude, longitude);
+        return String.format(Locale.US, "%.6f, %.6f", latitude, longitude);
     }
 
     private String normalizeAddress(String address) {
