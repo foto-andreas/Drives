@@ -2,18 +2,33 @@ package de.schrell.drives.drives.domain.services;
 
 import de.schrell.drives.config.OcrProperties;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.mockito.MockedConstruction;
+import org.mockito.Mockito;
 import org.springframework.mock.web.MockMultipartFile;
 
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Optional;
+
+import javax.imageio.ImageIO;
+
+import net.sourceforge.tess4j.Tesseract;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 
 class OcrServiceTest {
+
+    @TempDir
+    Path tempDir;
 
     @Test
     void extractBestNumberChoosesLongestSequence() {
@@ -137,6 +152,77 @@ class OcrServiceTest {
     }
 
     @Test
+    void extractKmStandRejectsEmptyPhoto() {
+        OcrService service = new OcrService(new OcrProperties());
+        MockMultipartFile file = new MockMultipartFile("photo", "photo.png", "image/png", new byte[0]);
+
+        assertThatThrownBy(() -> service.extractKmStand(file))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Foto fehlt oder ist leer");
+    }
+
+    @Test
+    void extractKmStandReturnsPrimaryResultAndWritesDebugFiles() throws IOException {
+        OcrProperties properties = new OcrProperties();
+        properties.setDebugEnabled(true);
+        properties.setDebugOutputDir(tempDir.toString());
+        OcrService service = new OcrService(properties);
+        MockMultipartFile file = createPngMultipartFile();
+
+        try (MockedConstruction<Tesseract> mocked = Mockito.mockConstruction(Tesseract.class,
+                (mock, context) -> Mockito.when(mock.doOCR(any(BufferedImage.class))).thenReturn("KM 12345"))) {
+            int result = service.extractKmStand(file);
+
+            assertThat(result).isEqualTo(12345);
+        }
+
+        try (var dirStream = Files.list(tempDir)) {
+            Path debugDir = dirStream.findFirst().orElseThrow();
+            assertThat(debugDir).isDirectory();
+            assertThat(Files.exists(debugDir.resolve("01-original.png"))).isTrue();
+            assertThat(Files.exists(debugDir.resolve("ocr-primary.txt"))).isTrue();
+        }
+    }
+
+    @Test
+    void extractKmStandFallsBackToRelaxedWhenPrimarySuspicious() throws IOException {
+        OcrService service = new OcrService(new OcrProperties());
+        MockMultipartFile file = createPngMultipartFile();
+
+        try (MockedConstruction<Tesseract> mocked = Mockito.mockConstruction(Tesseract.class,
+                (mock, context) -> {
+                    if (context.getCount() == 1) {
+                        Mockito.when(mock.doOCR(any(BufferedImage.class))).thenReturn("000");
+                    } else {
+                        Mockito.when(mock.doOCR(any(BufferedImage.class))).thenReturn("1234");
+                    }
+                })) {
+            int result = service.extractKmStand(file);
+
+            assertThat(result).isEqualTo(1234);
+        }
+    }
+
+    @Test
+    void extractKmStandFallsBackToCliWhenRelaxedSuspicious() throws IOException {
+        OcrService service = new OcrService(new OcrProperties());
+        MockMultipartFile file = createPngMultipartFile();
+
+        try (MockedConstruction<Tesseract> mocked = Mockito.mockConstruction(Tesseract.class,
+                (mock, context) -> {
+                    if (context.getCount() <= 2) {
+                        Mockito.when(mock.doOCR(any(BufferedImage.class))).thenReturn("000");
+                    } else {
+                        Mockito.when(mock.doOCR(any(BufferedImage.class))).thenReturn("98765");
+                    }
+                })) {
+            int result = service.extractKmStand(file);
+
+            assertThat(result).isEqualTo(98765);
+        }
+    }
+
+    @Test
     void ensureBlackTextOnWhiteInvertsWhenMostlyDark() {
         OcrService service = new OcrService(new OcrProperties());
         BufferedImage image = new BufferedImage(20, 20, BufferedImage.TYPE_BYTE_GRAY);
@@ -184,5 +270,18 @@ class OcrServiceTest {
         int threshold = service.otsuThresholdForTest(image);
 
         assertThat(threshold).isBetween(0, 255);
+    }
+
+    private MockMultipartFile createPngMultipartFile() throws IOException {
+        BufferedImage image = new BufferedImage(40, 20, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2d = image.createGraphics();
+        g2d.setColor(Color.BLACK);
+        g2d.fillRect(0, 0, 40, 20);
+        g2d.setColor(Color.WHITE);
+        g2d.fillRect(5, 5, 10, 10);
+        g2d.dispose();
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ImageIO.write(image, "png", out);
+        return new MockMultipartFile("photo", "photo.png", "image/png", out.toByteArray());
     }
 }
