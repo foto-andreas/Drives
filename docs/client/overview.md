@@ -4,17 +4,18 @@ Das Angular-Frontend ist als Single-Page-Application (SPA) konzipiert und bietet
 
 ## 🚀 Routing-Struktur
 
-Die Navigation innerhalb der Anwendung wird über den Angular Router gesteuert.
+Die Navigation innerhalb der Anwendung wird über den Angular Router gesteuert (Hash-Location via `withHashLocation()`).
 
 | Pfad | Komponente | Beschreibung |
 | :--- | :--- | :--- |
 | `/drives` | `DriveList` | Hauptliste aller Fahrten mit Filtern und Export. |
 | `/drives/new` | `DriveForm` | Erfassung einer neuen Fahrt. |
 | `/drives/edit/:id` | `DriveForm` | Bearbeiten einer bestehenden Fahrt. |
+| `/scan` | `Scan` | Scannen von Start/Ziel (Foto, GPS, OCR) und Übernahme als Fahrt. |
 | `/driveTemplates` | `DriveTemplateList` | Verwaltung der Fahrtvorlagen. |
 | `/driveTemplates/new` | `DriveTemplateForm` | Erstellung einer neuen Vorlage. |
 | `/driveTemplates/edit/:id` | `DriveTemplateForm` | Bearbeiten einer Vorlage. |
-| `**` | (Redirect) | Unbekannte Pfade leiten zur Fahrtenliste (`/drives`) weiter. |
+| `/` | (Redirect) | Startseite leitet auf `/drives/new` weiter. |
 
 ## 🏗 Komponenten-Hierarchie
 
@@ -28,6 +29,7 @@ graph TD
     Content --> DF[DriveForm]
     Content --> TL[DriveTemplateList]
     Content --> TF[DriveTemplateForm]
+    Content --> SC[Scan]
 ```
 
 ## 📱 Mobil-Optimierungen & UX
@@ -45,10 +47,11 @@ Um die Übersichtlichkeit zu wahren, wurde ein spezielles CSS-Layout implementie
 ### Dynamische UI-Elemente
 - **Pfeil-Separator:** In der Liste wird zwischen Start und Ziel ein Pfeil angezeigt. Bei `HOME` (Home-Office) wird dieser ausgeblendet, da kein physischer Weg zurückgelegt wurde.
 - **Formular-Validierung:** Die Pflichtfelder passen sich dynamisch an, je nachdem ob eine Vorlage gewählt wurde oder nicht.
+- **Scan-Flow:** Der Scan-Screen nutzt Geolocation und Foto-Upload. Start- und Ziel-Scans werden per OCR (KM-Stand) und Reverse-Geocoding (Adresse) ergänzt und können als Fahrt übernommen werden.
 
 ## 🛠 Technologien
-- **Angular 19**
-- **Angular Material** (UI-Komponenten)
+- **Angular 21**
+- **Angular Material** & **CDK**
 - **Signals** (State-Management)
-- **Bootstrap 5** (Utility-Klassen für Layout)
-- **Karma/Vitest** (Unit-Testing)
+- **RxJS** (Streams/Interop)
+- **Vitest** (Unit-Testing)

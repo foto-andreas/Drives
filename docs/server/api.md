@@ -12,6 +12,15 @@ Basis-URL: `/api`
 ### GET `/drives/{id}`
 - Antwort: `DriveResponse`
 
+### GET `/drives/years`
+- Antwort: `number[]` (Jahre mit vorhandenen Fahrten)
+
+### GET `/latestDrive`
+- Antwort: `LocalDate` (yyyy-MM-dd) oder `204 No Content`
+
+### GET `/latestDriveInfo`
+- Antwort: `DriveResponse` oder `204 No Content`
+
 ### PUT `/drives`
 - Zweck: Neue Fahrt anlegen
 - Request-Body: `DriveRequest`
@@ -24,6 +33,31 @@ Basis-URL: `/api`
 
 ### DELETE `/drives/{id}`
 - Zweck: Fahrt löschen
+
+## Scan Entries
+
+### POST `/scan-entries`
+- Content-Type: `multipart/form-data`
+- Felder: `type` (`START|ZIEL`), `timestamp` (ISO-OffsetDateTime), `latitude`, `longitude`, `photo`
+- Antwort: `ScanEntryResponse`
+
+### GET `/scan-entries/latest-start`
+- Antwort: `ScanEntryResponse` oder `204 No Content`
+
+### POST `/scan-entries/commit`
+- Zweck: Erzeugt eine Fahrt aus Scan-Start/Ziel
+- Request-Body: `ScanEntryCommitRequest`
+- Antwort: `DriveResponse`
+
+## User
+
+### GET `/user`
+- Antwort: `UserResponse` (Name, Version)
+
+## Initialization
+
+### GET `/initialization-status`
+- Antwort: `InitializationStatusResponse` (`initialized: true|false`)
 
 ## DriveTemplates
 
@@ -69,5 +103,45 @@ Basis-URL: `/api`
   fromLocation: string | null,
   toLocation: string | null,
   driveLength: number | null
+}
+```
+
+### ScanEntryResponse
+```
+{
+  id: string,
+  type: ScanType,
+  timestamp: OffsetDateTime,
+  latitude: number,
+  longitude: number,
+  address: string | null,
+  kmStand: number
+}
+```
+
+### ScanEntryCommitRequest
+```
+{
+  startId: string,
+  endId: string,
+  startKmStand: number | null,
+  endKmStand: number | null,
+  startAddress: string | null,
+  endAddress: string | null
+}
+```
+
+### UserResponse
+```
+{
+  name: string,
+  version: string
+}
+```
+
+### InitializationStatusResponse
+```
+{
+  initialized: boolean
 }
 ```

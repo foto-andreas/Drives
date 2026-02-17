@@ -13,7 +13,7 @@ Dieses Dokument dient als Einstiegspunkt für die gesamte Dokumentation des Fahr
 
 ## 🖥 Backend-Dokumentation (Server)
 
-Das Backend ist mit Spring Boot (Java 21) realisiert und verwaltet die Datenhaltung sowie die Geschäftslogik.
+Das Backend ist mit Spring Boot 4 (Java 25) realisiert und verwaltet die Datenhaltung sowie die Geschäftslogik.
 
 - 🏗 **[Architektur & Schichtenmodell](docs/server/architecture.md)**: Details zum Aufbau der Anwendung und der Schichtentrennung.
 - 📊 **[Datenmodell](docs/server/data-model.md)**: ER-Diagramm und detaillierte Beschreibungen der Entities (`Drive`, `DriveTemplate`).
@@ -24,7 +24,7 @@ Das Backend ist mit Spring Boot (Java 21) realisiert und verwaltet die Datenhalt
 
 ## 🌐 Frontend-Dokumentation (Client)
 
-Das Frontend basiert auf Angular 19 und bietet eine moderne, reaktive Benutzeroberfläche.
+Das Frontend basiert auf Angular 21 und bietet eine moderne, reaktive Benutzeroberfläche.
 
 - 🚀 **[Übersicht & Routing](docs/client/overview.md)**: UI-Flow, Navigationsstruktur und Mobil-Optimierungen.
 - 🧱 **[Komponenten](docs/client/components.md)**: Detaillierte Beschreibung der Formulare und Listenansichten.
@@ -66,6 +66,9 @@ Die Anwendung bietet einen integrierten CSV-Export in der Fahrtenliste. Dieser b
 
 ### Home-Office Support
 Über den speziellen Grund `HOME` können Home-Office-Tage erfasst werden. Auf Mobilgeräten wird hierbei die UI angepasst (kein Richtungspfeil), und in der Vorlagen-Definition ist für diesen Fall eine Länge von 0 km zulässig.
+
+### Scan-Workflow
+Die App unterstützt einen Scan-Flow für Start/Ziel: Geolocation + Foto werden hochgeladen, OCR liest den KM-Stand, Reverse-Geocoding ergänzt Adressen und der Nutzer kann daraus eine Fahrt erzeugen.
 
 ---
 > 💡 *Tipp: Weitere Informationen zum Deployment und zum Starten der Anwendung finden sich in der [README.md](README.md).*

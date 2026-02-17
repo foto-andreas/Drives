@@ -1,6 +1,6 @@
 # Server-Architektur & Schichtenmodell
 
-Das Backend ist als Spring Boot Anwendung (Java 21+) konzipiert und folgt einem klassischen Schichtenmodell, um eine saubere Trennung der Verantwortlichkeiten zu gewährleisten.
+Das Backend ist als Spring Boot 4 Anwendung (Java 25) konzipiert und folgt einem klassischen Schichtenmodell, um eine saubere Trennung der Verantwortlichkeiten zu gewährleisten.
 
 ## 🏛 Schichtenmodell
 
@@ -34,6 +34,7 @@ graph TD
 - **Services:** Enthalten die eigentliche Fachlogik. Hier werden Transaktionsgrenzen (`@Transactional`) definiert.
 - **Validierung:** Komplexe fachliche Prüfungen (z.B. "Darf eine Vorlage gelöscht werden?") finden hier statt.
 - **Normalisierung:** Der `DriveService` bereinigt Daten vor dem Speichern (Entfernen redundanter Template-Werte).
+- **Scan-Pipeline:** `ScanEntryService` orchestriert OCR (KM-Stand) und Reverse-Geocoding und erzeugt daraus eine Fahrt.
 
 ### 3. Persistence-Layer (`domain.repositories`, `domain.entities`)
 - **Entities:** JPA-annotierte Klassen, die das Datenbank-Schema repräsentieren.
@@ -50,6 +51,10 @@ Die Anwendung unterstützt mehrere Benutzer (Tenants) mit strikt getrennten Date
 1. **Identifikation:** Der Tenant wird über das OAuth2-Principal (E-Mail) ermittelt.
 2. **Isolierung:** Jeder Tenant erhält eine eigene Datenbankdatei (bei H2) bzw. ein eigenes Suffix.
 3. **Dynamik:** Die Datenbankverbindung wird "Just-in-Time" beim ersten Request des Benutzers aufgebaut und das Schema initialisiert.
+
+### Externe Dienste
+- **OCR:** Tesseract (via Tess4J) extrahiert den KM-Stand aus Fotos.
+- **Geocoding:** Nominatim (OpenStreetMap) liefert Adressen für GPS-Koordinaten.
 
 ### Command Pattern
 Für Schreiboperationen werden dedizierte `Command`-Objekte (Records) verwendet. Dies entkoppelt die API-Struktur (DTOs) von der internen Service-Logik und ermöglicht eine saubere Validierung, bevor Daten die Entities erreichen.

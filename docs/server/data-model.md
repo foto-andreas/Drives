@@ -7,6 +7,15 @@ Das Datenmodell ist darauf ausgelegt, Fahrten effizient zu speichern, wobei sowo
 ```mermaid
 erDiagram
     DRIVE_TEMPLATE ||--o{ DRIVE : "liefert Standardwerte für"
+    SCAN_ENTRY {
+        string id PK
+        string type
+        datetime timestamp
+        double latitude
+        double longitude
+        string address
+        int km_stand
+    }
     DRIVE_TEMPLATE {
         string id PK
         string name UK
@@ -53,6 +62,19 @@ Repräsentiert eine konkret durchgeführte Fahrt oder einen Home-Office-Tag.
 | `toLocation` | `String` | Optionaler Override für den Zielort. |
 | `driveLength` | `Integer` | Optionaler Override für die Länge. |
 
+### 3. `ScanEntry`
+Zwischenspeicher für Scan-Vorgänge (Start/Ziel), die später zu Fahrten verarbeitet werden.
+
+| Feld | Typ | Beschreibung |
+| :--- | :--- | :--- |
+| `id` | `String (UUID)` | Primärschlüssel. |
+| `type` | `ScanType` | `START` oder `ZIEL`. |
+| `timestamp` | `OffsetDateTime` | Zeitpunkt des Scans. |
+| `latitude` | `Double` | GPS-Breite. |
+| `longitude` | `Double` | GPS-Länge. |
+| `address` | `String` | Optional, via Reverse-Geocoding ermittelt. |
+| `kmStand` | `Integer` | Per OCR extrahierter (oder korrigierter) KM-Stand. |
+
 ## ⚙️ Logik & Besonderheiten
 
 ### Speicherung (Normalisierung)
@@ -73,3 +95,7 @@ In `DriveRepository.findFiltered` wird ein `LEFT JOIN` auf das Template verwende
 Das Projekt nutzt einen hybriden Ansatz:
 - **H2 (lokal):** Tabellen werden automatisch bei Bedarf erstellt (`MultiTenantDataSourceConfiguration`).
 - **Migration:** Bestehende `DRIVE`-Tabellen werden automatisch um die Spalten `from_location`, `to_location` und `drive_length` erweitert, falls sie aus einer älteren Version stammen.
+
+### Scan-Workflow
+- `ScanEntry` wird beim Upload gespeichert.
+- `commitDrive` validiert Start/Ziel und erzeugt daraus eine Fahrt (`Drive`).

@@ -36,15 +36,21 @@ Konfigurationsklassen für das Framework und die Infrastruktur.
 | :--- | :--- |
 | `SecurityConfig` | Konfiguration von Spring Security (OAuth2 Login, CSRF, Authorisierung). |
 | `WebConfig` | Web-spezifische Einstellungen (z.B. CORS-Header). |
+| `RestTemplateConfig` | Stellt einen `RestTemplate` für Geocoding bereit. |
+| `OcrProperties` | Konfigurationswerte für OCR (Tesseract-Pfade, Bild-Preprocessing). |
+| `GeocodingProperties` | Konfiguration für Reverse-Geocoding (Base-URL, User-Agent, Sprache). |
 
 #### 📂 `config.multitenancy`
 Spezialisierte Logik für den Mehrbenutzerbetrieb mit getrennten Datenbanken.
 
 | Klasse | Beschreibung |
 | :--- | :--- |
-| `MultiTenantDataSourceConfiguration` | Erzeugt dynamisch DataSources basierend auf dem Tenant-ID. Übernimmt die Erstinitialisierung (`CREATE TABLE`) und Schema-Migration (`ALTER TABLE`). |
-| `InitializationNotificationFilter` | Ein Servlet-Filter, der den Initialisierungsstatus im HTTP-Header `X-Db-Initialized` mitschickt. |
-| `InitializationTracker` | Hält den Status bereit, ob ein Tenant bereits initialisiert wurde. |
+| `MultiTenantDataSourceConfiguration` | Erzeugt dynamisch DataSources pro Tenant, initialisiert Schema und Migrationen. |
+| `InitializationNotificationFilter` | Servlet-Filter, der den Initialisierungsstatus im HTTP-Header `X-Db-Initialized` mitschickt. |
+| `DatabaseInitializationTracker` | Hält den Status, ob ein Tenant bereits initialisiert wurde. |
+| `TenantFilter` | Setzt den aktuellen Tenant aus dem Security-Context. |
+| `TenantContext` | ThreadLocal-Kontext für den aktuellen Tenant. |
+| `TenantAwareRoutingDataSource` | Routing-DataSource auf Basis des Tenants. |
 
 ### 2. `de.schrell.drives.drives.api`
 Die Schnittstelle nach außen.
@@ -56,6 +62,9 @@ REST-Endpunkte für die Kommunikation mit dem Frontend.
 | :--- | :--- |
 | `DriveController` | Endpunkte für Fahrten (`/api/drives`, `/api/latestDrive`). |
 | `DriveTemplateController` | Endpunkte für Fahrtvorlagen (`/api/driveTemplates`). |
+| `ScanEntryController` | Scan-Flow (`/api/scan-entries`, Commit von Start/Ziel). |
+| `InitializationController` | Initialisierungsstatus der Tenant-Datenbank. |
+| `UserController` | Benutzerinformationen und Version (`/api/user`). |
 
 #### 📂 `api.dtos`
 Data Transfer Objects (Java Records) für Request/Response.
@@ -64,6 +73,10 @@ Data Transfer Objects (Java Records) für Request/Response.
 | :--- | :--- |
 | `DriveRequest` / `DriveResponse` | Repräsentation einer Fahrt. |
 | `DriveTemplateRequest` / `DriveTemplateResponse` | Repräsentation einer Vorlage. |
+| `ScanEntryResponse` | Scan-Daten (Start/Ziel) inkl. GPS und KM-Stand. |
+| `ScanEntryCommitRequest` | Payload für die Erzeugung einer Fahrt aus Scan-Daten. |
+| `UserResponse` | Nutzername und Server-Version. |
+| `InitializationStatusResponse` | Initialisierungsflag für den aktuellen Tenant. |
 | `ErrorResponse` | Standardisiertes Fehlerformat für den `GlobalExceptionHandler`. |
 
 #### 📂 `api.handlers`
@@ -81,6 +94,9 @@ Zentrale Geschäftslogik und transaktionale Grenzen.
 | :--- | :--- |
 | `DriveService` | Steuert das Erstellen, Ändern und Löschen von Fahrten. Implementiert die Validierung (Pflichtfelder ohne Vorlage) und die Redundanzprüfung (Löschen von Werten, die dem Template entsprechen). |
 | `DriveTemplateService` | Verwaltet Vorlagen. Verhindert das Löschen von Vorlagen, die noch in Fahrten referenziert werden. |
+| `ScanEntryService` | Scan-Workflow: OCR, Reverse-Geocoding, Validierung und Commit zur Fahrt. |
+| `OcrService` | Extrahiert den KM-Stand aus Fotos via Tesseract (Tess4J). |
+| `GeocodingService` | Reverse-Geocoding via Nominatim (OpenStreetMap). |
 
 #### 📂 `domain.repositories`
 Spring Data JPA Schnittstellen.
@@ -89,6 +105,7 @@ Spring Data JPA Schnittstellen.
 | :--- | :--- |
 | `DriveRepository` | Beinhaltet die komplexe `findFiltered`-Abfrage mit `LEFT JOIN`, um Fahrten ohne Template nicht zu verlieren. |
 | `DriveTemplateRepository` | Standardzugriff auf Vorlagen, sortiert nach Name. |
+| `ScanEntryRepository` | Zugriff auf Scan-Einträge, inkl. letztem Eintrag nach Timestamp. |
 
 #### 📂 `domain.mappers`
 | Klasse | Beschreibung |
@@ -102,7 +119,9 @@ JPA-Entities (Datenbanktabellen).
 | :--- | :--- |
 | `Drive` | Repräsentiert eine Fahrt. Enthält optionale Override-Felder. |
 | `DriveTemplate` | Repräsentiert eine wiederverwendbare Vorlage. |
+| `ScanEntry` | Persistiert Scan-Daten (GPS, Zeit, KM-Stand). |
 | `Reason` | Enum für den Grund einer Fahrt (WORK, HOME, PRIVATE, etc.). |
+| `ScanType` | Enum für Scan-Typ (`START`, `ZIEL`). |
 
 #### 📂 `domain.commands`
 Interne Datenstrukturen für Schreiboperationen.

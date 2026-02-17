@@ -13,6 +13,7 @@ Die wichtigste Komponente zur Datenerfassung.
 | **Dynamische Validierung** | Wenn kein Template gewählt ist, werden `reason`, `fromLocation`, `toLocation` und `driveLength` zu Pflichtfeldern (`Validators.required`). |
 | **UX: Automatisches Ausfüllen** | Beim Auswählen einer Vorlage werden manuelle Eingaben geleert. Beim Öffnen des Grund-Selects wird der Vorlagen-Grund vorgeschlagen, sofern das Feld noch leer ist. |
 | **Datumsvorbelegung** | Nutzt das `lastSelectedDate` aus dem `DriveService`, um die Erfassung mehrerer Fahrten hintereinander zu beschleunigen. |
+| **Vorlagen-Sortierung** | Die Vorlagenliste priorisiert die zuletzt verwendete Zieladresse (`lastToLocation`) für schnelleren Zugriff. |
 
 ### 2. `DriveTemplateForm`
 Zur Definition von Standardwegen.
@@ -21,6 +22,15 @@ Zur Definition von Standardwegen.
 | :--- | :--- |
 | **Validierung** | Alle Felder sind Pflichtfelder. |
 | **Längen-Logik** | Bei Auswahl von `HOME` ist eine Länge von 0 km zulässig, bei allen anderen Gründen muss die Länge >= 1 km sein. |
+
+### 3. `Scan`
+Scan-Komponente zur Erfassung von Start/Ziel per Foto und GPS.
+
+| Feature | Beschreibung |
+| :--- | :--- |
+| **Geolocation & Foto** | Erfasst Standort und Foto für `START`/`ZIEL`. |
+| **OCR & Reverse-Geocoding** | OCR extrahiert den KM-Stand, Reverse-Geocoding ergänzt die Adresse. |
+| **Commit-Logik** | Eine Fahrt wird nur erzeugt, wenn Start/Ziel vorhanden sind und die Strecke > 0 ist. |
 
 ## 📊 Listenansichten
 
@@ -31,6 +41,7 @@ Zentrale Übersicht der Fahrten.
 - **Tabelle:** Zeigt Datum, Vorlagen-Name, Von/Nach (mit Pfeil-Logik), Länge und Grund.
 - **CSV-Export:** Generiert eine CSV-Datei basierend auf den aktuell sichtbaren (gefilterten) Daten.
 - **Swipe-Logic:** Implementiert `onRowTouchStart/Move/End`, um Zeilen auf Mobilgeräten nach links zu wischen (Lösch-Indikator).
+- **Home-Office-Export:** Bei Grund `HOME` wird im Export die Anzahl statt Kilometer aggregiert.
 
 ### 2. `DriveTemplateList`
 Verwaltung der verfügbaren Vorlagen.

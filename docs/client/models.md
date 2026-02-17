@@ -15,6 +15,15 @@ interface Drive {
 }
 ```
 
+### `DriveFilter`
+```
+interface DriveFilter {
+  year: number | null;
+  month: number | null;
+  reason: string | null;
+}
+```
+
 ### `DriveRequest`
 ```
 interface DriveRequest {
@@ -40,6 +49,36 @@ interface DriveTemplate {
 }
 ```
 
+### `ScanEntry`
+```
+type ScanType = 'START' | 'ZIEL';
+
+interface ScanEntry {
+  id: string;
+  type: ScanType;
+  timestamp: Date;
+  latitude: number;
+  longitude: number;
+  address: string | null;
+  kmStand: number;
+}
+```
+
+### `UserResponse`
+```
+interface UserResponse {
+  name: string;
+  version: string;
+}
+```
+
+### `InitializationStatusResponse`
+```
+interface InitializationStatusResponse {
+  initialized: boolean;
+}
+```
+
 ### `Reason`
 ```
 export enum Reason {
@@ -49,6 +88,8 @@ export enum Reason {
   PRIVATE = "privat",
   OTHER = "sonstiges"
 }
+
+export type ReasonKey = keyof typeof Reason;
 ```
 
 ## Hinweise
