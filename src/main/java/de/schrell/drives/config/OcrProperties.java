@@ -25,6 +25,16 @@ public class OcrProperties {
     private String libraryPath;
 
     /**
+     * Enables OCR debug output (intermediate images + OCR text).
+     */
+    private boolean debugEnabled = false;
+
+    /**
+     * Directory for OCR debug output (e.g. /root/data/ocr-debug).
+     */
+    private String debugOutputDir;
+
+    /**
      * Crop width ratio centered in the image (0-1).
      */
     private double cropWidthRatio = 0.6;

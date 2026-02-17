@@ -4,6 +4,8 @@ app:
     tesseract-path: ${TESSERACT_PATH:/usr/share/tesseract-ocr/5/tessdata}
     language: deu
     library-path: ${OCR_LIBRARY_PATH:}
+    debug-enabled: ${OCR_DEBUG_ENABLED:false}
+    debug-output-dir: ${OCR_DEBUG_DIR:}
     crop-width-ratio: 0.6
     crop-height-ratio: 0.35
     crop-min-height: 200

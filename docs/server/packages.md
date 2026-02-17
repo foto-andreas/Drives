@@ -41,7 +41,7 @@ Konfigurationsklassen für das Framework und die Infrastruktur.
 | `SecurityConfig` | Konfiguration von Spring Security (OAuth2 Login, CSRF, Authorisierung). |
 | `WebConfig` | Web-spezifische Einstellungen (z.B. CORS-Header). |
 | `RestTemplateConfig` | Stellt einen `RestTemplate` für Geocoding bereit. |
-| `OcrProperties` | Konfigurationswerte für OCR (Tesseract-Pfade via `TESSERACT_PATH`, optionale Native-Libs via `OCR_LIBRARY_PATH`, Bild-Preprocessing). |
+| `OcrProperties` | Konfigurationswerte für OCR (Tesseract-Pfade via `TESSERACT_PATH`, optionale Native-Libs via `OCR_LIBRARY_PATH`, Debug-Output via `OCR_DEBUG_ENABLED`/`OCR_DEBUG_DIR`, Bild-Preprocessing). |
 | `GeocodingProperties` | Konfiguration für Reverse-Geocoding (Base-URL, User-Agent, Sprache). |
 
 #### 📂 `config.multitenancy`
@@ -99,7 +99,7 @@ Zentrale Geschäftslogik und transaktionale Grenzen.
 | `DriveService` | Steuert das Erstellen, Ändern und Löschen von Fahrten. Implementiert die Validierung (Pflichtfelder ohne Vorlage) und die Redundanzprüfung (Löschen von Werten, die dem Template entsprechen). |
 | `DriveTemplateService` | Verwaltet Vorlagen. Verhindert das Löschen von Vorlagen, die noch in Fahrten referenziert werden. |
 | `ScanEntryService` | Scan-Workflow: OCR, Reverse-Geocoding, Validierung und Commit zur Fahrt. |
-| `OcrService` | Extrahiert den KM-Stand aus Fotos via Tesseract (Tess4J). |
+| `OcrService` | Extrahiert den KM-Stand aus Fotos via Tesseract (Tess4J) und nutzt bei unplausiblen Ergebnissen einen Relaxed-Fallback mit weniger aggressiver Vorverarbeitung und permissiverem OCR-Setup (OEM_DEFAULT/PSM_AUTO, ohne Whitelist); falls nötig folgt ein CLI-ähnlicher Pass auf dem Originalbild. |
 | `GeocodingService` | Reverse-Geocoding via Nominatim (OpenStreetMap). |
 
 #### 📂 `domain.repositories`

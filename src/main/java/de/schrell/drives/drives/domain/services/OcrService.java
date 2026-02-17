@@ -16,8 +16,13 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -51,12 +56,42 @@ public class OcrService {
             throw new IllegalArgumentException("Foto fehlt oder ist leer");
         }
 
+        String debugId = UUID.randomUUID().toString();
+        Optional<Path> debugDir = prepareDebugDir(debugId);
         BufferedImage image = readImage(photo);
+        writeDebugImage(debugDir, "01-original", image);
         BufferedImage prepared = preprocess(image);
+        writeDebugImage(debugDir, "02-prepared", prepared);
         String text = doOcr(prepared);
-        log.info("Extracted text from image: {}", text);
-        return extractBestNumber(text)
-                .orElseThrow(() -> new IllegalArgumentException("Kein KM-Stand im Foto gefunden"));
+        log.info("OCR primary result: {}", text);
+        writeDebugText(debugDir, "ocr-primary.txt", text);
+        Optional<Integer> primary = extractBestNumber(text);
+
+        if (isSuspiciousOcrResult(text, primary)) {
+            log.warn("OCR primary result suspicious (value={}, text='{}'), retrying with relaxed preprocessing",
+                    primary.orElse(null), text);
+            BufferedImage relaxed = preprocessRelaxed(image);
+            writeDebugImage(debugDir, "03-relaxed", relaxed);
+            String relaxedText = doOcrRelaxed(relaxed);
+            log.info("OCR fallback result: {}", relaxedText);
+            writeDebugText(debugDir, "ocr-fallback.txt", relaxedText);
+            Optional<Integer> fallback = extractBestNumber(relaxedText);
+            if (!isSuspiciousOcrResult(relaxedText, fallback)) {
+                return fallback.get();
+            }
+            log.warn("OCR relaxed result suspicious, retrying with CLI-like OCR on original image");
+            BufferedImage cliLike = resizeForSpeed(image, properties.getMaxWidth());
+            writeDebugImage(debugDir, "04-cli-like", cliLike);
+            String cliText = doOcrCliLike(cliLike);
+            log.info("OCR CLI-like result: {}", cliText);
+            writeDebugText(debugDir, "ocr-cli-like.txt", cliText);
+            Optional<Integer> cli = extractBestNumber(cliText);
+            if (cli.isPresent()) {
+                return cli.get();
+            }
+        }
+
+        return primary.orElseThrow(() -> new IllegalArgumentException("Kein KM-Stand im Foto gefunden"));
     }
 
     private BufferedImage readImage(MultipartFile photo) {
@@ -72,21 +107,50 @@ public class OcrService {
     }
 
     private String doOcr(BufferedImage image) {
-        ITesseract tesseract = new Tesseract();
-        tesseract.setDatapath(properties.getTesseractPath());
-        tesseract.setLanguage(properties.getLanguage());
-        tesseract.setVariable("tessedit_char_whitelist", "0123456789");
-        tesseract.setVariable("classify_bln_numeric_mode", "1");
-        tesseract.setVariable("load_system_dawg", "0");
-        tesseract.setVariable("load_freq_dawg", "0");
-        tesseract.setVariable("user_defined_dpi", "300");
-        tesseract.setPageSegMode(TessAPI.TessPageSegMode.PSM_SINGLE_LINE);
-        tesseract.setOcrEngineMode(TessAPI.TessOcrEngineMode.OEM_LSTM_ONLY);
+        return doOcr(image, false);
+    }
+
+    private String doOcrRelaxed(BufferedImage image) {
+        return doOcr(image, true);
+    }
+
+    private String doOcrCliLike(BufferedImage image) {
+        return doOcr(image, false, true);
+    }
+
+    private String doOcr(BufferedImage image, boolean relaxed) {
+        return doOcr(image, relaxed, false);
+    }
+
+    private String doOcr(BufferedImage image, boolean relaxed, boolean cliLike) {
+        ITesseract tesseract = createTesseract(relaxed, cliLike);
         try {
             return tesseract.doOCR(image);
         } catch (TesseractException e) {
             throw new IllegalArgumentException("OCR fehlgeschlagen", e);
         }
+    }
+
+    private ITesseract createTesseract(boolean relaxed, boolean cliLike) {
+        ITesseract tesseract = new Tesseract();
+        tesseract.setDatapath(properties.getTesseractPath());
+        tesseract.setLanguage(properties.getLanguage());
+        tesseract.setOcrEngineMode(relaxed || cliLike
+                ? TessAPI.TessOcrEngineMode.OEM_DEFAULT
+                : TessAPI.TessOcrEngineMode.OEM_LSTM_ONLY);
+        if (!relaxed && !cliLike) {
+            tesseract.setVariable("user_defined_dpi", "300");
+            tesseract.setVariable("tessedit_char_whitelist", "0123456789");
+            tesseract.setVariable("classify_bln_numeric_mode", "1");
+            tesseract.setVariable("load_system_dawg", "0");
+            tesseract.setVariable("load_freq_dawg", "0");
+            tesseract.setPageSegMode(TessAPI.TessPageSegMode.PSM_SINGLE_LINE);
+        } else if (cliLike) {
+            tesseract.setPageSegMode(TessAPI.TessPageSegMode.PSM_AUTO);
+        } else {
+            tesseract.setPageSegMode(TessAPI.TessPageSegMode.PSM_AUTO);
+        }
+        return tesseract;
     }
 
     private BufferedImage preprocess(BufferedImage source) {
@@ -102,6 +166,12 @@ public class OcrService {
         int threshold = otsuThreshold(gray);
         BufferedImage binarized = binarize(gray, threshold);
         return ensureBlackTextOnWhite(binarized);
+    }
+
+    private BufferedImage preprocessRelaxed(BufferedImage source) {
+        BufferedImage resized = resizeForSpeed(source, properties.getMaxWidth());
+        BufferedImage gray = toGrayscale(resized);
+        return ensureBlackTextOnWhite(gray);
     }
 
     private BufferedImage resizeForSpeed(BufferedImage source, int maxWidth) {
@@ -285,12 +355,27 @@ public class OcrService {
                 .map(Integer::parseInt);
     }
 
+    private boolean isSuspiciousOcrResult(String text, Optional<Integer> number) {
+        if (number.isEmpty()) {
+            return true;
+        }
+        if (number.get() != 0) {
+            return false;
+        }
+        String digitsOnly = text.replaceAll("\\D", "");
+        return digitsOnly.length() >= 3 && digitsOnly.chars().allMatch(ch -> ch == '0');
+    }
+
     BufferedImage preprocessForTest(BufferedImage source) {
         return preprocess(source);
     }
 
     Optional<Integer> extractBestNumberForTest(String text) {
         return extractBestNumber(text);
+    }
+
+    boolean isSuspiciousOcrResultForTest(String text, Optional<Integer> number) {
+        return isSuspiciousOcrResult(text, number);
     }
 
     Optional<BufferedImage> findWhiteTextRoiForTest(BufferedImage source) {
@@ -304,4 +389,48 @@ public class OcrService {
     int otsuThresholdForTest(BufferedImage source) {
         return otsuThreshold(source);
     }
+
+    private Optional<Path> prepareDebugDir(String debugId) {
+        if (!properties.isDebugEnabled()) {
+            return Optional.empty();
+        }
+        String baseDir = properties.getDebugOutputDir();
+        if (baseDir == null || baseDir.isBlank()) {
+            log.warn("OCR debug enabled but debugOutputDir not set");
+            return Optional.empty();
+        }
+        Path dir = Paths.get(baseDir).resolve(debugId);
+        try {
+            Files.createDirectories(dir);
+            return Optional.of(dir);
+        } catch (IOException e) {
+            log.warn("Failed to create OCR debug directory {}", dir, e);
+            return Optional.empty();
+        }
+    }
+
+    private void writeDebugImage(Optional<Path> dir, String name, BufferedImage image) {
+        if (dir.isEmpty() || image == null) {
+            return;
+        }
+        Path target = dir.get().resolve(name + ".png");
+        try {
+            ImageIO.write(image, "png", target.toFile());
+        } catch (IOException e) {
+            log.warn("Failed to write OCR debug image {}", target, e);
+        }
+    }
+
+    private void writeDebugText(Optional<Path> dir, String name, String text) {
+        if (dir.isEmpty()) {
+            return;
+        }
+        Path target = dir.get().resolve(name);
+        try {
+            Files.writeString(target, text == null ? "" : text, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            log.warn("Failed to write OCR debug text {}", target, e);
+        }
+    }
+
 }

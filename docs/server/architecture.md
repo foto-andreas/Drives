@@ -60,6 +60,21 @@ Die Anwendung unterstützt mehrere Benutzer (Tenants) mit strikt getrennten Date
 - **OCR:** Tesseract (via Tess4J) extrahiert den KM-Stand aus Fotos.
 - **Geocoding:** Nominatim (OpenStreetMap) liefert Adressen für GPS-Koordinaten.
 
+### OCR-Debugging (optional)
+Für Problemfälle (z.B. OCR-Ergebnisse unterscheiden sich zwischen Desktop und Docker) kann Debug-Ausgabe aktiviert werden.
+1. Setze `OCR_DEBUG_ENABLED=true`.
+2. Setze `OCR_DEBUG_DIR` auf ein beschreibbares Verzeichnis (z.B. `/root/data/ocr-debug` im Container).
+3. Für jeden OCR-Request wird ein Unterordner mit Zwischenbildern und Texten erzeugt.
+
+Artefakte pro Request:
+- `01-original.png` (Originalbild)
+- `02-prepared.png` (Vorverarbeitung, normaler Pass)
+- `03-relaxed.png` (Relaxed-Fallback)
+- `04-cli-like.png` (CLI-ähnlicher Pass auf Originalbild)
+- `ocr-primary.txt` (OCR-Text aus dem normalen Pass)
+- `ocr-fallback.txt` (OCR-Text aus Relaxed-Fallback)
+- `ocr-cli-like.txt` (OCR-Text aus CLI-ähnlichem Pass)
+
 ### Command Pattern
 Für Schreiboperationen werden dedizierte `Command`-Objekte (Records) verwendet. Dies entkoppelt die API-Struktur (DTOs) von der internen Service-Logik und ermöglicht eine saubere Validierung, bevor Daten die Entities erreichen.
 

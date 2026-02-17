@@ -34,6 +34,33 @@ class OcrServiceTest {
     }
 
     @Test
+    void isSuspiciousOcrResultReturnsTrueForOnlyZeros() {
+        OcrService service = new OcrService(new OcrProperties());
+
+        boolean suspicious = service.isSuspiciousOcrResultForTest("000000", Optional.of(0));
+
+        assertThat(suspicious).isTrue();
+    }
+
+    @Test
+    void isSuspiciousOcrResultReturnsFalseForNonZero() {
+        OcrService service = new OcrService(new OcrProperties());
+
+        boolean suspicious = service.isSuspiciousOcrResultForTest("100000", Optional.of(100000));
+
+        assertThat(suspicious).isFalse();
+    }
+
+    @Test
+    void isSuspiciousOcrResultReturnsTrueWhenEmpty() {
+        OcrService service = new OcrService(new OcrProperties());
+
+        boolean suspicious = service.isSuspiciousOcrResultForTest("no digits here", Optional.empty());
+
+        assertThat(suspicious).isTrue();
+    }
+
+    @Test
     void findWhiteTextRoiDetectsWhiteTextOnBlueBackground() {
         OcrProperties properties = new OcrProperties();
         properties.setWhiteMinBrightness(200);
