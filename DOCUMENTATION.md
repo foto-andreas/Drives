@@ -39,6 +39,10 @@ Das Frontend basiert auf Angular 21 und bietet eine moderne, reaktive Benutzerob
 Die Anwendung folgt einem klassischen Schichtenmodell (Controller -> Service -> Repository), wobei die Fachlogik strikt in den Services gekapselt ist.
 
 ```mermaid
+---
+config:
+  layout: elk
+---
 graph LR
     User[Benutzer] <--> Angular[Angular Frontend]
     Angular <--> Spring[Spring Boot Backend]

@@ -5,6 +5,10 @@ Das Backend ist als Spring Boot 4 Anwendung (Java 25) konzipiert und folgt einem
 ## 🏛 Schichtenmodell
 
 ```mermaid
+---
+config:
+  layout: elk
+---
 graph TD
     subgraph Web-Layer
         C[Controller]

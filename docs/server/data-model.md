@@ -5,6 +5,10 @@ Das Datenmodell ist darauf ausgelegt, Fahrten effizient zu speichern, wobei sowo
 ## 📊 Entity-Beziehung (ER-Diagramm)
 
 ```mermaid
+---
+config:
+  layout: elk
+---
 erDiagram
     DRIVE_TEMPLATE ||--o{ DRIVE : "liefert Standardwerte für"
     SCAN_ENTRY {

@@ -20,6 +20,10 @@ Die Navigation innerhalb der Anwendung wird über den Angular Router gesteuert (
 ## 🏗 Komponenten-Hierarchie
 
 ```mermaid
+---
+config:
+  layout: elk
+---
 graph TD
     AppComponent --> Toolbar[MatToolbar]
     AppComponent --> Sidenav[MatSidenav]

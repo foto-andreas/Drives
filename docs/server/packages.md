@@ -7,6 +7,10 @@ Dieses Dokument beschreibt die interne Organisation des Backends, die Verantwort
 Das Backend folgt einem Schichtenmodell, wobei die Geschäftslogik in der Domänenschicht konzentriert ist.
 
 ```mermaid
+---
+config:
+  layout: elk
+---
 graph TD
     subgraph API-Layer
         C[Controller] --> DTO[DTOs]
