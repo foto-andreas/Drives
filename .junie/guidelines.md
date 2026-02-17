@@ -145,16 +145,3 @@ Use Flyway for database migrations:
     - MockMvcTester for HTTP requests
     - Import `TestcontainersConfiguration.java`
 10. **Min 80% Code Coverage**: Aim for good code coverage, but be pragmatic. Don't write useless tests just for the sake of code coverage metrics.
-
-### Other
-
-* These Guidelines come from here: https://gist.github.com/sivaprasadreddy/9751db630b819b39e5e87f5ecfb53346
-* Use client/.junie/guidelines.md for client code
-* Use .junie/guidelines.md (this file) for server code
-* ALWAYS remember that lombok is used in the code, do NOT code things lombok provides
-* NEVER downgrade JAVA-Version or other LIBRARY versions
-* Run all Unit tests after finishing a task. Check if tests are failing due to expected changes. if yes, rewrite testcode otherwise check production code again.
-* Use the latest stable versions of libraries and frameworks
-* Use meaningful and descriptive names for variables, functions, and classes
-* Use consistent indentation and formatting throughout the codebase
-* IMPORTANT: Run all Unit tests after finishing a task. Check if tests are failing due to expected changes. if yes, rewrite testcode otherwise check production code again. Use "-runner=vitest"
