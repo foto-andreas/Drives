@@ -99,7 +99,7 @@ Zentrale Geschäftslogik und transaktionale Grenzen.
 | `DriveService` | Steuert das Erstellen, Ändern und Löschen von Fahrten. Implementiert die Validierung (Pflichtfelder ohne Vorlage) und die Redundanzprüfung (Löschen von Werten, die dem Template entsprechen). |
 | `DriveTemplateService` | Verwaltet Vorlagen. Verhindert das Löschen von Vorlagen, die noch in Fahrten referenziert werden. |
 | `ScanEntryService` | Scan-Workflow: OCR, Reverse-Geocoding, Validierung und Commit zur Fahrt (inkl. optionalem `reason`, Default `OTHER`). |
-| `OcrService` | Extrahiert den KM-Stand aus Fotos via Tesseract (Tess4J); zuerst wird ein CLI-ähnlicher Pass auf dem Originalbild ausgeführt, bei unplausiblen Ergebnissen folgen normaler Pass mit Vorverarbeitung und danach ein Relaxed-Fallback (OEM_DEFAULT/PSM_AUTO, ohne Whitelist). |
+| `OcrService` | Extrahiert den KM-Stand aus Fotos via Tesseract (Tess4J); zuerst wird ein unterer Bildstreifen mit `PSM_SINGLE_LINE` und Ziffern-Whitelist erkannt, bei unplausiblen Ergebnissen folgen Vorverarbeitung (Kontrast/Helligkeit, Shadow-Removal, Otsu) und danach ein Relaxed-Fallback ohne harte Binarisierung. |
 | `GeocodingService` | Reverse-Geocoding via Nominatim (OpenStreetMap). |
 
 #### 📂 `domain.repositories`

@@ -336,7 +336,7 @@ describe('Scan', () => {
     }
   });
 
-  it('should clear pending capture when no file is selected', () => {
+  it('should clear pending capture when no file is selected', async () => {
     const fixture = TestBed.createComponent(Scan);
     fixture.detectChanges();
 
@@ -347,7 +347,7 @@ describe('Scan', () => {
     component.startFileInput = { nativeElement: input };
 
     const event = { target: { files: [] } } as any;
-    component.onFileSelected(event, 'START');
+    await component.onFileSelected(event, 'START');
 
     expect(component.pendingStart).toBeNull();
     expect(component.pendingStartFile).toBeNull();
@@ -408,7 +408,7 @@ describe('Scan', () => {
     }
   });
 
-  it('should keep file when geolocation is not yet available', () => {
+  it('should keep file when geolocation is not yet available', async () => {
     const fixture = TestBed.createComponent(Scan);
     fixture.detectChanges();
 
@@ -417,14 +417,14 @@ describe('Scan', () => {
     const input = { files: [file], value: 'x' };
     component.pendingStart = null;
 
-    component.onFileSelected({ target: input } as any, 'START');
+    await component.onFileSelected({ target: input } as any, 'START');
 
     expect(snackBar.lastMessage).toBeNull();
     expect(component.pendingStartFile).toBe(file);
     expect(scanService.upload).not.toHaveBeenCalled();
   });
 
-  it('should upload photo and update start entry', () => {
+  it('should upload photo and update start entry', async () => {
     const fixture = TestBed.createComponent(Scan);
     fixture.detectChanges();
 
@@ -444,7 +444,7 @@ describe('Scan', () => {
     component.startFileInput = { nativeElement: input };
     scanService.upload.mockReturnValue(of(entry));
 
-    component.onFileSelected({ target: input } as any, 'START');
+    await component.onFileSelected({ target: input } as any, 'START');
 
     expect(component.startEntry()).toEqual(entry);
     expect(component.pendingStart).toBeNull();
@@ -454,7 +454,7 @@ describe('Scan', () => {
     expect(snackBar.lastMessage).toContain('Foto verarbeitet');
   });
 
-  it('should upload photo and update end entry', () => {
+  it('should upload photo and update end entry', async () => {
     const fixture = TestBed.createComponent(Scan);
     fixture.detectChanges();
 
@@ -474,7 +474,7 @@ describe('Scan', () => {
     component.endFileInput = { nativeElement: input };
     scanService.upload.mockReturnValue(of(entry));
 
-    component.onFileSelected({ target: input } as any, 'ZIEL');
+    await component.onFileSelected({ target: input } as any, 'ZIEL');
 
     expect(component.endEntry()).toEqual(entry);
     expect(component.scanForm.controls.endKm.value).toBe(1500);
@@ -483,7 +483,7 @@ describe('Scan', () => {
     expect(input.value).toBe('');
   });
 
-  it('should handle upload errors and reset state', () => {
+  it('should handle upload errors and reset state', async () => {
     const fixture = TestBed.createComponent(Scan);
     fixture.detectChanges();
 
@@ -494,7 +494,7 @@ describe('Scan', () => {
     component.endFileInput = { nativeElement: input };
     scanService.upload.mockReturnValue(throwError(() => ({ status: 500, message: 'Boom' })));
 
-    component.onFileSelected({ target: input } as any, 'ZIEL');
+    await component.onFileSelected({ target: input } as any, 'ZIEL');
 
     expect(component.pendingEnd).toBeNull();
     expect(component.pendingEndFile).toBeNull();
@@ -624,7 +624,7 @@ describe('Scan', () => {
     expect(component.scanForm.controls.endAddress.value).toBe('Neu');
   });
 
-  it('should clear pending end capture when no file is selected', () => {
+  it('should clear pending end capture when no file is selected', async () => {
     const fixture = TestBed.createComponent(Scan);
     fixture.detectChanges();
 
@@ -635,7 +635,7 @@ describe('Scan', () => {
     component.endFileInput = { nativeElement: input };
 
     const event = { target: { files: [] } } as any;
-    component.onFileSelected(event, 'ZIEL');
+    await component.onFileSelected(event, 'ZIEL');
 
     expect(component.pendingEnd).toBeNull();
     expect(component.pendingEndFile).toBeNull();

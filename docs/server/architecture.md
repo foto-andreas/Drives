@@ -57,7 +57,7 @@ Die Anwendung unterstützt mehrere Benutzer (Tenants) mit strikt getrennten Date
 3. **Dynamik:** Die Datenbankverbindung wird "Just-in-Time" beim ersten Request des Benutzers aufgebaut und das Schema initialisiert.
 
 ### Externe Dienste
-- **OCR:** Tesseract (via Tess4J) extrahiert den KM-Stand aus Fotos; zuerst wird ein CLI-ähnlicher Pass auf dem Originalbild ausgeführt. Bei verdächtigen Ergebnissen folgen ein normaler Pass mit Vorverarbeitung und danach ein Relaxed-Fallback.
+- **OCR:** Tesseract (via Tess4J) extrahiert den KM-Stand aus Fotos; der erste Pass arbeitet auf einem unteren Bildstreifen (Band-Crop) mit `PSM_SINGLE_LINE` und Ziffern-Whitelist. Der normale Pass erhöht Kontrast/Helligkeit, entfernt Schatten (Dilation + Median-Blur + Normalisierung) und binarisiert per Otsu; der Relaxed-Pass nutzt dieselbe Normalisierung ohne harte Binarisierung.
 - **Geocoding:** Nominatim (OpenStreetMap) liefert Adressen für GPS-Koordinaten.
 
 ### OCR-Debugging (optional)
@@ -68,9 +68,9 @@ Für Problemfälle (z.B. OCR-Ergebnisse unterscheiden sich zwischen Desktop und 
 
 Artefakte pro Request:
 - `01-original.png` (Originalbild)
-- `02-cli-like.png` (CLI-ähnlicher Pass auf Originalbild)
-- `03-prepared.png` (Vorverarbeitung, normaler Pass)
-- `04-relaxed.png` (Relaxed-Fallback)
+- `02-cli-like.png` (unterer Bildstreifen für den ersten OCR-Pass)
+- `03-prepared.png` (Vorverarbeitung mit Kontrast/Shadow-Removal + Otsu)
+- `04-relaxed.png` (Shadow-Removal ohne harte Binarisierung)
 - `ocr-cli-like.txt` (OCR-Text aus CLI-ähnlichem Pass)
 - `ocr-primary.txt` (OCR-Text aus dem normalen Pass)
 - `ocr-fallback.txt` (OCR-Text aus Relaxed-Fallback)

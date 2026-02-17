@@ -20,6 +20,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.UUID;
@@ -34,11 +35,58 @@ public class OcrService {
     private static final Pattern DIGITS = Pattern.compile("(\\d{3,})");
     private static final int MIN_ROI_DIMENSION = 3;
     private static final double MIN_ROI_RATIO = 0.05;
+    private static final double CLI_LIKE_CROP_TOP_RATIO = 0.25;
+    private static final double CLI_LIKE_CROP_HEIGHT_RATIO = 0.6;
+    private static final double PREPROCESS_CONTRAST = 1.0;
+    private static final int PREPROCESS_BRIGHTNESS = 5;
+    private static final int SHADOW_DILATE_SIZE = 7;
+    private static final int SHADOW_MEDIAN_SIZE = 21;
+    private static final int SHADOW_MAX_WIDTH = 600;
 
     private final OcrProperties properties;
 
     @jakarta.annotation.PostConstruct
     void configureNativeLibraryPath() {
+        String envTessPath = System.getenv("TESSERACT_PATH");
+        String envOcrLibraryPath = System.getenv("OCR_LIBRARY_PATH");
+        String envAppOcrPath = System.getenv("APP_OCR_TESSERACT_PATH");
+        log.info("OCR env TESSERACT_PATH='{}', APP_OCR_TESSERACT_PATH='{}', OCR_LIBRARY_PATH='{}'",
+                envTessPath, envAppOcrPath, envOcrLibraryPath);
+
+        String tessPath = properties.getTesseractPath();
+        if (tessPath == null || tessPath.isBlank()) {
+            log.warn("OCR tessdata path is blank. Set app.ocr.tesseract-path or TESSERACT_PATH.");
+        } else {
+            Path tessDir = Paths.get(tessPath);
+            boolean exists = Files.exists(tessDir);
+            boolean directory = Files.isDirectory(tessDir);
+            log.info("OCR tessdata path: {} (exists={}, directory={})", tessPath, exists, directory);
+            if (exists && directory) {
+                String language = properties.getLanguage();
+                if (language != null && !language.isBlank()) {
+                    String[] languages = language.split("\\+");
+                    boolean missing = false;
+                    for (String lang : languages) {
+                        String trimmed = lang.trim();
+                        if (trimmed.isEmpty()) {
+                            continue;
+                        }
+                        Path trainedData = tessDir.resolve(trimmed + ".traineddata");
+                        boolean present = Files.exists(trainedData);
+                        log.info("OCR traineddata {}: {}", trainedData.getFileName(), present ? "present" : "missing");
+                        if (!present) {
+                            missing = true;
+                        }
+                    }
+                    if (missing) {
+                        log.warn("OCR traineddata files missing for language(s): {}", language);
+                    }
+                }
+            } else {
+                log.warn("OCR tessdata path does not exist or is not a directory.");
+            }
+        }
+
         String libraryPath = properties.getLibraryPath();
         if (libraryPath == null || libraryPath.isBlank()) {
             return;
@@ -66,7 +114,7 @@ public class OcrService {
             BufferedImage image = readImage(photo);
             writeDebugImage(debugDir, "01-original", image);
 
-            BufferedImage cliLike = resizeForSpeed(image, properties.getMaxWidth());
+            BufferedImage cliLike = cropForCliLike(resizeForSpeed(image, properties.getMaxWidth()));
             writeDebugImage(debugDir, "02-cli-like", cliLike);
             String cliText = doOcrCliLike(cliLike);
             log.info("OCR CLI-like result: {}", cliText);
@@ -159,7 +207,8 @@ public class OcrService {
             tesseract.setVariable("load_freq_dawg", "0");
             tesseract.setPageSegMode(TessAPI.TessPageSegMode.PSM_SINGLE_LINE);
         } else if (cliLike) {
-            tesseract.setPageSegMode(TessAPI.TessPageSegMode.PSM_AUTO);
+            tesseract.setVariable("tessedit_char_whitelist", "0123456789");
+            tesseract.setPageSegMode(TessAPI.TessPageSegMode.PSM_SINGLE_LINE);
         } else {
             tesseract.setPageSegMode(TessAPI.TessPageSegMode.PSM_AUTO);
         }
@@ -168,23 +217,22 @@ public class OcrService {
 
     private BufferedImage preprocess(BufferedImage source) {
         BufferedImage resized = resizeForSpeed(source, properties.getMaxWidth());
-        BufferedImage cropped = findWhiteTextRoi(resized)
-                .orElseGet(() -> centerBandCrop(
-                        resized,
-                        properties.getCropWidthRatio(),
-                        properties.getCropHeightRatio(),
-                        properties.getCropMinHeight()
-                ));
+        BufferedImage cropped = cropForCliLike(resized);
         BufferedImage gray = toGrayscale(cropped);
-        int threshold = otsuThreshold(gray);
-        BufferedImage binarized = binarize(gray, threshold);
+        BufferedImage adjusted = adjustContrastBrightness(gray, PREPROCESS_CONTRAST, PREPROCESS_BRIGHTNESS);
+        BufferedImage normalized = removeShadows(adjusted);
+        int threshold = otsuThreshold(normalized);
+        BufferedImage binarized = binarize(normalized, threshold);
         return ensureBlackTextOnWhite(binarized);
     }
 
     private BufferedImage preprocessRelaxed(BufferedImage source) {
         BufferedImage resized = resizeForSpeed(source, properties.getMaxWidth());
-        BufferedImage gray = toGrayscale(resized);
-        return ensureBlackTextOnWhite(gray);
+        BufferedImage cropped = cropForCliLike(resized);
+        BufferedImage gray = toGrayscale(cropped);
+        BufferedImage adjusted = adjustContrastBrightness(gray, PREPROCESS_CONTRAST, PREPROCESS_BRIGHTNESS);
+        BufferedImage normalized = removeShadows(adjusted);
+        return ensureBlackTextOnWhite(normalized);
     }
 
     private BufferedImage resizeForSpeed(BufferedImage source, int maxWidth) {
@@ -201,6 +249,36 @@ public class OcrService {
         g2d.drawImage(source, 0, 0, maxWidth, targetHeight, null);
         g2d.dispose();
         return resized;
+    }
+
+    private BufferedImage resize(BufferedImage source, int targetWidth, int targetHeight) {
+        int type = source.getType() == 0 ? BufferedImage.TYPE_INT_RGB : source.getType();
+        BufferedImage resized = new BufferedImage(targetWidth, targetHeight, type);
+        Graphics2D g2d = resized.createGraphics();
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g2d.drawImage(source, 0, 0, targetWidth, targetHeight, null);
+        g2d.dispose();
+        return resized;
+    }
+
+    private BufferedImage cropForCliLike(BufferedImage source) {
+        int width = source.getWidth();
+        int height = source.getHeight();
+        int y = (int) Math.round(height * CLI_LIKE_CROP_TOP_RATIO);
+        int cropHeight = (int) Math.round(height * CLI_LIKE_CROP_HEIGHT_RATIO);
+        if (cropHeight <= 0) {
+            cropHeight = height;
+        }
+        if (y < 0) {
+            y = 0;
+        }
+        if (y + cropHeight > height) {
+            cropHeight = height - y;
+        }
+        if (cropHeight <= 0) {
+            return source;
+        }
+        return source.getSubimage(0, y, width, cropHeight);
     }
 
     private BufferedImage centerBandCrop(BufferedImage source, double widthRatio, double heightRatio, int minHeight) {
@@ -278,6 +356,158 @@ public class OcrService {
         g2d.drawImage(source, 0, 0, null);
         g2d.dispose();
         return gray;
+    }
+
+    private BufferedImage adjustContrastBrightness(BufferedImage source, double contrast, int brightness) {
+        int width = source.getWidth();
+        int height = source.getHeight();
+        BufferedImage out = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int gray = source.getRGB(x, y) & 0xff;
+                int value = clamp((int) Math.round(gray * contrast + brightness));
+                int rgb = (value << 16) | (value << 8) | value;
+                out.setRGB(x, y, rgb);
+            }
+        }
+        return out;
+    }
+
+    private BufferedImage removeShadows(BufferedImage source) {
+        int width = source.getWidth();
+        int height = source.getHeight();
+        int targetWidth = Math.min(width, SHADOW_MAX_WIDTH);
+        int targetHeight = Math.max(1, (int) Math.round(height * (targetWidth / (double) width)));
+        BufferedImage small = (targetWidth == width && targetHeight == height)
+                ? source
+                : resize(source, targetWidth, targetHeight);
+
+        int[][] smallGray = toGrayArray(small);
+        int[][] dilated = dilateMax(smallGray, SHADOW_DILATE_SIZE);
+        int[][] blurred = medianBlur(dilated, SHADOW_MEDIAN_SIZE);
+        BufferedImage backgroundSmall = fromGrayArray(blurred);
+        BufferedImage background = (backgroundSmall.getWidth() == width && backgroundSmall.getHeight() == height)
+                ? backgroundSmall
+                : resize(backgroundSmall, width, height);
+
+        int[][] src = toGrayArray(source);
+        int[][] bg = toGrayArray(background);
+        int[][] diff = new int[height][width];
+        int min = 255;
+        int max = 0;
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int value = 255 - Math.abs(src[y][x] - bg[y][x]);
+                diff[y][x] = value;
+                if (value < min) {
+                    min = value;
+                }
+                if (value > max) {
+                    max = value;
+                }
+            }
+        }
+        int range = Math.max(1, max - min);
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                diff[y][x] = (diff[y][x] - min) * 255 / range;
+            }
+        }
+        return fromGrayArray(diff);
+    }
+
+    private int[][] toGrayArray(BufferedImage source) {
+        int width = source.getWidth();
+        int height = source.getHeight();
+        int[][] gray = new int[height][width];
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                gray[y][x] = source.getRGB(x, y) & 0xff;
+            }
+        }
+        return gray;
+    }
+
+    private BufferedImage fromGrayArray(int[][] gray) {
+        int height = gray.length;
+        int width = gray[0].length;
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int value = gray[y][x] & 0xff;
+                int rgb = (value << 16) | (value << 8) | value;
+                image.setRGB(x, y, rgb);
+            }
+        }
+        return image;
+    }
+
+    private int[][] dilateMax(int[][] source, int size) {
+        int height = source.length;
+        int width = source[0].length;
+        int radius = size / 2;
+        int[][] out = new int[height][width];
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int max = 0;
+                for (int dy = -radius; dy <= radius; dy++) {
+                    int yy = clampIndex(y + dy, height);
+                    for (int dx = -radius; dx <= radius; dx++) {
+                        int xx = clampIndex(x + dx, width);
+                        int value = source[yy][xx];
+                        if (value > max) {
+                            max = value;
+                        }
+                    }
+                }
+                out[y][x] = max;
+            }
+        }
+        return out;
+    }
+
+    private int[][] medianBlur(int[][] source, int size) {
+        int height = source.length;
+        int width = source[0].length;
+        int radius = size / 2;
+        int[][] out = new int[height][width];
+        int windowSize = size * size;
+        int[] window = new int[windowSize];
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int idx = 0;
+                for (int dy = -radius; dy <= radius; dy++) {
+                    int yy = clampIndex(y + dy, height);
+                    for (int dx = -radius; dx <= radius; dx++) {
+                        int xx = clampIndex(x + dx, width);
+                        window[idx++] = source[yy][xx];
+                    }
+                }
+                Arrays.sort(window, 0, idx);
+                out[y][x] = window[idx / 2];
+            }
+        }
+        return out;
+    }
+
+    private int clampIndex(int value, int max) {
+        if (value < 0) {
+            return 0;
+        }
+        if (value >= max) {
+            return max - 1;
+        }
+        return value;
+    }
+
+    private int clamp(int value) {
+        if (value < 0) {
+            return 0;
+        }
+        if (value > 255) {
+            return 255;
+        }
+        return value;
     }
 
     private BufferedImage binarize(BufferedImage source, int threshold) {

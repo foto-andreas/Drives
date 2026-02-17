@@ -36,6 +36,8 @@ interface PendingCapture {
   ],
 })
 export class Scan {
+  private static readonly MAX_IMAGE_DIMENSION = 1280;
+  private static readonly JPEG_QUALITY = 0.85;
   private readonly scanService = inject(ScanService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly router = inject(Router);
@@ -151,7 +153,7 @@ export class Scan {
     );
   }
 
-  onFileSelected(event: Event, type: ScanType): void {
+  async onFileSelected(event: Event, type: ScanType): Promise<void> {
     const input = event.target as HTMLInputElement;
     const file = input.files && input.files.length > 0 ? input.files[0] : null;
     if (!file) {
@@ -161,7 +163,8 @@ export class Scan {
       return;
     }
 
-    this.setPendingFile(type, file);
+    const preparedFile = await this.prepareUploadFile(file);
+    this.setPendingFile(type, preparedFile);
     this.tryUpload(type);
   }
 
@@ -344,5 +347,66 @@ export class Scan {
     if (!normalized) return null;
     const num = Number(normalized);
     return Number.isFinite(num) ? num : null;
+  }
+
+  private async prepareUploadFile(file: File): Promise<File> {
+    if (!file.type.startsWith('image/')) {
+      return file;
+    }
+    if (typeof createImageBitmap !== 'function' || typeof document === 'undefined') {
+      return file;
+    }
+
+    try {
+      let bitmap: ImageBitmap;
+      try {
+        bitmap = await createImageBitmap(file, { imageOrientation: 'none' });
+      } catch {
+        bitmap = await createImageBitmap(file);
+      }
+
+      const maxDimension = Math.max(bitmap.width, bitmap.height);
+      if (maxDimension <= Scan.MAX_IMAGE_DIMENSION) {
+        bitmap.close();
+        return file;
+      }
+
+      const scale = Scan.MAX_IMAGE_DIMENSION / maxDimension;
+      const targetWidth = Math.max(1, Math.round(bitmap.width * scale));
+      const targetHeight = Math.max(1, Math.round(bitmap.height * scale));
+      const canvas = document.createElement('canvas');
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        bitmap.close();
+        return file;
+      }
+      ctx.drawImage(bitmap, 0, 0, targetWidth, targetHeight);
+      bitmap.close();
+
+      const blob = await new Promise<Blob | null>((resolve) => {
+        canvas.toBlob(resolve, 'image/jpeg', Scan.JPEG_QUALITY);
+      });
+      if (!blob) {
+        return file;
+      }
+
+      return new File([blob], this.buildResizedFileName(file.name), {
+        type: blob.type,
+        lastModified: file.lastModified,
+      });
+    } catch {
+      return file;
+    }
+  }
+
+  private buildResizedFileName(originalName: string): string {
+    if (!originalName) {
+      return 'scan.jpg';
+    }
+    const dot = originalName.lastIndexOf('.');
+    const base = dot > 0 ? originalName.slice(0, dot) : originalName;
+    return `${base}.jpg`;
   }
 }
