@@ -118,6 +118,28 @@ class OcrServiceTest {
     }
 
     @Test
+    void findWhiteTextRoiIgnoresAreasThatAreTooSmall() {
+        OcrProperties properties = new OcrProperties();
+        properties.setWhiteMinBrightness(200);
+        properties.setWhiteMaxDelta(60);
+        properties.setMinWhitePixels(10);
+        properties.setRoiPadding(0);
+        OcrService service = new OcrService(properties);
+
+        BufferedImage image = new BufferedImage(100, 40, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2d = image.createGraphics();
+        g2d.setColor(new Color(15, 40, 90));
+        g2d.fillRect(0, 0, 100, 40);
+        g2d.setColor(Color.WHITE);
+        g2d.fillRect(10, 2, 2, 36);
+        g2d.dispose();
+
+        Optional<BufferedImage> roi = service.findWhiteTextRoiForTest(image);
+
+        assertThat(roi).isEmpty();
+    }
+
+    @Test
     void preprocessResizesLargeImages() {
         OcrProperties properties = new OcrProperties();
         properties.setMaxWidth(200);

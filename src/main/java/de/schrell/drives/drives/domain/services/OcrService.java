@@ -32,6 +32,8 @@ import java.util.regex.Pattern;
 public class OcrService {
 
     private static final Pattern DIGITS = Pattern.compile("(\\d{3,})");
+    private static final int MIN_ROI_DIMENSION = 3;
+    private static final double MIN_ROI_RATIO = 0.05;
 
     private final OcrProperties properties;
 
@@ -258,6 +260,12 @@ public class OcrService {
 
         int roiWidth = Math.max(1, x2 - x1 + 1);
         int roiHeight = Math.max(1, y2 - y1 + 1);
+
+        int minWidth = Math.max(MIN_ROI_DIMENSION, (int) Math.round(width * MIN_ROI_RATIO));
+        int minHeight = Math.max(MIN_ROI_DIMENSION, (int) Math.round(height * MIN_ROI_RATIO));
+        if (roiWidth < minWidth || roiHeight < minHeight) {
+            return Optional.empty();
+        }
 
         return Optional.of(source.getSubimage(x1, y1, roiWidth, roiHeight));
     }
