@@ -14,7 +14,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Configuration
@@ -25,7 +24,7 @@ public class MultiTenantDataSourceConfiguration {
     private final String username;
     private final String password;
     private final String driverClassName;
-    private final Map<Object, Object> resolvedDataSources = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, DataSource> resolvedDataSources = new ConcurrentHashMap<>();
     private final DatabaseInitializationTracker initializationTracker;
 
     public MultiTenantDataSourceConfiguration(
@@ -48,11 +47,18 @@ public class MultiTenantDataSourceConfiguration {
             @Override
             protected DataSource determineTargetDataSource() {
                 Object lookupKey = determineCurrentLookupKey();
-                if (lookupKey != null && !resolvedDataSources.containsKey(lookupKey)) {
-                    DataSource tenantDataSource = createDataSource((String) lookupKey);
-                    resolvedDataSources.put(lookupKey, tenantDataSource);
-                    setTargetDataSources(new HashMap<>(resolvedDataSources));
-                    afterPropertiesSet();
+                if (lookupKey instanceof String tenantId) {
+                    boolean[] created = new boolean[1];
+                    DataSource tenantDataSource = resolvedDataSources.computeIfAbsent(tenantId, key -> {
+                        created[0] = true;
+                        return createDataSource(key);
+                    });
+                    if (created[0]) {
+                        synchronized (resolvedDataSources) {
+                            setTargetDataSources(new HashMap<>(resolvedDataSources));
+                            afterPropertiesSet();
+                        }
+                    }
                 }
                 return super.determineTargetDataSource();
             }
@@ -62,7 +68,7 @@ public class MultiTenantDataSourceConfiguration {
         resolvedDataSources.put("default", defaultDataSource);
 
         routingDataSource.setDefaultTargetDataSource(defaultDataSource);
-        routingDataSource.setTargetDataSources(resolvedDataSources);
+        routingDataSource.setTargetDataSources(new HashMap<>(resolvedDataSources));
         routingDataSource.afterPropertiesSet();
 
         return routingDataSource;
