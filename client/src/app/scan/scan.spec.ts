@@ -454,6 +454,32 @@ describe('Scan', () => {
     expect(snackBar.lastMessage).toContain('Foto verarbeitet');
   });
 
+  it('should show error snackbar when km stand is missing', async () => {
+    const fixture = TestBed.createComponent(Scan);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance as any;
+    const file = new File(['x'], 'photo.jpg', { type: 'image/jpeg' });
+    const input = { files: [file], value: 'x' };
+    const entry: ScanEntry = {
+      id: 's2',
+      type: 'START',
+      timestamp: new Date(),
+      latitude: 48.1,
+      longitude: 11.6,
+      address: 'Adresse',
+      kmStand: null
+    };
+    component.pendingStart = { timestamp: entry.timestamp, latitude: 48.1, longitude: 11.6 };
+    component.startFileInput = { nativeElement: input };
+    scanService.upload.mockReturnValue(of(entry));
+
+    await component.onFileSelected({ target: input } as any, 'START');
+
+    expect(snackBar.lastMessage).toContain('KM-Stand');
+    expect(snackBar.lastConfig?.duration).toBe(2000);
+  });
+
   it('should upload photo and update end entry', async () => {
     const fixture = TestBed.createComponent(Scan);
     fixture.detectChanges();

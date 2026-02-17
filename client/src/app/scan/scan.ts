@@ -240,6 +240,15 @@ export class Scan {
       )
       .subscribe({
         next: entry => {
+          if (!entry) {
+            this.snackBar.open('Foto konnte nicht verarbeitet werden', 'Schließen', {
+              duration: 2000,
+              horizontalPosition: 'center',
+              verticalPosition: 'bottom',
+              panelClass: ['error-snackbar']
+            });
+            return;
+          }
           if (type === 'START') {
             this.startEntry.set(entry);
             this.applyEntryToForm(entry, 'START');
@@ -247,12 +256,21 @@ export class Scan {
             this.endEntry.set(entry);
             this.applyEntryToForm(entry, 'ZIEL');
           }
-          this.snackBar.open('Foto verarbeitet', 'Schließen', {
-            duration: 3000,
-            horizontalPosition: 'center',
-            verticalPosition: 'bottom',
-            panelClass: ['success-snackbar']
-          });
+          if (entry.kmStand === null || entry.kmStand === undefined) {
+            this.snackBar.open('KM-Stand konnte nicht erkannt werden', 'Schließen', {
+              duration: 2000,
+              horizontalPosition: 'center',
+              verticalPosition: 'bottom',
+              panelClass: ['error-snackbar']
+            });
+          } else {
+            this.snackBar.open('Foto verarbeitet', 'Schließen', {
+              duration: 3000,
+              horizontalPosition: 'center',
+              verticalPosition: 'bottom',
+              panelClass: ['success-snackbar']
+            });
+          }
         },
         error: (err) => {
           const serverMsg = err && typeof err === 'object'
