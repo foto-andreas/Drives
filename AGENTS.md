@@ -58,3 +58,12 @@ Dieses Repository hat **zwei getrennte Guideline-Sets** (jeweils im `.junie`-Ver
 * Nimm eventuelle Korrekturen und Erweiterungen vor.
 * Halte dich an die aktuelle einheitliche Struktur.
 * Ergänze Kommentare, falls sinnvoll.
+* Ergänze IMMER die Dokumentation um fehlende Teile und passe sie entsprechend der aktuellen Implementierung an.
+* Ergänze die Dokumentation um neue Funktionen und Features, wenn diese hinzugefügt werden.
+* Aktualisiere die Dokumentation bei Änderungen an bestehenden Funktionen und Features.
+* Verwende ein einheitliches Format für die Dokumentation, um eine konsistente Darstellung zu gewährleisten.
+* Verwende Markdown für die Dokumentation, um eine einfache und lesbare Formatierung zu ermöglichen.
+* Verwende Markdown-Plugins für die Dokumentation, um zusätzliche Funktionalitäten wie Code-Snippets oder Diagramme zu unterstützen.
+* Verwende Markdown-Tools für die Dokumentation, um die Dokumentation zu erstellen und zu verwalten.
+* Verwende Markdown-Editor-Plugins für die Dokumentation, um die Dokumentation zu bearbeiten und zu formatieren.
+* Verwende Markdown-Viewer-Plugins für die Dokumentation, um die Dokumentation zu lesen und zu präsentieren.
