@@ -93,7 +93,7 @@ public class GeocodingService {
                 address.street(),
                 address.residential()
         );
-        String street = joinParts(streetName, address.houseNumber());
+        String street = joinParts(streetName, address.houseNumber(), " ");
         String locality = firstNonBlank(
                 address.city(),
                 address.town(),
@@ -103,7 +103,7 @@ public class GeocodingService {
                 address.county(),
                 address.state()
         );
-        String base = joinParts(street, locality);
+        String base = joinParts(street, locality, ", ");
         String countryCode = address.countryCode();
         if (countryCode != null && !countryCode.isBlank() && !"de".equalsIgnoreCase(countryCode)) {
             return base + " (" + countryCode.toUpperCase() + ")";
@@ -111,13 +111,13 @@ public class GeocodingService {
         return base;
     }
 
-    private String joinParts(String first, String second) {
+    private String joinParts(String first, String second, String separator) {
         String f = firstNonBlank(first);
         String s = firstNonBlank(second);
         if (f == null && s == null) return "";
         if (f == null) return s;
         if (s == null) return f;
-        return f + ", " + s;
+        return f + separator + s;
     }
 
     private String firstNonBlank(String... values) {

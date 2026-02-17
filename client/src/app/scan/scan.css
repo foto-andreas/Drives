@@ -6,8 +6,8 @@
   background: #fafafa;
 }
 
-.card.my-5 {
-  xmargin-top: calc(3rem - 24px);
+h2 {
+  margin-top: 0;
 }
 
 .section-header {

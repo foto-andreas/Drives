@@ -42,7 +42,7 @@ class GeocodingServiceTest {
 
         String result = service.formatAddress(address);
 
-        assertThat(result).isEqualTo("Main Street, 10 (GB)");
+        assertThat(result).isEqualTo("Main Street 10 (GB)");
     }
 
     @Test
@@ -70,7 +70,7 @@ class GeocodingServiceTest {
 
         String result = service.formatAddress(address);
 
-        assertThat(result).isEqualTo("Hauptstrasse, 5, Berlin");
+        assertThat(result).isEqualTo("Hauptstrasse 5, Berlin");
     }
 
     @Test
@@ -125,7 +125,7 @@ class GeocodingServiceTest {
 
         GeocodingService service = new GeocodingService(properties, restTemplate);
 
-        assertThat(service.reverseGeocode(51.983979, 9.236743)).contains("Hauptstrasse, 5, Berlin");
+        assertThat(service.reverseGeocode(51.983979, 9.236743)).contains("Hauptstrasse 5, Berlin");
         server.verify();
     }
 

@@ -100,7 +100,7 @@ Zentrale Geschäftslogik und transaktionale Grenzen.
 | `DriveTemplateService` | Verwaltet Vorlagen. Verhindert das Löschen von Vorlagen, die noch in Fahrten referenziert werden. |
 | `ScanEntryService` | Scan-Workflow: OCR, Reverse-Geocoding, Validierung und Commit zur Fahrt (inkl. optionalem `reason`, Default `OTHER`). |
 | `OcrService` | Extrahiert den KM-Stand aus Fotos via Tesseract (Tess4J); zuerst wird ein unterer Bildstreifen mit `PSM_SINGLE_LINE` und Ziffern-Whitelist erkannt, bei unplausiblen Ergebnissen folgen Vorverarbeitung (Kontrast/Helligkeit, Shadow-Removal, Otsu) und danach ein Relaxed-Fallback ohne harte Binarisierung. |
-| `GeocodingService` | Reverse-Geocoding via Nominatim (OpenStreetMap). |
+| `GeocodingService` | Reverse-Geocoding via Nominatim (OpenStreetMap); Straße und Hausnummer werden ohne Komma kombiniert. |
 
 #### 📂 `domain.repositories`
 Spring Data JPA Schnittstellen.

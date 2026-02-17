@@ -84,3 +84,7 @@ tr.mat-mdc-row {
     display: table-cell !important;
   }
 }
+
+h2 {
+  margin-top: 0;
+}

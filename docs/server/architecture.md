@@ -58,7 +58,7 @@ Die Anwendung unterstützt mehrere Benutzer (Tenants) mit strikt getrennten Date
 
 ### Externe Dienste
 - **OCR:** Tesseract (via Tess4J) extrahiert den KM-Stand aus Fotos; der erste Pass arbeitet auf einem unteren Bildstreifen (Band-Crop) mit `PSM_SINGLE_LINE` und Ziffern-Whitelist. Der normale Pass erhöht Kontrast/Helligkeit, entfernt Schatten (Dilation + Median-Blur + Normalisierung) und binarisiert per Otsu; der Relaxed-Pass nutzt dieselbe Normalisierung ohne harte Binarisierung.
-- **Geocoding:** Nominatim (OpenStreetMap) liefert Adressen für GPS-Koordinaten.
+- **Geocoding:** Nominatim (OpenStreetMap) liefert Adressen für GPS-Koordinaten; Straße und Hausnummer werden ohne Komma kombiniert.
 
 ### OCR-Debugging (optional)
 Für Problemfälle (z.B. OCR-Ergebnisse unterscheiden sich zwischen Desktop und Docker) kann Debug-Ausgabe aktiviert werden.
