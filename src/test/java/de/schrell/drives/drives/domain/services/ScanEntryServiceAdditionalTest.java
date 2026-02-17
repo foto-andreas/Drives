@@ -51,7 +51,7 @@ class ScanEntryServiceAdditionalTest {
         when(scanEntryRepository.findById("e1")).thenReturn(Optional.of(end));
         when(driveService.create(any(DriveCommand.class))).thenReturn(driveResponse);
 
-        scanEntryService.commitDrive("s1", "e1", 1234, 1246, "NeuVon", "NeuNach");
+        scanEntryService.commitDrive("s1", "e1", 1234, 1246, "NeuVon", "NeuNach", Reason.OTHER);
 
         ArgumentCaptor<ScanEntry> captor = ArgumentCaptor.forClass(ScanEntry.class);
         verify(scanEntryRepository, times(2)).save(captor.capture());
@@ -71,7 +71,7 @@ class ScanEntryServiceAdditionalTest {
         when(scanEntryRepository.findById("s1")).thenReturn(Optional.of(start));
         when(scanEntryRepository.findById("e1")).thenReturn(Optional.of(end));
 
-        assertThatThrownBy(() -> scanEntryService.commitDrive("s1", "e1", 1000, 1010, null, null))
+        assertThatThrownBy(() -> scanEntryService.commitDrive("s1", "e1", 1000, 1010, null, null, Reason.OTHER))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Start-Eintrag ist kein START");
     }

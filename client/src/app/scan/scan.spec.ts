@@ -484,6 +484,7 @@ describe('Scan', () => {
     const router = TestBed.inject(Router) as unknown as RouterMock;
     component.commitDrive();
 
+    expect(scanService.commitArgs?.[6]).toBe('OTHER');
     expect(router.navigate).toHaveBeenCalledWith(['/drives']);
     expect(component.endEntry()).toBeNull();
     expect(snackBar.lastMessage).toContain('Fahrt wurde uebernommen');

@@ -46,7 +46,8 @@ public class ScanEntryController {
                 request.startKmStand(),
                 request.endKmStand(),
                 request.startAddress(),
-                request.endAddress()
+                request.endAddress(),
+                request.reason()
         );
     }
 

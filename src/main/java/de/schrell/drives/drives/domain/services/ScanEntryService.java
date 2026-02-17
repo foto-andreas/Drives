@@ -60,7 +60,8 @@ public class ScanEntryService {
                                      Integer startKmStand,
                                      Integer endKmStand,
                                      String startAddress,
-                                     String endAddress) {
+                                     String endAddress,
+                                     Reason reason) {
         ScanEntry start = scanEntryRepository.findById(startId)
                 .orElseThrow(() -> new ResourceNotFoundException("Scan-Start mit id '%s' nicht gefunden".formatted(startId)));
         ScanEntry end = scanEntryRepository.findById(endId)
@@ -109,11 +110,12 @@ public class ScanEntryService {
                 ? endAddressValue
                 : (end.getAddress() != null ? end.getAddress() : formatCoordinates(end.getLatitude(), end.getLongitude()));
 
+        Reason resolvedReason = reason != null ? reason : Reason.OTHER;
         DriveCommand command = new DriveCommand(
                 null,
                 start.getTimestamp().toLocalDate(),
                 null,
-                Reason.OTHER,
+                resolvedReason,
                 from,
                 to,
                 length

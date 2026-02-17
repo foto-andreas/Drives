@@ -78,7 +78,7 @@ Data Transfer Objects (Java Records) für Request/Response.
 | `DriveRequest` / `DriveResponse` | Repräsentation einer Fahrt. |
 | `DriveTemplateRequest` / `DriveTemplateResponse` | Repräsentation einer Vorlage. |
 | `ScanEntryResponse` | Scan-Daten (Start/Ziel) inkl. GPS und KM-Stand. |
-| `ScanEntryCommitRequest` | Payload für die Erzeugung einer Fahrt aus Scan-Daten. |
+| `ScanEntryCommitRequest` | Payload für die Erzeugung einer Fahrt aus Scan-Daten, inkl. optionalem `reason` (Default: `OTHER`). |
 | `UserResponse` | Nutzername und Server-Version. |
 | `InitializationStatusResponse` | Initialisierungsflag für den aktuellen Tenant. |
 | `ErrorResponse` | Standardisiertes Fehlerformat für den `GlobalExceptionHandler`. |
@@ -98,7 +98,7 @@ Zentrale Geschäftslogik und transaktionale Grenzen.
 | :--- | :--- |
 | `DriveService` | Steuert das Erstellen, Ändern und Löschen von Fahrten. Implementiert die Validierung (Pflichtfelder ohne Vorlage) und die Redundanzprüfung (Löschen von Werten, die dem Template entsprechen). |
 | `DriveTemplateService` | Verwaltet Vorlagen. Verhindert das Löschen von Vorlagen, die noch in Fahrten referenziert werden. |
-| `ScanEntryService` | Scan-Workflow: OCR, Reverse-Geocoding, Validierung und Commit zur Fahrt. |
+| `ScanEntryService` | Scan-Workflow: OCR, Reverse-Geocoding, Validierung und Commit zur Fahrt (inkl. optionalem `reason`, Default `OTHER`). |
 | `OcrService` | Extrahiert den KM-Stand aus Fotos via Tesseract (Tess4J) und nutzt bei unplausiblen Ergebnissen einen Relaxed-Fallback mit weniger aggressiver Vorverarbeitung und permissiverem OCR-Setup (OEM_DEFAULT/PSM_AUTO, ohne Whitelist); falls nötig folgt ein CLI-ähnlicher Pass auf dem Originalbild. |
 | `GeocodingService` | Reverse-Geocoding via Nominatim (OpenStreetMap). |
 

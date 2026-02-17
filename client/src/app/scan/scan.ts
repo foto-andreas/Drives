@@ -4,12 +4,15 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { toSignal, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
 import { ScanEntry, ScanType } from '../scan-entry';
 import { ScanService } from '../scan-service';
+import { ReasonKey } from '../reason';
+import { ReasonHelper } from '../reason-helper';
 
 interface PendingCapture {
   timestamp: Date;
@@ -28,6 +31,7 @@ interface PendingCapture {
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
+    MatSelectModule,
     MatSnackBarModule,
   ],
 })
@@ -49,6 +53,7 @@ export class Scan {
     startAddress: new FormControl<string | null>(null),
     endKm: new FormControl<number | null>(null, [Validators.required, Validators.min(1)]),
     endAddress: new FormControl<string | null>(null),
+    reason: new FormControl<ReasonKey | null>('OTHER'),
   });
   private readonly scanFormValue = toSignal(this.scanForm.valueChanges, { initialValue: this.scanForm.getRawValue() });
   private lastStartId: string | null = null;
@@ -64,6 +69,8 @@ export class Scan {
     if (startKm === null || endKm === null) return null;
     return endKm - startKm;
   });
+  protected readonly reasons = ReasonHelper.keys();
+  protected readonly ReasonHelper = ReasonHelper;
 
   protected readonly canCommit = computed(() => {
     const length = this.driveLength();
@@ -217,7 +224,8 @@ export class Scan {
       startKm,
       endKm,
       this.scanForm.controls.startAddress.value,
-      this.scanForm.controls.endAddress.value
+      this.scanForm.controls.endAddress.value,
+      this.scanForm.controls.reason.value
     )
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({

@@ -103,3 +103,4 @@ Das Projekt nutzt einen hybriden Ansatz:
 ### Scan-Workflow
 - `ScanEntry` wird beim Upload gespeichert.
 - `commitDrive` validiert Start/Ziel und erzeugt daraus eine Fahrt (`Drive`).
+- Optionaler `reason` wird bei der Fahrt gesetzt; fehlt er, wird `OTHER` verwendet.

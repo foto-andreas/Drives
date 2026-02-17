@@ -73,7 +73,7 @@ Die Anwendung bietet einen integrierten CSV-Export in der Fahrtenliste. Dieser b
 Über den speziellen Grund `HOME` können Home-Office-Tage erfasst werden. Auf Mobilgeräten wird hierbei die UI angepasst (kein Richtungspfeil), und in der Vorlagen-Definition ist für diesen Fall eine Länge von 0 km zulässig.
 
 ### Scan-Workflow
-Die App unterstützt einen Scan-Flow für Start/Ziel: Geolocation + Foto werden hochgeladen, OCR liest den KM-Stand, Reverse-Geocoding ergänzt Adressen und der Nutzer kann daraus eine Fahrt erzeugen. Tesseract wird über `TESSERACT_PATH` konfiguriert, optionale Native-Libs über `OCR_LIBRARY_PATH`. Für Debugging können Zwischenbilder und OCR-Text über `OCR_DEBUG_ENABLED` und `OCR_DEBUG_DIR` ausgegeben werden; Details siehe `docs/server/architecture.md`.
+Die App unterstützt einen Scan-Flow für Start/Ziel: Geolocation + Foto werden hochgeladen, OCR liest den KM-Stand, Reverse-Geocoding ergänzt Adressen und der Nutzer kann daraus eine Fahrt erzeugen. Beim Commit kann ein `Grund` ausgewählt werden; falls keiner angegeben ist, wird `OTHER` verwendet. Tesseract wird über `TESSERACT_PATH` konfiguriert, optionale Native-Libs über `OCR_LIBRARY_PATH`. Für Debugging können Zwischenbilder und OCR-Text über `OCR_DEBUG_ENABLED` und `OCR_DEBUG_DIR` ausgegeben werden; Details siehe `docs/server/architecture.md`.
 
 ---
 

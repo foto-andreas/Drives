@@ -23,7 +23,7 @@ Verwaltet die Fahrtvorlagen.
 Verantwortlich für das Scannen von Start/Ziel.
 - **Upload:** `POST /api/scan-entries` (Multipart mit Foto, GPS und Timestamp).
 - **Latest-Start:** `GET /api/scan-entries/latest-start` (204 wenn kein Start verfügbar).
-- **Commit:** `POST /api/scan-entries/commit` erzeugt eine Fahrt aus Scan-Daten.
+- **Commit:** `POST /api/scan-entries/commit` erzeugt eine Fahrt aus Scan-Daten, inkl. optionalem `reason` (Default: `OTHER`).
 
 ### InitializationService
 Liest den Initialisierungsstatus der Tenant-Datenbank.

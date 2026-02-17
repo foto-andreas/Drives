@@ -100,11 +100,11 @@ class ScanEntryControllerTest {
                 "Nach",
                 12
         );
-        when(scanEntryService.commitDrive("s1", "e1", 1000, 1012, "Von", "Nach")).thenReturn(driveResponse);
+        when(scanEntryService.commitDrive("s1", "e1", 1000, 1012, "Von", "Nach", Reason.WORK)).thenReturn(driveResponse);
 
-        DriveResponse result = controller.commitDrive(new ScanEntryCommitRequest("s1", "e1", 1000, 1012, "Von", "Nach"));
+        DriveResponse result = controller.commitDrive(new ScanEntryCommitRequest("s1", "e1", 1000, 1012, "Von", "Nach", Reason.WORK));
 
         assertThat(result).isEqualTo(driveResponse);
-        verify(scanEntryService).commitDrive("s1", "e1", 1000, 1012, "Von", "Nach");
+        verify(scanEntryService).commitDrive("s1", "e1", 1000, 1012, "Von", "Nach", Reason.WORK);
     }
 }

@@ -4,6 +4,7 @@ import { map, Observable } from 'rxjs';
 import { SUPPRESS_GLOBAL_ERROR_TOAST } from './core/interceptors/error.interceptor';
 import { ScanEntry, ScanType } from './scan-entry';
 import { Drive } from './drive';
+import { ReasonKey } from './reason';
 
 @Injectable({
   providedIn: 'root',
@@ -37,7 +38,8 @@ export class ScanService {
     startKmStand: number | null,
     endKmStand: number | null,
     startAddress: string | null,
-    endAddress: string | null
+    endAddress: string | null,
+    reason: ReasonKey | null
   ): Observable<Drive> {
     const context = new HttpContext().set(SUPPRESS_GLOBAL_ERROR_TOAST, true);
     return this.http.post<Drive>('/api/scan-entries/commit', {
@@ -46,7 +48,8 @@ export class ScanService {
       startKmStand,
       endKmStand,
       startAddress,
-      endAddress
+      endAddress,
+      reason
     }, { context }).pipe(
       map(response => this.toDrive(response))
     );

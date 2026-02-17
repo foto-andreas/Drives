@@ -48,6 +48,7 @@ Basis-URL: `/api`
 - Zweck: Erzeugt eine Fahrt aus Scan-Start/Ziel
 - Request-Body: `ScanEntryCommitRequest`
 - Antwort: `DriveResponse`
+- Hinweis: Wenn `reason` fehlt, wird `OTHER` gesetzt.
 
 ## User
 
@@ -127,7 +128,8 @@ Basis-URL: `/api`
   startKmStand: number | null,
   endKmStand: number | null,
   startAddress: string | null,
-  endAddress: string | null
+  endAddress: string | null,
+  reason: Reason | null
 }
 ```
 

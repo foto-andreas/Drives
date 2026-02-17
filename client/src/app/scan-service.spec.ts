@@ -77,7 +77,7 @@ describe('ScanService', () => {
   });
 
   it('should commit drive via POST', () => {
-    service.commitDrive('s1', 'e1', 1000, 1012, 'Von', 'Nach').subscribe(drive => {
+    service.commitDrive('s1', 'e1', 1000, 1012, 'Von', 'Nach', 'WORK').subscribe(drive => {
       expect(drive.id).toBe('d1');
       expect(drive.date).toBeInstanceOf(Date);
     });
@@ -90,7 +90,8 @@ describe('ScanService', () => {
       startKmStand: 1000,
       endKmStand: 1012,
       startAddress: 'Von',
-      endAddress: 'Nach'
+      endAddress: 'Nach',
+      reason: 'WORK'
     });
 
     req.flush({

@@ -56,6 +56,14 @@
       </div>
 
       <div class="actions">
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Grund</mat-label>
+          <mat-select formControlName="reason" [panelClass]="'tall-combobox-panel'">
+            @for (reason of reasons; track reason) {
+              <mat-option [value]="reason">{{ ReasonHelper.toString(reason) }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
         <button mat-raised-button color="primary" type="button" (click)="commitDrive()"
                 [disabled]="!canCommit()">
           Fahrt übernehmen

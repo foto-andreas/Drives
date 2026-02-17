@@ -110,13 +110,13 @@ class ScanEntryServiceTest {
         OffsetDateTime endTs = OffsetDateTime.parse("2025-01-01T09:30:00Z");
         ScanEntry start = new ScanEntry("s1", ScanType.START, startTs, 48.1, 11.6, "StartAddr", 1000);
         ScanEntry end = new ScanEntry("e1", ScanType.ZIEL, endTs, 48.2, 11.7, "EndAddr", 1020);
-        DriveResponse driveResponse = new DriveResponse("d1", LocalDate.parse("2025-01-01"), null, Reason.OTHER, "StartAddr", "EndAddr", 20);
+        DriveResponse driveResponse = new DriveResponse("d1", LocalDate.parse("2025-01-01"), null, Reason.WORK, "StartAddr", "EndAddr", 20);
 
         when(scanEntryRepository.findById("s1")).thenReturn(Optional.of(start));
         when(scanEntryRepository.findById("e1")).thenReturn(Optional.of(end));
         when(driveService.create(any(DriveCommand.class))).thenReturn(driveResponse);
 
-        DriveResponse result = scanEntryService.commitDrive("s1", "e1", 1000, 1020, "StartAddr", "EndAddr");
+        DriveResponse result = scanEntryService.commitDrive("s1", "e1", 1000, 1020, "StartAddr", "EndAddr", Reason.WORK);
 
         ArgumentCaptor<DriveCommand> captor = ArgumentCaptor.forClass(DriveCommand.class);
         verify(driveService).create(captor.capture());
@@ -125,7 +125,7 @@ class ScanEntryServiceTest {
         assertThat(command.fromLocation()).isEqualTo("StartAddr");
         assertThat(command.toLocation()).isEqualTo("EndAddr");
         assertThat(command.driveLength()).isEqualTo(20);
-        assertThat(command.reason()).isEqualTo(Reason.OTHER);
+        assertThat(command.reason()).isEqualTo(Reason.WORK);
         assertThat(result).isEqualTo(driveResponse);
     }
 
@@ -139,7 +139,7 @@ class ScanEntryServiceTest {
         when(scanEntryRepository.findById("s1")).thenReturn(Optional.of(start));
         when(scanEntryRepository.findById("e1")).thenReturn(Optional.of(end));
 
-        assertThatThrownBy(() -> scanEntryService.commitDrive("s1", "e1", 1000, 999, "StartAddr", "EndAddr"))
+        assertThatThrownBy(() -> scanEntryService.commitDrive("s1", "e1", 1000, 999, "StartAddr", "EndAddr", Reason.OTHER))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("KM-Stand am Ziel muss groesser");
     }
@@ -158,8 +158,11 @@ class ScanEntryServiceTest {
             return new DriveResponse("d1", command.date(), null, Reason.OTHER, command.fromLocation(), command.toLocation(), command.driveLength());
         });
 
-        DriveResponse result = scanEntryService.commitDrive("s1", "e1", null, null, null, null);
+        DriveResponse result = scanEntryService.commitDrive("s1", "e1", null, null, null, null, null);
 
+        ArgumentCaptor<DriveCommand> captor = ArgumentCaptor.forClass(DriveCommand.class);
+        verify(driveService).create(captor.capture());
+        assertThat(captor.getValue().reason()).isEqualTo(Reason.OTHER);
         assertThat(result.fromLocation()).isEqualTo("51.500000, 9.200000");
         assertThat(result.toLocation()).isEqualTo("51.600000, 9.300000");
         assertThat(result.driveLength()).isEqualTo(10);
