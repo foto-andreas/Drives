@@ -87,6 +87,14 @@ describe('Scan', () => {
     expect(component.startEntry()).toBeNull();
   });
 
+  it('should default reason to OTHER', () => {
+    const fixture = TestBed.createComponent(Scan);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance as any;
+    expect(component.scanForm.controls.reason.value).toBe('OTHER');
+  });
+
   it('should enable commit when values are present and valid', () => {
     const fixture = TestBed.createComponent(Scan);
     fixture.detectChanges();
@@ -488,6 +496,38 @@ describe('Scan', () => {
     expect(router.navigate).toHaveBeenCalledWith(['/drives']);
     expect(component.endEntry()).toBeNull();
     expect(snackBar.lastMessage).toContain('Fahrt wurde uebernommen');
+  });
+
+  it('should pass selected reason to commit', () => {
+    const fixture = TestBed.createComponent(Scan);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance as any;
+    component.startEntry.set({
+      id: 's1',
+      type: 'START',
+      timestamp: new Date(),
+      latitude: 48.1,
+      longitude: 11.6,
+      address: 'Adresse',
+      kmStand: 1000
+    });
+    component.endEntry.set({
+      id: 'e1',
+      type: 'ZIEL',
+      timestamp: new Date(),
+      latitude: 48.2,
+      longitude: 11.7,
+      address: 'Adresse',
+      kmStand: 1010
+    });
+    component.scanForm.controls.startKm.setValue(1000);
+    component.scanForm.controls.endKm.setValue(1010);
+    component.scanForm.controls.reason.setValue('WORK');
+
+    component.commitDrive();
+
+    expect(scanService.commitArgs?.[6]).toBe('WORK');
   });
 
   it('should show snackbar on commit error', () => {

@@ -107,4 +107,23 @@ class ScanEntryControllerTest {
         assertThat(result).isEqualTo(driveResponse);
         verify(scanEntryService).commitDrive("s1", "e1", 1000, 1012, "Von", "Nach", Reason.WORK);
     }
+
+    @Test
+    void commitDriveAllowsNullReason() {
+        DriveResponse driveResponse = new DriveResponse(
+                "d1",
+                LocalDate.parse("2025-01-01"),
+                null,
+                Reason.OTHER,
+                "Von",
+                "Nach",
+                12
+        );
+        when(scanEntryService.commitDrive("s1", "e1", 1000, 1012, "Von", "Nach", null)).thenReturn(driveResponse);
+
+        DriveResponse result = controller.commitDrive(new ScanEntryCommitRequest("s1", "e1", 1000, 1012, "Von", "Nach", null));
+
+        assertThat(result).isEqualTo(driveResponse);
+        verify(scanEntryService).commitDrive("s1", "e1", 1000, 1012, "Von", "Nach", null);
+    }
 }
