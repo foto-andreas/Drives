@@ -4,7 +4,9 @@
   </button>
   <div class="header-text">
     <div class="title">{{ title() }}</div>
-    <div class="subtitle" *ngIf="userName() as name">{{ name }}</div>
+    @if (userName(); as name) {
+      <div class="subtitle">{{ name }}</div>
+    }
   </div>
 </mat-toolbar>
 
@@ -15,10 +17,12 @@
         <mat-icon matListItemIcon>add_road</mat-icon>
         <span matListItemTitle>Fahrt eintragen</span>
       </a>
-      <a mat-list-item routerLink="/scan" (click)="sidenav.close()" *ngIf="isMobile()">
-        <mat-icon matListItemIcon>photo_camera</mat-icon>
-        <span matListItemTitle>Scannen</span>
-      </a>
+      @if (isMobile()) {
+        <a mat-list-item routerLink="/scan" (click)="sidenav.close()">
+          <mat-icon matListItemIcon>photo_camera</mat-icon>
+          <span matListItemTitle>Scannen</span>
+        </a>
+      }
       <a mat-list-item routerLink="/drives" (click)="sidenav.close()">
         <mat-icon matListItemIcon>directions_car</mat-icon>
         <span matListItemTitle>Fahrten</span>

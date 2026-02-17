@@ -83,7 +83,10 @@ und sinnvoll erfüllt sind.
 
 ## TODOs
 
-* GitHub-Workflows
+* Tests:
+```text
+benutze AGENTS.md und prüfe die gesamte Codebasis, auf Einhaltung der Regeln. Passe den Code ggf an.
+```
 
 ## Tests & Coverage
 

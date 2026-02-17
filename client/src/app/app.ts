@@ -6,7 +6,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { NgIf } from '@angular/common';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { UserService } from './user-service';
@@ -26,7 +25,6 @@ import { InitializationService } from './initialization-service';
     MatIconModule,
     MatListModule,
     MatSnackBarModule,
-    NgIf,
   ],
 })
 export class App implements OnInit {

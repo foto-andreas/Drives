@@ -8,10 +8,10 @@ import de.schrell.drives.drives.domain.repositories.DriveRepository;
 import de.schrell.drives.drives.domain.repositories.DriveTemplateRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.TestConstructor;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.LocalDate;
@@ -23,13 +23,13 @@ import static org.assertj.core.api.Assertions.assertThat;
         "spring.datasource.url=jdbc:h2:mem:latestDriveDb;DB_CLOSE_DELAY=-1",
         "spring.jpa.hibernate.ddl-auto=create-drop"
 })
+@TestConstructor(autowireMode = TestConstructor.AutowireMode.ALL)
 class LatestDriveEndpointTest {
 
     private final DriveController driveController;
     private final DriveRepository driveRepository;
     private final DriveTemplateRepository driveTemplateRepository;
 
-    @Autowired
     LatestDriveEndpointTest(DriveController driveController,
                             DriveRepository driveRepository,
                             DriveTemplateRepository driveTemplateRepository) {
