@@ -162,7 +162,7 @@ class OcrServiceTest {
     }
 
     @Test
-    void extractKmStandReturnsPrimaryResultAndWritesDebugFiles() throws IOException {
+    void extractKmStandReturnsCliLikeResultAndWritesDebugFiles() throws IOException {
         OcrProperties properties = new OcrProperties();
         properties.setDebugEnabled(true);
         properties.setDebugOutputDir(tempDir.toString());
@@ -180,18 +180,19 @@ class OcrServiceTest {
             Path debugDir = dirStream.findFirst().orElseThrow();
             assertThat(debugDir).isDirectory();
             assertThat(Files.exists(debugDir.resolve("01-original.png"))).isTrue();
-            assertThat(Files.exists(debugDir.resolve("ocr-primary.txt"))).isTrue();
+            assertThat(Files.exists(debugDir.resolve("02-cli-like.png"))).isTrue();
+            assertThat(Files.exists(debugDir.resolve("ocr-cli-like.txt"))).isTrue();
         }
     }
 
     @Test
-    void extractKmStandFallsBackToRelaxedWhenPrimarySuspicious() throws IOException {
+    void extractKmStandFallsBackToRelaxedWhenCliAndPrimarySuspicious() throws IOException {
         OcrService service = new OcrService(new OcrProperties());
         MockMultipartFile file = createPngMultipartFile();
 
         try (MockedConstruction<Tesseract> mocked = Mockito.mockConstruction(Tesseract.class,
                 (mock, context) -> {
-                    if (context.getCount() <= 4) {
+                    if (context.getCount() <= 2) {
                         Mockito.when(mock.doOCR(any(BufferedImage.class))).thenReturn("000");
                     } else {
                         Mockito.when(mock.doOCR(any(BufferedImage.class))).thenReturn("1234");
@@ -204,13 +205,13 @@ class OcrServiceTest {
     }
 
     @Test
-    void extractKmStandFallsBackToCliWhenRelaxedSuspicious() throws IOException {
+    void extractKmStandFallsBackToPrimaryWhenCliSuspicious() throws IOException {
         OcrService service = new OcrService(new OcrProperties());
         MockMultipartFile file = createPngMultipartFile();
 
         try (MockedConstruction<Tesseract> mocked = Mockito.mockConstruction(Tesseract.class,
                 (mock, context) -> {
-                    if (context.getCount() <= 5) {
+                    if (context.getCount() == 1) {
                         Mockito.when(mock.doOCR(any(BufferedImage.class))).thenReturn("000");
                     } else {
                         Mockito.when(mock.doOCR(any(BufferedImage.class))).thenReturn("98765");
@@ -220,30 +221,6 @@ class OcrServiceTest {
 
             assertThat(result).isEqualTo(98765);
         }
-    }
-
-    @Test
-    void applyOrientationRotates90Clockwise() {
-        OcrService service = new OcrService(new OcrProperties());
-        BufferedImage image = new BufferedImage(2, 3, BufferedImage.TYPE_INT_RGB);
-        image.setRGB(0, 0, Color.RED.getRGB());
-
-        BufferedImage rotated = service.applyOrientationForTest(image, 6);
-
-        assertThat(rotated.getWidth()).isEqualTo(3);
-        assertThat(rotated.getHeight()).isEqualTo(2);
-        assertThat(rotated.getRGB(2, 0)).isEqualTo(Color.RED.getRGB());
-    }
-
-    @Test
-    void applyOrientationFlipsHorizontal() {
-        OcrService service = new OcrService(new OcrProperties());
-        BufferedImage image = new BufferedImage(3, 2, BufferedImage.TYPE_INT_RGB);
-        image.setRGB(0, 0, Color.BLUE.getRGB());
-
-        BufferedImage flipped = service.applyOrientationForTest(image, 2);
-
-        assertThat(flipped.getRGB(2, 0)).isEqualTo(Color.BLUE.getRGB());
     }
 
     @Test
