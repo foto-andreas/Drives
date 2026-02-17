@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { Scan } from './scan';
 import { ScanService } from '../scan-service';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -14,14 +14,12 @@ class ScanServiceMock {
     return of(this.latestStart);
   }
 
-  upload() {
-    return of(this.latestStart as ScanEntry);
-  }
+  upload = vi.fn(() => of(this.latestStart as ScanEntry));
 
-  commitDrive(...args: any[]) {
+  commitDrive = vi.fn((...args: any[]) => {
     this.commitArgs = args;
     return of({ id: 'd1', date: new Date(), template: null });
-  }
+  });
 }
 
 class MatSnackBarMock {
@@ -34,9 +32,7 @@ class MatSnackBarMock {
 }
 
 class RouterMock {
-  navigate() {
-    return Promise.resolve(true);
-  }
+  navigate = vi.fn().mockResolvedValue(true);
 }
 
 describe('Scan', () => {
@@ -79,6 +75,16 @@ describe('Scan', () => {
     const component = fixture.componentInstance as any;
     expect(component.scanForm.controls.startKm.value).toBe(1000);
     expect(component.scanForm.controls.startAddress.value).toBe('Adresse');
+  });
+
+  it('should ignore errors when loading latest start entry', () => {
+    scanService.getLatestStartIfLatest = vi.fn(() => throwError(() => new Error('boom')));
+
+    const fixture = TestBed.createComponent(Scan);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance as any;
+    expect(component.startEntry()).toBeNull();
   });
 
   it('should enable commit when values are present and valid', () => {
@@ -158,6 +164,17 @@ describe('Scan', () => {
     expect(component.driveLength()).toBe(10);
   });
 
+  it('should return null drive length when input has no digits', () => {
+    const fixture = TestBed.createComponent(Scan);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance as any;
+    component.scanForm.controls.startKm.setValue('---');
+    component.scanForm.controls.endKm.setValue('100');
+
+    expect(component.driveLength()).toBeNull();
+  });
+
   it('should not call commit when km values are missing', () => {
     const fixture = TestBed.createComponent(Scan);
     fixture.detectChanges();
@@ -186,6 +203,19 @@ describe('Scan', () => {
     component.endEntry.set(endEntry);
     component.scanForm.controls.startKm.setValue(null);
     component.scanForm.controls.endKm.setValue(1010);
+
+    component.commitDrive();
+
+    expect(scanService.commitArgs).toBeNull();
+  });
+
+  it('should not commit when start or end is missing', () => {
+    const fixture = TestBed.createComponent(Scan);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance as any;
+    component.startEntry.set(null);
+    component.endEntry.set(null);
 
     component.commitDrive();
 
@@ -229,6 +259,25 @@ describe('Scan', () => {
     expect(component.scanForm.controls.startKm.value).toBe(2000);
   });
 
+  it('should show snackbar when geolocation is unavailable', () => {
+    const fixture = TestBed.createComponent(Scan);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance as any;
+    const original = Object.getOwnPropertyDescriptor(navigator, 'geolocation');
+    Object.defineProperty(navigator, 'geolocation', { configurable: true, value: undefined });
+
+    component.capture('START');
+
+    expect(snackBar.lastMessage).toContain('Geolocation wird vom Browser nicht unterstützt');
+
+    if (original) {
+      Object.defineProperty(navigator, 'geolocation', original);
+    } else {
+      delete (navigator as any).geolocation;
+    }
+  });
+
   it('should show snackbar when geolocation lookup fails', () => {
     const fixture = TestBed.createComponent(Scan);
     fixture.detectChanges();
@@ -262,5 +311,248 @@ describe('Scan', () => {
     component.onFileSelected(event, 'START');
 
     expect(component.pendingStart).toBeNull();
+  });
+
+  it('should capture and trigger start file selection on success', () => {
+    const fixture = TestBed.createComponent(Scan);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance as any;
+    const clickSpy = vi.fn();
+    component.startFileInput = { nativeElement: { click: clickSpy } };
+    const original = Object.getOwnPropertyDescriptor(navigator, 'geolocation');
+    const geoMock = {
+      getCurrentPosition: (success: PositionCallback) => success({
+        coords: { latitude: 48.1, longitude: 11.6 } as GeolocationCoordinates,
+      } as GeolocationPosition)
+    };
+    Object.defineProperty(navigator, 'geolocation', { configurable: true, value: geoMock });
+
+    component.capture('START');
+
+    expect(component.pendingStart).not.toBeNull();
+    expect(clickSpy).toHaveBeenCalled();
+
+    if (original) {
+      Object.defineProperty(navigator, 'geolocation', original);
+    } else {
+      delete (navigator as any).geolocation;
+    }
+  });
+
+  it('should capture and trigger end file selection on success', () => {
+    const fixture = TestBed.createComponent(Scan);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance as any;
+    const clickSpy = vi.fn();
+    component.endFileInput = { nativeElement: { click: clickSpy } };
+    const original = Object.getOwnPropertyDescriptor(navigator, 'geolocation');
+    const geoMock = {
+      getCurrentPosition: (success: PositionCallback) => success({
+        coords: { latitude: 48.2, longitude: 11.7 } as GeolocationCoordinates,
+      } as GeolocationPosition)
+    };
+    Object.defineProperty(navigator, 'geolocation', { configurable: true, value: geoMock });
+
+    component.capture('ZIEL');
+
+    expect(component.pendingEnd).not.toBeNull();
+    expect(clickSpy).toHaveBeenCalled();
+
+    if (original) {
+      Object.defineProperty(navigator, 'geolocation', original);
+    } else {
+      delete (navigator as any).geolocation;
+    }
+  });
+
+  it('should warn when file is selected without pending capture', () => {
+    const fixture = TestBed.createComponent(Scan);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance as any;
+    const file = new File(['x'], 'photo.jpg', { type: 'image/jpeg' });
+    const input = { files: [file], value: 'x' };
+    component.pendingStart = null;
+
+    component.onFileSelected({ target: input } as any, 'START');
+
+    expect(snackBar.lastMessage).toContain('Es fehlen Zeitstempel oder GPS-Daten');
+    expect(input.value).toBe('');
+  });
+
+  it('should upload photo and update start entry', () => {
+    const fixture = TestBed.createComponent(Scan);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance as any;
+    const file = new File(['x'], 'photo.jpg', { type: 'image/jpeg' });
+    const input = { files: [file], value: 'x' };
+    const entry: ScanEntry = {
+      id: 's1',
+      type: 'START',
+      timestamp: new Date(),
+      latitude: 48.1,
+      longitude: 11.6,
+      address: 'Adresse',
+      kmStand: 1000
+    };
+    component.pendingStart = { timestamp: entry.timestamp, latitude: 48.1, longitude: 11.6 };
+    scanService.upload.mockReturnValue(of(entry));
+
+    component.onFileSelected({ target: input } as any, 'START');
+
+    expect(component.startEntry()).toEqual(entry);
+    expect(component.pendingStart).toBeNull();
+    expect(component.isUploading()).toBe(false);
+    expect(input.value).toBe('');
+    expect(snackBar.lastMessage).toContain('Foto verarbeitet');
+  });
+
+  it('should upload photo and update end entry', () => {
+    const fixture = TestBed.createComponent(Scan);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance as any;
+    const file = new File(['x'], 'photo.jpg', { type: 'image/jpeg' });
+    const input = { files: [file], value: 'x' };
+    const entry: ScanEntry = {
+      id: 'e1',
+      type: 'ZIEL',
+      timestamp: new Date(),
+      latitude: 48.2,
+      longitude: 11.7,
+      address: 'Ziel',
+      kmStand: 1500
+    };
+    component.pendingEnd = { timestamp: entry.timestamp, latitude: 48.2, longitude: 11.7 };
+    scanService.upload.mockReturnValue(of(entry));
+
+    component.onFileSelected({ target: input } as any, 'ZIEL');
+
+    expect(component.endEntry()).toEqual(entry);
+    expect(component.scanForm.controls.endKm.value).toBe(1500);
+    expect(component.pendingEnd).toBeNull();
+    expect(input.value).toBe('');
+  });
+
+  it('should handle upload errors and reset state', () => {
+    const fixture = TestBed.createComponent(Scan);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance as any;
+    const file = new File(['x'], 'photo.jpg', { type: 'image/jpeg' });
+    const input = { files: [file], value: 'x' };
+    component.pendingEnd = { timestamp: new Date(), latitude: 48.1, longitude: 11.6 };
+    scanService.upload.mockReturnValue(throwError(() => ({ status: 500, message: 'Boom' })));
+
+    component.onFileSelected({ target: input } as any, 'ZIEL');
+
+    expect(component.pendingEnd).toBeNull();
+    expect(component.isUploading()).toBe(false);
+    expect(input.value).toBe('');
+    expect(snackBar.lastMessage).toContain('Fehler beim Verarbeiten des Fotos');
+  });
+
+  it('should commit drive and navigate on success', async () => {
+    const fixture = TestBed.createComponent(Scan);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance as any;
+    component.startEntry.set({
+      id: 's1',
+      type: 'START',
+      timestamp: new Date(),
+      latitude: 48.1,
+      longitude: 11.6,
+      address: 'Adresse',
+      kmStand: 1000
+    });
+    component.endEntry.set({
+      id: 'e1',
+      type: 'ZIEL',
+      timestamp: new Date(),
+      latitude: 48.2,
+      longitude: 11.7,
+      address: 'Adresse',
+      kmStand: 1010
+    });
+    component.scanForm.controls.startKm.setValue(1000);
+    component.scanForm.controls.endKm.setValue(1010);
+
+    const router = TestBed.inject(Router) as unknown as RouterMock;
+    component.commitDrive();
+
+    expect(router.navigate).toHaveBeenCalledWith(['/drives']);
+    expect(component.endEntry()).toBeNull();
+    expect(snackBar.lastMessage).toContain('Fahrt wurde uebernommen');
+  });
+
+  it('should show snackbar on commit error', () => {
+    const fixture = TestBed.createComponent(Scan);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance as any;
+    component.startEntry.set({
+      id: 's1',
+      type: 'START',
+      timestamp: new Date(),
+      latitude: 48.1,
+      longitude: 11.6,
+      address: 'Adresse',
+      kmStand: 1000
+    });
+    component.endEntry.set({
+      id: 'e1',
+      type: 'ZIEL',
+      timestamp: new Date(),
+      latitude: 48.2,
+      longitude: 11.7,
+      address: 'Adresse',
+      kmStand: 1010
+    });
+    component.scanForm.controls.startKm.setValue(1000);
+    component.scanForm.controls.endKm.setValue(1010);
+    scanService.commitDrive.mockReturnValue(throwError(() => ({ status: 400, message: 'Bad' })));
+
+    component.commitDrive();
+
+    expect(snackBar.lastMessage).toContain('Fehler beim Uebernehmen der Fahrt');
+  });
+
+  it('should apply end entry to form and mark pristine on new entry', () => {
+    const fixture = TestBed.createComponent(Scan);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance as any;
+    component.scanForm.controls.endKm.setValue(999);
+    component.scanForm.controls.endKm.markAsDirty();
+
+    component.applyEntryToForm({
+      id: 'e1',
+      type: 'ZIEL',
+      timestamp: new Date(),
+      latitude: 48.2,
+      longitude: 11.7,
+      address: 'Neu',
+      kmStand: 2000
+    }, 'ZIEL');
+
+    expect(component.scanForm.controls.endKm.value).toBe(2000);
+    expect(component.scanForm.controls.endAddress.value).toBe('Neu');
+  });
+
+  it('should clear pending end capture when no file is selected', () => {
+    const fixture = TestBed.createComponent(Scan);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance as any;
+    component.pendingEnd = { timestamp: new Date(), latitude: 1, longitude: 2 };
+
+    const event = { target: { files: [] } } as any;
+    component.onFileSelected(event, 'ZIEL');
+
+    expect(component.pendingEnd).toBeNull();
   });
 });
