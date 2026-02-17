@@ -103,4 +103,15 @@ describe('ScanService', () => {
       driveLength: 12
     });
   });
+
+  it('should keep Date instance in parseDate', () => {
+    const now = new Date();
+    const parsed = (service as any).parseDate(now);
+    expect(parsed).toBe(now);
+  });
+
+  it('should parse non-iso date strings with Date constructor', () => {
+    const parsed = (service as any).parseDate('2025/01/01');
+    expect(parsed).toBeInstanceOf(Date);
+  });
 });

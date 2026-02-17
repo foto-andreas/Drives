@@ -114,4 +114,60 @@ describe('DriveService', () => {
     expect(req.request.method).toBe('GET');
     req.flush(mockYears);
   });
+
+  it('should include reason filter in findAll', () => {
+    service.findAll({ year: null, month: null, reason: 'WORK' }).subscribe();
+    const req = httpMock.expectOne('/api/drives?reason=WORK');
+    expect(req.request.method).toBe('GET');
+    req.flush([]);
+  });
+
+  it('should return latest drive date when available', () => {
+    service.getLatestDriveDate().subscribe(date => {
+      expect(date).toBeInstanceOf(Date);
+      expect(date?.getFullYear()).toBe(2024);
+    });
+    const req = httpMock.expectOne('/api/latestDrive');
+    expect(req.request.method).toBe('GET');
+    req.flush('2024-02-03');
+  });
+
+  it('should return null when latest drive date is empty', () => {
+    service.getLatestDriveDate().subscribe(date => {
+      expect(date).toBeNull();
+    });
+    const req = httpMock.expectOne('/api/latestDrive');
+    expect(req.request.method).toBe('GET');
+    req.flush(null);
+  });
+
+  it('should return latest drive when available', () => {
+    service.getLatestDrive().subscribe(drive => {
+      expect(drive).not.toBeNull();
+      expect(drive?.date).toBeInstanceOf(Date);
+    });
+    const req = httpMock.expectOne('/api/latestDriveInfo');
+    expect(req.request.method).toBe('GET');
+    req.flush({ id: 'd1', date: '2024-02-03', template: null });
+  });
+
+  it('should return null when latest drive info is empty', () => {
+    service.getLatestDrive().subscribe(drive => {
+      expect(drive).toBeNull();
+    });
+    const req = httpMock.expectOne('/api/latestDriveInfo');
+    expect(req.request.method).toBe('GET');
+    req.flush(null);
+  });
+
+  it('should keep Date instance in parseDate', () => {
+    const now = new Date();
+    const parsed = (service as any).parseDate(now);
+    expect(parsed).toBe(now);
+  });
+
+  it('should parse non-iso date strings with Date constructor', () => {
+    const parsed = (service as any).parseDate('2024/02/03');
+    expect(parsed).toBeInstanceOf(Date);
+  });
 });

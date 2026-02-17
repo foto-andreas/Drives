@@ -1,12 +1,12 @@
 import { TestBed, ComponentFixture } from '@angular/core/testing';
-import { of, throwError } from 'rxjs';
+import { BehaviorSubject, of, throwError } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { DriveForm } from './drive-form';
 import { DriveService } from '../drive-service';
 import { DriveTemplateService } from '../drive-template-service';
 import { UserService } from '../user-service';
 import { HttpErrorResponse } from '@angular/common/http';
-import { provideRouter, Router } from '@angular/router';
+import { ActivatedRoute, ParamMap, convertToParamMap, provideRouter, Router } from '@angular/router';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { signal } from '@angular/core';
 import { DriveTemplate } from '../drive-template';
@@ -44,12 +44,14 @@ describe('DriveForm', () => {
   let userServiceMock: UserServiceMock;
   let snackBarMock: { open: any };
   let router: Router;
+  let paramMapSubject: BehaviorSubject<ParamMap>;
 
   beforeEach(async () => {
     driveServiceMock = new DriveServiceMock();
     driveTemplateServiceMock = new DriveTemplateServiceMock();
     userServiceMock = new UserServiceMock();
     snackBarMock = { open: vi.fn() };
+    paramMapSubject = new BehaviorSubject<ParamMap>(convertToParamMap({}));
 
     await TestBed.configureTestingModule({
       imports: [DriveForm],
@@ -58,7 +60,8 @@ describe('DriveForm', () => {
         { provide: DriveTemplateService, useValue: driveTemplateServiceMock },
         { provide: UserService, useValue: userServiceMock },
         { provide: BreakpointObserver, useClass: BreakpointObserverMock },
-        provideRouter([])
+        provideRouter([]),
+        { provide: ActivatedRoute, useValue: { paramMap: paramMapSubject.asObservable() } }
       ]
     }).overrideComponent(DriveForm, {
       add: {
@@ -97,6 +100,13 @@ describe('DriveForm', () => {
     expect(component['driveForm'].controls.reason.value).toBe('WORK');
   });
 
+  it('soll beim Schließen des Grund-Selects nichts verändern', () => {
+    const template: DriveTemplate = { id: '1', name: 'T1', fromLocation: 'A', toLocation: 'B', driveLength: 10, reason: 'WORK' };
+    component['driveForm'].patchValue({ template, reason: null });
+    (component as any).onReasonOpened(false);
+    expect(component['driveForm'].controls.reason.value).toBeNull();
+  });
+
   it('soll eine Fahrt erfolgreich speichern und Formular zurücksetzen', async () => {
     const navigateSpy = vi.spyOn(router, 'navigate');
     component['driveForm'].patchValue({
@@ -110,6 +120,12 @@ describe('DriveForm', () => {
     expect(driveServiceMock.save).toHaveBeenCalled();
     expect(snackBarMock.open).toHaveBeenCalledWith('Fahrt erfolgreich gespeichert', expect.anything(), expect.anything());
     expect(navigateSpy).not.toHaveBeenCalled();
+  });
+
+  it('soll beim ungültigen Formular nicht speichern', () => {
+    component['driveForm'].controls.date.setValue(null);
+    component.onSubmit();
+    expect(driveServiceMock.save).not.toHaveBeenCalled();
   });
 
   it('soll im Edit-Modus nach Speichern navigieren', () => {
@@ -127,6 +143,26 @@ describe('DriveForm', () => {
     const navigateSpy = vi.spyOn(TestBed.inject(Router), 'navigate');
     component.onSubmit();
     expect(navigateSpy).toHaveBeenCalledWith(['/drives']);
+  });
+
+  it('soll eine Fahrt laden, wenn eine ID in der Route vorhanden ist', () => {
+    const drive = {
+      id: 'drive-1',
+      date: new Date(2024, 1, 2),
+      template: { id: 't1', name: 'T1' },
+      reason: 'WORK',
+      fromLocation: 'A',
+      toLocation: 'B',
+      driveLength: 12
+    } as any;
+    driveServiceMock.get.mockReturnValue(of(drive));
+
+    paramMapSubject.next(convertToParamMap({ id: 'drive-1' }));
+    fixture.detectChanges();
+
+    expect(driveServiceMock.get).toHaveBeenCalledWith('drive-1');
+    expect(component['driveForm'].controls.date.value).toEqual(drive.date);
+    expect(component['driveForm'].controls.fromLocation.value).toBe('A');
   });
 
   it('soll Fehler beim Speichern behandeln', () => {
@@ -275,6 +311,22 @@ describe('DriveForm', () => {
       expect(sortedTemplates[0].id).toBe('2'); // B matches lastToLocation
       expect(['1', '3']).toContain(sortedTemplates[1].id);
       expect(['1', '3']).toContain(sortedTemplates[2].id);
+    });
+
+    it('soll Vorlagen sortieren, wenn der Treffer im zweiten Element steht', () => {
+      const t1 = { id: '1', fromLocation: 'A' } as any;
+      const t2 = { id: '2', fromLocation: 'B' } as any;
+
+      driveTemplateServiceMock.findAll.mockReturnValue(of([t1, t2]));
+      driveServiceMock.lastToLocation.set('B');
+
+      fixture = TestBed.createComponent(DriveForm);
+      component = fixture.componentInstance;
+      fixture.detectChanges();
+
+      const sortedTemplates = component['templates']();
+      expect(sortedTemplates[0].id).toBe('2');
+      expect(sortedTemplates[1].id).toBe('1');
     });
 
     it('soll bei fehlendem lastToLocation die ursprüngliche Reihenfolge beibehalten', () => {

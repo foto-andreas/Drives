@@ -32,13 +32,29 @@ Dieses Repository hat **zwei getrennte Guideline-Sets** (jeweils im `.junie`-Ver
 
 1. Sichere bei allen Änderungen die Korrektheit durch vorhandene und neue Unit-Tests
 2. Stell die Testabdeckung sicher, so dass möglichst 90% erreicht werden. 
-3. Nutze auch fachliche Prüfung auf Sinnhaftigkeit und frage ggf. nach.
+3. Nutze auch fachliche Prüfung auf Sinnhaftigkeit und frage ggf. nach. 
+4. Prüfe den gesamten Code intensiv auf Korrektheit. 
+5. Wenn ein Verhalten fraglich ist, stelle Rückfragen. 
+6. Bereinige den Code bei Fehlern. 
+7. Erstelle zusätzliche Testfälle, die diese Probleme abdecken.
 
-## 6) Ergänzungen
-* Use the latest stable versions of libraries and frameworks
-* Use meaningful and descriptive names for variables, functions, and classes
-* Use consistent indentation and formatting throughout the codebase
-* IMPORTANT: Run all Unit tests after finishing a task. Check if tests are failing due to expected changes. if yes, rewrite testcode otherwise check production code again. Use "-runner=vitest"
-* ALWAYS remember that lombok is used in the code, do NOT code things lombok provides
-* NEVER downgrade JAVA-Version or other LIBRARY versions
-* Run all Unit tests after finishing a task. Check if tests are failing due to expected changes. if yes, rewrite testcode otherwise check production code again.
+## 7) Ergänzungen 
+* Verwende die neuesten stabilen Versionen von Bibliotheken und Frameworks
+* Verwende sinnvolle und beschreibende Namen für Variablen, Funktionen und Klassen
+* Verwende konsistente Einzüge und Formatierungen im gesamten Codebasis
+* WICHTIG: Führe alle Unit-Tests nach Abschluss einer Aufgabe durch. Überprüfe, ob Tests aufgrund erwarteter Änderungen nicht bestehen. Wenn ja, schreiben Sie den Testcode neu oder überprüfen Sie den Produktionscode erneut. Verwenden Sie "-runner=vitest"
+* Denk IMMER daran, dass Lombok im Code verwendet wird, aber NICHT Code, was Lombok bereitstellt,
+* NIEMALS JAVA-Version oder andere BIBLIOTHEKSVERSIONEN herunterzustufen
+* Führe alle Unit-Tests durch, nachdem du eine Aufgabe abgeschlossen hast. Überprüfe, ob Tests aufgrund erwarteter Änderungen nicht bestehen. Wenn ja, schreiben Sie den Testcode neu oder überprüfen Sie den Produktionscode erneut.
+
+## 7) Systemdokumentation
+* Erstelle eine ausführliche Dokumentation für jedes Package und jede Klasse bzw. passe diese bei Änderungen im Code an.
+* Beschreibe Ressourcen und deren Nutzung.
+* Ergänze Grafiken (mit Mermaid) und Tabellen, falls sinnvoll.
+* Gehe auf alle Besonderheiten ein.
+* Erstelle eine Gesamtdokumentation auf oberer Ebene, die eine Zusammenfassung und Links zu den Einzel-Dokumentationen enthält.
+* Die gesamte Dokumentation soll einheitlich aussehen
+* Prüfe sämtliche Dokumentations-Dateien und Kommentare im Code auf aktuellen Stand und Korrektheit.
+* Nimm eventuelle Korrekturen und Erweiterungen vor.
+* Halte dich an die aktuelle einheitliche Struktur.
+* Ergänze Kommentare, falls sinnvoll.

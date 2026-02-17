@@ -92,6 +92,13 @@ describe('DriveList', () => {
     expect(navigateSpy).toHaveBeenCalledWith(['/drives/edit', '1']);
   });
 
+  it('soll Navigation beim Bearbeiten blockieren, wenn geswiped wird', () => {
+    const navigateSpy = vi.spyOn(router, 'navigate');
+    component['isActuallySwiping'] = true;
+    component.editDrive('1');
+    expect(navigateSpy).not.toHaveBeenCalled();
+  });
+
   it('soll eine Fahrt erfolgreich löschen', () => {
     vi.stubGlobal('confirm', vi.fn(() => true));
     driveServiceMock.delete.mockReturnValue(of({}));
@@ -139,6 +146,39 @@ describe('DriveList', () => {
     expect(component['swipedRowId']).toBeNull();
     expect(component['currentSwipeOffset']).toBe(0);
     vi.unstubAllGlobals();
+  });
+
+  it('soll onRowTouchMove ignorieren, wenn keine Zeile aktiv ist', () => {
+    component['swipedRowId'] = null;
+    const moveEvent = { touches: [{ clientX: 150, clientY: 100 }], cancelable: true, preventDefault: vi.fn() } as any;
+    component.onRowTouchMove(moveEvent);
+    expect(component['currentSwipeOffset']).toBe(0);
+  });
+
+  it('soll Swipe-Offset zurücksetzen, wenn nach rechts gewischt wird', () => {
+    const startEvent = { touches: [{ clientX: 100, clientY: 100 }] } as any;
+    component.onRowTouchStart(startEvent, '1');
+
+    const moveEvent = { touches: [{ clientX: 120, clientY: 100 }], cancelable: true, preventDefault: vi.fn() } as any;
+    component.onRowTouchMove(moveEvent);
+
+    expect(component['currentSwipeOffset']).toBe(0);
+  });
+
+  it('soll Swipe-Ende ohne Löschen korrekt zurücksetzen', () => {
+    vi.useFakeTimers();
+    const deleteSpy = vi.spyOn(component, 'deleteDrive');
+    component['swipedRowId'] = '1';
+    component['currentSwipeOffset'] = 10;
+    component['isActuallySwiping'] = true;
+
+    const endEvent = { changedTouches: [{ clientX: 95, clientY: 100 }] } as any;
+    component.onRowTouchEnd(endEvent, '1');
+
+    vi.runAllTimers();
+    expect(deleteSpy).not.toHaveBeenCalled();
+    expect(component['isActuallySwiping']).toBe(false);
+    vi.useRealTimers();
   });
 
   it('soll CSV-Export auslösen', () => {

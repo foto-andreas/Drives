@@ -51,9 +51,14 @@ describe('Scan', () => {
       imports: [Scan],
       providers: [
         { provide: ScanService, useValue: scanService },
-        { provide: MatSnackBar, useValue: snackBar },
         { provide: Router, useClass: RouterMock }
       ]
+    }).overrideComponent(Scan, {
+      add: {
+        providers: [
+          { provide: MatSnackBar, useValue: snackBar }
+        ]
+      }
     });
   });
 
@@ -222,5 +227,40 @@ describe('Scan', () => {
     }, 'START');
 
     expect(component.scanForm.controls.startKm.value).toBe(2000);
+  });
+
+  it('should show snackbar when geolocation lookup fails', () => {
+    const fixture = TestBed.createComponent(Scan);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance as any;
+    const original = Object.getOwnPropertyDescriptor(navigator, 'geolocation');
+    const geoMock = {
+      getCurrentPosition: (_success: PositionCallback, error: PositionErrorCallback) => error({} as GeolocationPositionError),
+    };
+    Object.defineProperty(navigator, 'geolocation', { configurable: true, value: geoMock });
+
+    component.capture('START');
+
+    expect(snackBar.lastMessage).toContain('GPS-Position konnte nicht ermittelt werden');
+
+    if (original) {
+      Object.defineProperty(navigator, 'geolocation', original);
+    } else {
+      delete (navigator as any).geolocation;
+    }
+  });
+
+  it('should clear pending capture when no file is selected', () => {
+    const fixture = TestBed.createComponent(Scan);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance as any;
+    component.pendingStart = { timestamp: new Date(), latitude: 1, longitude: 2 };
+
+    const event = { target: { files: [] } } as any;
+    component.onFileSelected(event, 'START');
+
+    expect(component.pendingStart).toBeNull();
   });
 });
