@@ -1,9 +1,9 @@
 app:
   version: 1.0.1
   ocr:
-    tesseract-path: ${TESSERACT_PATH:/Users/andreas/tesseract}
+    tesseract-path: ${TESSERACT_PATH:/usr/share/tesseract-ocr/5/tessdata}
     language: deu
-    library-path: "/opt/homebrew/lib"
+    library-path: ${OCR_LIBRARY_PATH:}
     crop-width-ratio: 0.6
     crop-height-ratio: 0.35
     crop-min-height: 200

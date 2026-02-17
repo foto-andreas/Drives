@@ -41,7 +41,7 @@ Konfigurationsklassen für das Framework und die Infrastruktur.
 | `SecurityConfig` | Konfiguration von Spring Security (OAuth2 Login, CSRF, Authorisierung). |
 | `WebConfig` | Web-spezifische Einstellungen (z.B. CORS-Header). |
 | `RestTemplateConfig` | Stellt einen `RestTemplate` für Geocoding bereit. |
-| `OcrProperties` | Konfigurationswerte für OCR (Tesseract-Pfade, Bild-Preprocessing). |
+| `OcrProperties` | Konfigurationswerte für OCR (Tesseract-Pfade via `TESSERACT_PATH`, optionale Native-Libs via `OCR_LIBRARY_PATH`, Bild-Preprocessing). |
 | `GeocodingProperties` | Konfiguration für Reverse-Geocoding (Base-URL, User-Agent, Sprache). |
 
 #### 📂 `config.multitenancy`
