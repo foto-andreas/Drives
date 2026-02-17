@@ -20,11 +20,14 @@ runLocal.sh
 
 ## Deployment
 
+Die App-Version wird zentral in `app.env` gepflegt (`APP_VERSION=...`).
+
 Der Client-Code wird zusammen mit dem Server-Code gebaut. Die gesamte Anwendung kann als Docker-Container bereitgestellt werden. Wenn der Task ```dockerBuild``` nicht funktioniert, das hier benutzen:
 ```bash
-./gradlew build && \
-  docker build --build-arg JAR_FILE=build/libs/drives-0.0.1-SNAPSHOT.jar -t drives:0.0.1-SNAPSHOT . && \
-  docker save drives -o drives.tar && \
+APP_VERSION=$(grep APP_VERSION app.env | cut -d= -f2) && \
+  ./gradlew build && \
+  docker build --build-arg JAR_FILE=build/libs/drives-${APP_VERSION}.jar -t drives:${APP_VERSION} . && \
+  docker save drives:${APP_VERSION} -o drives.tar && \
   scp drives.tar root@evcc-box.schrell.de:
 ```
 und nach Übertragung der drives.tar auf Server-Seite:

@@ -6,9 +6,127 @@ plugins {
 	id 'jacoco'
 }
 
+import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.TaskAction
+
 group = 'de.schrell'
-version = '1.0.1'
 description = 'Fahrtenbuch'
+
+def appEnvFile = file('app.env')
+def readAppVersion = { ->
+	if (!appEnvFile.exists()) {
+		throw new GradleException("app.env fehlt. Bitte APP_VERSION in app.env setzen.")
+	}
+	def appVersionLine = appEnvFile.readLines().find { line ->
+		def trimmed = line.trim()
+		!trimmed.isEmpty() && !trimmed.startsWith('#') && trimmed.startsWith('APP_VERSION=')
+	}
+	if (appVersionLine == null) {
+		throw new GradleException("APP_VERSION fehlt in app.env.")
+	}
+	def value = appVersionLine.substring('APP_VERSION='.length()).trim()
+	if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+		value = value.substring(1, value.length() - 1)
+	}
+	if (value.isEmpty()) {
+		throw new GradleException("APP_VERSION in app.env ist leer.")
+	}
+	return value
+}
+
+def resolvedAppVersion = readAppVersion()
+version = resolvedAppVersion
+ext.appVersion = resolvedAppVersion
+
+abstract class SyncAppVersionTask extends DefaultTask {
+	@Input
+	abstract Property<String> getAppVersion()
+
+	@InputFile
+	abstract RegularFileProperty getPackageJson()
+
+	@InputFile
+	abstract RegularFileProperty getPackageLock()
+
+	@TaskAction
+	void sync() {
+		updatePackageJsonVersion(packageJson.get().asFile, appVersion.get())
+		updatePackageLockVersion(packageLock.get().asFile, appVersion.get())
+	}
+
+	private static String replaceVersionLine(String line, String newVersion) {
+		return line.replaceFirst(/("version"\s*:\s*")([^"]+)(")/, "\$1${newVersion}\$3")
+	}
+
+	private static void updatePackageJsonVersion(File file, String newVersion) {
+		def lines = file.readLines()
+		boolean updated = false
+		for (int i = 0; i < lines.size(); i++) {
+			if (!updated && lines[i] =~ /"version"\s*:\s*"/) {
+				lines[i] = replaceVersionLine(lines[i], newVersion)
+				updated = true
+			}
+		}
+		if (!updated) {
+			throw new GradleException("Version-Feld fehlt in ${file}.")
+		}
+		file.text = lines.join("\n") + "\n"
+	}
+
+	private static void updatePackageLockVersion(File file, String newVersion) {
+		def lines = file.readLines()
+		boolean updatedTop = false
+		boolean inPackages = false
+		boolean inRootPackage = false
+		boolean updatedRootPackage = false
+		for (int i = 0; i < lines.size(); i++) {
+			def line = lines[i]
+			if (!updatedTop && line =~ /"version"\s*:\s*"/) {
+				lines[i] = replaceVersionLine(line, newVersion)
+				updatedTop = true
+				continue
+			}
+			if (!inPackages && line =~ /"packages"\s*:\s*\{/) {
+				inPackages = true
+				continue
+			}
+			if (inPackages && !inRootPackage && line.trim().startsWith('"":')) {
+				inRootPackage = true
+				continue
+			}
+			if (inRootPackage && !updatedRootPackage && line =~ /"version"\s*:\s*"/) {
+				lines[i] = replaceVersionLine(line, newVersion)
+				updatedRootPackage = true
+				inRootPackage = false
+			}
+		}
+		if (!updatedTop || !updatedRootPackage) {
+			throw new GradleException("Version-Felder fehlen in ${file}.")
+		}
+		file.text = lines.join("\n") + "\n"
+	}
+}
+
+tasks.register('syncAppVersion', SyncAppVersionTask) {
+	group = 'versioning'
+	description = 'Synchronisiert die App-Version in Client-Dateien.'
+	appVersion.set(resolvedAppVersion)
+	packageJson.set(layout.projectDirectory.file('client/package.json'))
+	packageLock.set(layout.projectDirectory.file('client/package-lock.json'))
+}
+
+project(':client') {
+	tasks.matching { it.name == 'npmInstall' }.configureEach {
+		dependsOn rootProject.tasks.named('syncAppVersion')
+	}
+}
+
+tasks.named('bootRun') {
+	environment 'APP_VERSION', resolvedAppVersion
+}
 
 java {
 	toolchain {

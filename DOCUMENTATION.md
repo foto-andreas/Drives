@@ -8,6 +8,7 @@ Dieses Dokument dient als Einstiegspunkt für die gesamte Dokumentation des Fahr
 2.  [**Frontend-Dokumentation (Client)**](#-frontend-dokumentation-client)
 3.  [**Architektur & Design-Entscheidungen**](#-architektur--design-entscheidungen)
 4.  [**Besonderheiten & Workflows**](#-besonderheiten--workflows)
+5.  [**Versionierung**](#-versionierung)
 
 ---
 
@@ -73,6 +74,21 @@ Die Anwendung bietet einen integrierten CSV-Export in der Fahrtenliste. Dieser b
 
 ### Scan-Workflow
 Die App unterstützt einen Scan-Flow für Start/Ziel: Geolocation + Foto werden hochgeladen, OCR liest den KM-Stand, Reverse-Geocoding ergänzt Adressen und der Nutzer kann daraus eine Fahrt erzeugen. Tesseract wird über `TESSERACT_PATH` konfiguriert, optionale Native-Libs über `OCR_LIBRARY_PATH`. Für Debugging können Zwischenbilder und OCR-Text über `OCR_DEBUG_ENABLED` und `OCR_DEBUG_DIR` ausgegeben werden; Details siehe `docs/server/architecture.md`.
+
+---
+
+## 🔖 Versionierung
+
+Die App-Version wird **zentral** in `app.env` gepflegt.
+
+1. `app.env` enthält genau einen Eintrag: `APP_VERSION=...`.
+2. Gradle liest diese Version und verwendet sie als `project.version`.
+3. `client/package.json` und `client/package-lock.json` werden vor `npmInstall` automatisch synchronisiert.
+4. Docker-Compose Dateien verwenden `image: drives:${APP_VERSION}` und laden `app.env`.
+
+Empfohlener Ablauf:
+- Version nur in `app.env` ändern.
+- Danach wie gewohnt bauen/ausliefern (`./gradlew build`, Docker-Image bauen).
 
 ---
 > 💡 *Tipp: Weitere Informationen zum Deployment und zum Starten der Anwendung finden sich in der [README.md](README.md).*

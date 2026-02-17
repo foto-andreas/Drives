@@ -1,11 +1,10 @@
 services:
 
   drives:
-    xxxxx
 
     container_name: drives
 
-    image: drives:0.0.1-SNAPSHOT
+    image: drives:${APP_VERSION}
     pull_policy: if_not_present
 
     volumes:
@@ -16,7 +15,9 @@ services:
     networks:
       - traefik
 
-    env_file: "docker-drives-env.txt"
+    env_file:
+      - app.env
+      - docker-drives-env.txt
 
     labels:
       - "traefik.enable=true"

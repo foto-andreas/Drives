@@ -1,2 +1,7 @@
 GOOGLE_CLIENT_ID=.....
 GOOGLE_CLIENT_SECRET=....
+
+OCR_LIBRARY_PATH=/usr/lib/aarch64-linux-gnu
+
+OCR_DEBUG_ENABLED=false
+OCR_DEBUG_DIR=/root/data/ocr-debug
