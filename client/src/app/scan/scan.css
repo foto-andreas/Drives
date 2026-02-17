@@ -8,9 +8,10 @@
 
 .section-header {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  align-items: flex-start;
+  gap: 24px;
   margin-bottom: 12px;
+  flex-wrap: wrap;
 }
 
 .fields {

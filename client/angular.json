@@ -61,14 +61,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "client:build:production",
-              "codeCoverage": true,
-              "templateCoverage": true
+              "buildTarget": "client:build:production"
             },
             "development": {
-              "buildTarget": "client:build:development",
-              "codeCoverage": true,
-              "templateCoverage": true
+              "buildTarget": "client:build:development"
             }
           },
           "defaultConfiguration": "development"
