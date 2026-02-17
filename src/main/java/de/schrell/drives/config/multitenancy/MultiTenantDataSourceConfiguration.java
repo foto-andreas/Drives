@@ -128,7 +128,7 @@ public class MultiTenantDataSourceConfiguration {
                     "latitude double not null, " +
                     "longitude double not null, " +
                     "address varchar(1024), " +
-                    "km_stand integer not null, " +
+                    "km_stand integer, " +
                     "primary key (id))");
             statement.executeUpdate("create index if not exists idx_scan_entry_timestamp on scan_entry (timestamp)");
             initializationTracker.markInitialized(tenantId);
@@ -147,6 +147,8 @@ public class MultiTenantDataSourceConfiguration {
             boolean toExists = false;
             boolean lengthExists = false;
             boolean scanEntryExists = false;
+            boolean kmStandExists = false;
+            boolean kmStandNullable = true;
 
             try (ResultSet columns = metaData.getColumns(null, null, "DRIVE", null)) {
                 while (columns.next()) {
@@ -158,6 +160,18 @@ public class MultiTenantDataSourceConfiguration {
             }
             try (ResultSet tables = metaData.getTables(null, null, "SCAN_ENTRY", new String[]{"TABLE"})) {
                 scanEntryExists = tables.next();
+            }
+            if (scanEntryExists) {
+                try (ResultSet columns = metaData.getColumns(null, null, "SCAN_ENTRY", null)) {
+                    while (columns.next()) {
+                        String columnName = columns.getString("COLUMN_NAME");
+                        if ("KM_STAND".equalsIgnoreCase(columnName)) {
+                            kmStandExists = true;
+                            String nullable = columns.getString("IS_NULLABLE");
+                            kmStandNullable = "YES".equalsIgnoreCase(nullable);
+                        }
+                    }
+                }
             }
 
             try (Statement statement = connection.createStatement()) {
@@ -181,10 +195,23 @@ public class MultiTenantDataSourceConfiguration {
                             "latitude double not null, " +
                             "longitude double not null, " +
                             "address varchar(1024), " +
-                            "km_stand integer not null, " +
+                            "km_stand integer, " +
                             "primary key (id))");
                     statement.executeUpdate("create index if not exists idx_scan_entry_timestamp on scan_entry (timestamp)");
                     log.info("Added scan_entry table for " + tenantId);
+                } else {
+                    if (!kmStandExists) {
+                        statement.executeUpdate("ALTER TABLE scan_entry ADD COLUMN km_stand integer");
+                        log.info("Added km_stand to scan_entry table for " + tenantId);
+                    } else if (!kmStandNullable) {
+                        String product = metaData.getDatabaseProductName();
+                        if (product != null && product.toLowerCase().contains("postgres")) {
+                            statement.executeUpdate("ALTER TABLE scan_entry ALTER COLUMN km_stand DROP NOT NULL");
+                        } else {
+                            statement.executeUpdate("ALTER TABLE scan_entry ALTER COLUMN km_stand SET NULL");
+                        }
+                        log.info("Relaxed km_stand nullability for " + tenantId);
+                    }
                 }
             }
         } catch (SQLException ex) {

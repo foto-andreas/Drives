@@ -33,6 +33,6 @@ public class ScanEntry {
     @Column
     private String address;
 
-    @Column(nullable = false)
+    @Column
     private Integer kmStand;
 }

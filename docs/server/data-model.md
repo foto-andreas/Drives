@@ -77,7 +77,7 @@ Zwischenspeicher für Scan-Vorgänge (Start/Ziel), die später zu Fahrten verarb
 | `latitude` | `Double` | GPS-Breite. |
 | `longitude` | `Double` | GPS-Länge. |
 | `address` | `String` | Optional, via Reverse-Geocoding ermittelt. |
-| `kmStand` | `Integer` | Per OCR extrahierter (oder korrigierter) KM-Stand. |
+| `kmStand` | `Integer` | Per OCR extrahierter KM-Stand; kann `null` sein, wenn die Erkennung fehlschlägt. |
 
 ## ⚙️ Logik & Besonderheiten
 

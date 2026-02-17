@@ -116,7 +116,7 @@ Basis-URL: `/api`
   latitude: number,
   longitude: number,
   address: string | null,
-  kmStand: number
+  kmStand: number | null
 }
 ```
 

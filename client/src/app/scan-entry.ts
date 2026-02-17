@@ -7,5 +7,5 @@ export interface ScanEntry {
   latitude: number;
   longitude: number;
   address: string | null;
-  kmStand: number;
+  kmStand: number | null;
 }

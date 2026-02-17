@@ -50,6 +50,16 @@ class MultiTenantSchemaMigrationTest {
                     "reason integer, " +
                     "primary key (id), " +
                     "constraint fk_drive_template foreign key (template_id) references drive_template(id))");
+            stmt.executeUpdate("create table scan_entry (" +
+                    "id varchar(255) not null, " +
+                    "type varchar(10) not null, " +
+                    "timestamp timestamp with time zone not null, " +
+                    "latitude double not null, " +
+                    "longitude double not null, " +
+                    "address varchar(1024), " +
+                    "km_stand integer not null, " +
+                    "primary key (id))");
+            stmt.executeUpdate("create index if not exists idx_scan_entry_timestamp on scan_entry (timestamp)");
 
             // Testdaten einfügen
             stmt.executeUpdate("insert into drive (id, date, reason) values ('1', '2024-01-01', 1)");
@@ -67,6 +77,7 @@ class MultiTenantSchemaMigrationTest {
             boolean fromExists = false;
             boolean toExists = false;
             boolean lengthExists = false;
+            boolean kmStandNullable = false;
             
             try (ResultSet columns = metaData.getColumns(null, null, "DRIVE", null)) {
                 while (columns.next()) {
@@ -76,10 +87,19 @@ class MultiTenantSchemaMigrationTest {
                     if ("DRIVE_LENGTH".equalsIgnoreCase(columnName)) lengthExists = true;
                 }
             }
+            try (ResultSet columns = metaData.getColumns(null, null, "SCAN_ENTRY", null)) {
+                while (columns.next()) {
+                    String columnName = columns.getString("COLUMN_NAME");
+                    if ("KM_STAND".equalsIgnoreCase(columnName)) {
+                        kmStandNullable = "YES".equalsIgnoreCase(columns.getString("IS_NULLABLE"));
+                    }
+                }
+            }
             
             assertThat(fromExists).as("from_location should exist").isTrue();
             assertThat(toExists).as("to_location should exist").isTrue();
             assertThat(lengthExists).as("drive_length should exist").isTrue();
+            assertThat(kmStandNullable).as("km_stand should be nullable").isTrue();
 
             // Bestehende Daten prüfen
             try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery("select reason from drive where id='1'")) {

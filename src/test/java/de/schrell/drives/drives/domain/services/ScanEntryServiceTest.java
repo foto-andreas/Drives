@@ -67,6 +67,30 @@ class ScanEntryServiceTest {
     }
 
     @Test
+    void createKeepsGeocodingWhenOcrFails() {
+        MockMultipartFile photo = new MockMultipartFile("photo", "photo.jpg", "image/jpeg", new byte[]{1, 2, 3});
+        OffsetDateTime timestamp = OffsetDateTime.of(2025, 1, 2, 9, 0, 0, 0, ZoneOffset.UTC);
+
+        when(ocrService.extractKmStand(photo)).thenThrow(new IllegalArgumentException("Kein KM-Stand"));
+        when(geocodingService.reverseGeocode(48.1, 11.6)).thenReturn(Optional.of("Adresse"));
+        when(scanEntryRepository.save(any(ScanEntry.class))).thenAnswer(invocation -> {
+            ScanEntry entry = invocation.getArgument(0);
+            entry.setId("2");
+            return entry;
+        });
+
+        ScanEntryResponse response = scanEntryService.create(ScanType.START, timestamp, 48.1, 11.6, photo);
+
+        assertThat(response.id()).isEqualTo("2");
+        assertThat(response.address()).isEqualTo("Adresse");
+        assertThat(response.kmStand()).isNull();
+        verify(geocodingService).reverseGeocode(48.1, 11.6);
+        ArgumentCaptor<ScanEntry> captor = ArgumentCaptor.forClass(ScanEntry.class);
+        verify(scanEntryRepository).save(captor.capture());
+        assertThat(captor.getValue().getKmStand()).isNull();
+    }
+
+    @Test
     void findLatestStartIfLatestReturnsEmptyWhenLatestIsEnd() {
         ScanEntry entry = new ScanEntry(
                 "1",

@@ -9,6 +9,7 @@ import de.schrell.drives.drives.domain.entities.ScanType;
 import de.schrell.drives.drives.domain.exceptions.ResourceNotFoundException;
 import de.schrell.drives.drives.domain.repositories.ScanEntryRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,6 +19,7 @@ import java.util.Locale;
 import java.util.Optional;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class ScanEntryService {
 
@@ -32,7 +34,12 @@ public class ScanEntryService {
                                     double latitude,
                                     double longitude,
                                     MultipartFile photo) {
-        int kmStand = ocrService.extractKmStand(photo);
+        Integer kmStand = null;
+        try {
+            kmStand = ocrService.extractKmStand(photo);
+        } catch (RuntimeException ex) {
+            log.warn("OCR konnte keinen KM-Stand ermitteln (type={}, ts={})", type, timestamp, ex);
+        }
         String address = geocodingService.reverseGeocode(latitude, longitude).orElse(null);
 
         ScanEntry entry = new ScanEntry();
