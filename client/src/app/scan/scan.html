@@ -75,3 +75,40 @@
     </form>
   </div>
 </div>
+
+@if (cropperOpen()) {
+  <div class="cropper-backdrop">
+    <div class="cropper-dialog" role="dialog" aria-modal="true" aria-labelledby="cropper-title" tabindex="-1"
+         #cropDialog (keydown.escape)="cancelCrop()">
+      <h3 id="cropper-title">Ausschnitt wählen</h3>
+      <div class="cropper-canvas-wrapper">
+        <canvas #cropCanvas class="cropper-canvas"
+                (pointerdown)="onCropPointerDown($event)"
+                (pointermove)="onCropPointerMove($event)"
+                (pointerup)="onCropPointerUp($event)"
+                (pointercancel)="onCropPointerUp($event)"
+                (pointerleave)="onCropPointerUp($event)"></canvas>
+      </div>
+      <div class="cropper-toolbar">
+        <label for="cropperZoom">Zoom</label>
+        <input id="cropperZoom" type="range" min="1" max="3" step="0.05"
+               [value]="cropZoom()" (input)="onCropZoom($event)">
+        <div class="cropper-mode">
+          <button mat-stroked-button type="button" (click)="setCropMode('select')"
+                  [class.active]="cropMode() === 'select'">
+            Ausschnitt
+          </button>
+          <button mat-stroked-button type="button" (click)="setCropMode('pan')"
+                  [class.active]="cropMode() === 'pan'">
+            Bild verschieben
+          </button>
+        </div>
+      </div>
+      <div class="cropper-actions">
+        <button mat-stroked-button type="button" (click)="cancelCrop()">Abbrechen</button>
+        <button mat-stroked-button type="button" (click)="useOriginal()">Ohne Ausschnitt</button>
+        <button mat-raised-button color="primary" type="button" (click)="confirmCrop()">Übernehmen</button>
+      </div>
+    </div>
+  </div>
+}

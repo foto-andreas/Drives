@@ -51,7 +51,7 @@ Um die Übersichtlichkeit zu wahren, wurde ein spezielles CSS-Layout implementie
 ### Dynamische UI-Elemente
 - **Pfeil-Separator:** In der Liste wird zwischen Start und Ziel ein Pfeil angezeigt. Bei `HOME` (Home-Office) wird dieser ausgeblendet, da kein physischer Weg zurückgelegt wurde.
 - **Formular-Validierung:** Die Pflichtfelder passen sich dynamisch an, je nachdem ob eine Vorlage gewählt wurde oder nicht.
-- **Scan-Flow:** Der Scan-Screen nutzt Geolocation und Foto-Upload (clientseitig auf max. 1280px skaliert und als JPEG komprimiert). Start- und Ziel-Scans werden per OCR (KM-Stand) und Reverse-Geocoding (Adresse) ergänzt; der Grund kann ausgewählt werden (Default `sonstiges`) und die Fahrt kann übernommen werden.
+- **Scan-Flow:** Der Scan-Screen nutzt Geolocation und Foto-Upload (clientseitig auf max. 1280px skaliert und als JPEG komprimiert). Der Start/Ziel-Button öffnet vor dem Upload optional einen freien Bildausschnitt mit Zoom (inkl. „Ohne Ausschnitt“). Start- und Ziel-Scans werden per OCR (KM-Stand) und Reverse-Geocoding (Adresse) ergänzt; der Grund kann ausgewählt werden (Default `sonstiges`) und die Fahrt kann übernommen werden.
 
 ## 🛠 Technologien
 - **Angular 21**

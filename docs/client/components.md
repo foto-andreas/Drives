@@ -31,6 +31,7 @@ Scan-Komponente zur Erfassung von Start/Ziel per Foto und GPS.
 | **Geolocation & Foto** | Erfasst Standort und Foto für `START`/`ZIEL`. |
 | **OCR & Reverse-Geocoding** | OCR extrahiert den KM-Stand, Reverse-Geocoding ergänzt die Adresse. |
 | **Upload-Optimierung** | Das Foto wird clientseitig auf maximal 1280px Kantenlänge skaliert und als JPEG komprimiert, um Upload-Daten zu reduzieren. |
+| **Ausschnitt wählen** | Der Start/Ziel-Button öffnet vor dem Upload einen optionalen Crop-Dialog mit freiem Seitenverhältnis und Zoom; der Nutzer kann einen Bildausschnitt wählen oder ohne Ausschnitt fortfahren. |
 | **Grund-Auswahl** | Übernimmt den Grund per Select (Standard: `sonstiges`), analog zur Erfassung im `DriveForm`. |
 | **Fallback bei OCR** | Falls kein KM-Stand erkannt wird, bleibt das Feld leer und kann manuell ergänzt werden. |
 | **Commit-Logik** | Eine Fahrt wird nur erzeugt, wenn Start/Ziel vorhanden sind und die Strecke > 0 ist. |
