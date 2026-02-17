@@ -38,7 +38,7 @@ Dieses Repository hat **zwei getrennte Guideline-Sets** (jeweils im `.junie`-Ver
 2. Stell die Testabdeckung sicher, so dass möglichst 90% erreicht werden.
 3. Nutze auch fachliche Prüfung auf Sinnhaftigkeit und frage ggf. nach.
 4. Prüfe den gesamten Code intensiv auf Korrektheit.
-5. Wenn ein Verhalten fraglich ist, stelle Rückfragen.
+5. Wenn ein Verhalten fraglich ist, stell Rückfragen.
 6. Bereinige den Code bei Fehlern.
 7. Erstelle zusätzliche Testfälle, die diese Probleme abdecken.
 

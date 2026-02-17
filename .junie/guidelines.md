@@ -4,9 +4,10 @@ This document provides guidelines for developing a Spring Boot project.
 It includes coding standards, Spring Boot best practices and testing recommendations to follow.
 
 ### Prerequisites
-- Java 21 or later
+- Java 25 (toolchain)
+- Gradle (use the included Gradle wrapper: `./gradlew`)
+- Node.js + npm (required because the backend build runs the client build)
 - Docker and Docker Compose
-- Maven (or use the included Maven wrapper)
 
 ### Project Structure
 
@@ -14,13 +15,16 @@ Follow **package-by-feature/module** and in each module **package-by-layer** cod
 
 ```shell
 project-root/
-├── pom.xml
+├── build.gradle
+├── settings.gradle
+├── gradlew
+├── client/
 ├── src/
 │   ├── main/
 │   │   ├── java/
-│   │   │   └── com/mycompany/projectname/
+│   │   │   └── de/schrell/drives/
 │   │   │       ├── config/
-│   │   │       ├── module1/
+│   │   │       ├── drives/
 │   │   │       │     ├── api/
 │   │   │       │     │   ├── controllers/
 │   │   │       │     │   └── dtos/
@@ -34,12 +38,13 @@ project-root/
 │   │   │       │     │   └── services/
 │   │   │       │     ├── jobs/
 │   │   │       │     ├── eventhandlers/
-│   │   └── resources/
-│   │       └── application.properties
+│   └── resources/
+│   │       ├── application.yaml
+│   │       └── db/migration/
 │   └── test/
 │   │   └── java/
-│   │   │   └── com/mycompany/projectname/
-│   │   │       ├── module1/
+│   │   │   └── de/schrell/drives/
+│   │   │       ├── drives/
 │   │   │       │     ├── api/
 │   │   │       │     │   ├── controllers/
 │   │   │       │     ├── domain/
@@ -47,47 +52,49 @@ project-root/
 └── README.md
 ```
 
-1. **Web Layer** (`com.companyname.projectname.module.api`):
+1. **Web Layer** (`de.schrell.drives.drives.api`):
     - Controllers handle HTTP requests and responses
     - DTOs for request/response data
     - Global exception handling
 
-2. **Service Layer** (`com.companyname.projectname.module.domain.services`):
+2. **Service Layer** (`de.schrell.drives.drives.domain.services`):
     - Business logic implementation
     - Transaction management
 
-3. **Repository Layer** (`com.companyname.projectname.module.domain.repositories`):
+3. **Repository Layer** (`de.schrell.drives.drives.domain.repositories`):
     - Spring Data JPA repositories
     - Database access
 
-4. **Entity Layer** (`com.companyname.projectname.module.domain.entities`):
+4. **Entity Layer** (`de.schrell.drives.drives.domain.entities`):
     - JPA entities representing database tables
 
-5. **Model Layer** (`com.companyname.projectname.module.domain.models`):
+5. **Model Layer** (`de.schrell.drives.drives.domain.models`):
     - DTOs for domain objects
     - Command objects for operations
 
-6. **Mapper Layer** (`com.companyname.projectname.module.domain.mappers`):
+6. **Mapper Layer** (`de.schrell.drives.drives.domain.mappers`):
     - Converters from DTOs to JPA entities and vice-versa
 
-7. **Exceptions** (`com.companyname.projectname.module.domain.exceptions`):
+7. **Exceptions** (`de.schrell.drives.drives.domain.exceptions`):
     - Custom exceptions
 
-8. **Config** (`com.companyname.projectname.module.config`):
+8. **Config** (`de.schrell.drives.config`):
     - Spring Boot configuration classes such as WebMvcConfig, WebSecurityConfig, etc.
 
 ### Java Code Style Guidelines
 
 1. **Java Code Style**:
-    - Use Java 21 features where appropriate (records, text blocks, pattern matching, etc.)
+    - Use Java 25 features where appropriate (records, text blocks, pattern matching, etc.)
     - Follow standard Java naming conventions
     - Use meaningful variable and method names
     - Use `public` access modifier only when necessary
+    - Rely on Lombok for boilerplate; do not hand-write getters/setters/builders Lombok already provides
 
 2. **Testing Style**:
     - Use descriptive test method names
     - Follow the Given-When-Then pattern
     - Use AssertJ for assertions
+    - Use JUnit 5 and Spring Boot test support; use Mockito only when a real dependency is not practical
 
 ### Spring Boot Code Style Guidelines
 1. Dependency Injection Style
@@ -109,8 +116,8 @@ project-root/
 5. Create usecase specific Command objects and pass them to the "service" layer methods to perform create or update operations.
 
 6. Application Configuration:
-    * Create all the application-specific configuration properties with a common prefix in `application.properties` file.
-    * Use Typed Configuration with `@ConfigurationProperties` with validations.
+    * Create all the application-specific configuration properties with a common prefix in `application.yaml`.
+    * Use typed configuration with `@ConfigurationProperties` and `@Validated` constraints.
 
 7. Implement Global Exception Handling:
     * `@ControllerAdvice`/`@RestControllerAdvice` with `@ExceptionHandler` methods.
@@ -120,7 +127,9 @@ project-root/
     * Never use `System.out.println()` for production logging.
     * Use SLF4J logging.
 
-9. Use WebJars for service static content.
+9. Static Content:
+    * The frontend build outputs to `src/main/resources/public`.
+    * Serve static assets via Spring Boot static resources; avoid WebJars unless there is a clear need.
 
 10. Use Lombok for concise and readable code.
 
@@ -129,19 +138,23 @@ Use Flyway for database migrations:
 
 - Migration scripts should be in `src/main/resources/db/migration`
 - Naming convention: `V{version}__{description}.sql`
-- Hibernate is configured with `ddl-auto=validate` to ensure schema matches entities
+- Keep `ddl-auto` non-destructive for production environments; use `validate` or `none` when possible
 
 ### Test Best Practices
-1. **Unit Tests**: Test individual components in isolation using mocks if required
-2. **Integration Tests**: Test interactions between components using Testcontainers
+1. **Unit Tests**: Test individual components in isolation using mocks only when required
+2. **Integration Tests**: Use Spring Boot test slices or full context tests where behavior crosses layers
 3. **Use descriptive test names** that explain what the test is verifying
 4. **Follow the Given-When-Then pattern** for a clear test structure
 5. **Use AssertJ for assertions** for more readable assertions
-6. **Prefer testing with real dependencies** in unit tests as much as possible instead of using mocks
-7. **Use Testcontainers for integration tests** to test with real databases, message brokers, etc
-8. **TestcontainersConfiguration.java**: Configures database, message broker, etc containers for tests
-9. **BaseIT.java**: Base class for integration tests that sets up:
-    - Spring Boot test context using a random port
-    - MockMvcTester for HTTP requests
-    - Import `TestcontainersConfiguration.java`
-10. **Min 80% Code Coverage**: Aim for good code coverage, but be pragmatic. Don't write useless tests just for the sake of code coverage metrics.
+6. **Prefer testing with real dependencies** where practical
+7. **Coverage**: Keep minimum 90% code coverage (Jacoco enforces this in `check`)
+8. **Commands**: Use `./gradlew test` and `./gradlew check` to verify tests and coverage
+
+### Documentation
+1. Keep `DOCUMENTATION.md` as the top-level entry point and add links to new docs.
+2. Add or update package/class docs under `docs/` when behavior changes.
+3. Use Mermaid diagrams when they clarify behavior. Always start Mermaid blocks with:
+   ---
+   config:
+     layout: elk
+   ---

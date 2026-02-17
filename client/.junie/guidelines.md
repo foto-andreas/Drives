@@ -10,7 +10,7 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 ## Angular Best Practices
 
 - ALWAYS use standalone components over NgModules
-- Must NOT set `standalone: true` inside Angular decorators. It's the default in Angular v20+.
+- Must NOT set `standalone: true` inside Angular decorators. It's the default in Angular v21+ for this project.
 - Use signals for state management
 - Implement lazy loading for feature routes
 - Do NOT use the `@HostBinding` and `@HostListener` decorators. Put host bindings inside the `host` object of the `@Component` or `@Directive` decorator instead
@@ -46,7 +46,7 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - Keep templates simple and avoid complex logic
 - Use native control flow (`@if`, `@for`, `@switch`) instead of `*ngIf`, `*ngFor`, `*ngSwitch`
 - Use the async pipe to handle observables
-- Do not assume globals like (`new Date()`) are available.
+- Do not instantiate objects or call constructors in templates (e.g. `new Date()`); compute in TypeScript or use a pipe.
 - Do not write arrow functions in templates (they are not supported).
 
 ## Services
@@ -55,3 +55,7 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - Use the `providedIn: 'root'` option for singleton services
 - Use the `inject()` function instead of constructor injection
 
+## Testing
+
+- Run unit tests via `ng test --runner=vitest` (wired by `npm test`).
+- Prefer deterministic tests; avoid real timers and network calls.
