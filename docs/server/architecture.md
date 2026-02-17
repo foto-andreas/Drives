@@ -57,7 +57,7 @@ Die Anwendung unterstützt mehrere Benutzer (Tenants) mit strikt getrennten Date
 3. **Dynamik:** Die Datenbankverbindung wird "Just-in-Time" beim ersten Request des Benutzers aufgebaut und das Schema initialisiert.
 
 ### Externe Dienste
-- **OCR:** Tesseract (via Tess4J) extrahiert den KM-Stand aus Fotos.
+- **OCR:** Tesseract (via Tess4J) extrahiert den KM-Stand aus Fotos; EXIF-Orientation wird vorab berücksichtigt. Bei verdächtigen Ergebnissen werden Rotationen (90/180/270 Grad) versucht, bevor Relaxed/CLI-Fallbacks greifen.
 - **Geocoding:** Nominatim (OpenStreetMap) liefert Adressen für GPS-Koordinaten.
 
 ### OCR-Debugging (optional)

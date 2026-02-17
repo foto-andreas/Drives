@@ -191,7 +191,7 @@ class OcrServiceTest {
 
         try (MockedConstruction<Tesseract> mocked = Mockito.mockConstruction(Tesseract.class,
                 (mock, context) -> {
-                    if (context.getCount() == 1) {
+                    if (context.getCount() <= 4) {
                         Mockito.when(mock.doOCR(any(BufferedImage.class))).thenReturn("000");
                     } else {
                         Mockito.when(mock.doOCR(any(BufferedImage.class))).thenReturn("1234");
@@ -210,7 +210,7 @@ class OcrServiceTest {
 
         try (MockedConstruction<Tesseract> mocked = Mockito.mockConstruction(Tesseract.class,
                 (mock, context) -> {
-                    if (context.getCount() <= 2) {
+                    if (context.getCount() <= 5) {
                         Mockito.when(mock.doOCR(any(BufferedImage.class))).thenReturn("000");
                     } else {
                         Mockito.when(mock.doOCR(any(BufferedImage.class))).thenReturn("98765");
@@ -220,6 +220,30 @@ class OcrServiceTest {
 
             assertThat(result).isEqualTo(98765);
         }
+    }
+
+    @Test
+    void applyOrientationRotates90Clockwise() {
+        OcrService service = new OcrService(new OcrProperties());
+        BufferedImage image = new BufferedImage(2, 3, BufferedImage.TYPE_INT_RGB);
+        image.setRGB(0, 0, Color.RED.getRGB());
+
+        BufferedImage rotated = service.applyOrientationForTest(image, 6);
+
+        assertThat(rotated.getWidth()).isEqualTo(3);
+        assertThat(rotated.getHeight()).isEqualTo(2);
+        assertThat(rotated.getRGB(2, 0)).isEqualTo(Color.RED.getRGB());
+    }
+
+    @Test
+    void applyOrientationFlipsHorizontal() {
+        OcrService service = new OcrService(new OcrProperties());
+        BufferedImage image = new BufferedImage(3, 2, BufferedImage.TYPE_INT_RGB);
+        image.setRGB(0, 0, Color.BLUE.getRGB());
+
+        BufferedImage flipped = service.applyOrientationForTest(image, 2);
+
+        assertThat(flipped.getRGB(2, 0)).isEqualTo(Color.BLUE.getRGB());
     }
 
     @Test

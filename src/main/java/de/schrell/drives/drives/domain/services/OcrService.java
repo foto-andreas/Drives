@@ -1,5 +1,10 @@
 package de.schrell.drives.drives.domain.services;
 
+import com.drew.imaging.ImageMetadataReader;
+import com.drew.imaging.ImageProcessingException;
+import com.drew.metadata.Metadata;
+import com.drew.metadata.MetadataException;
+import com.drew.metadata.exif.ExifIFD0Directory;
 import com.sun.jna.NativeLibrary;
 import de.schrell.drives.config.OcrProperties;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +20,7 @@ import javax.imageio.ImageIO;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -22,6 +28,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -68,8 +75,12 @@ public class OcrService {
         Optional<Integer> primary = extractBestNumber(text);
 
         if (isSuspiciousOcrResult(text, primary)) {
-            log.warn("OCR primary result suspicious (value={}, text='{}'), retrying with relaxed preprocessing",
+            log.warn("OCR primary result suspicious (value={}, text='{}'), retrying with rotation + relaxed preprocessing",
                     primary.orElse(null), text);
+            Optional<Integer> rotated = tryRotatedOcr(image);
+            if (rotated.isPresent()) {
+                return rotated.get();
+            }
             BufferedImage relaxed = preprocessRelaxed(image);
             writeDebugImage(debugDir, "03-relaxed", relaxed);
             String relaxedText = doOcrRelaxed(relaxed);
@@ -94,13 +105,113 @@ public class OcrService {
         return primary.orElseThrow(() -> new IllegalArgumentException("Kein KM-Stand im Foto gefunden"));
     }
 
+    private Optional<Integer> tryRotatedOcr(BufferedImage source) {
+        int[] rotations = new int[]{90, 180, 270};
+        for (int rotation : rotations) {
+            BufferedImage rotated = rotateImage(source, rotation);
+            BufferedImage prepared = preprocess(rotated);
+            String text = doOcr(prepared);
+            log.info("OCR rotated {} result: {}", rotation, text);
+            Optional<Integer> number = extractBestNumber(text);
+            if (!isSuspiciousOcrResult(text, number)) {
+                return number;
+            }
+        }
+        return Optional.empty();
+    }
+
+    private BufferedImage rotateImage(BufferedImage source, int degrees) {
+        int width = source.getWidth();
+        int height = source.getHeight();
+        int type = getImageType(source);
+        if (degrees == 180) {
+            BufferedImage rotated = new BufferedImage(width, height, type);
+            Graphics2D g2d = rotated.createGraphics();
+            g2d.translate(width, height);
+            g2d.rotate(Math.toRadians(180));
+            g2d.drawImage(source, 0, 0, null);
+            g2d.dispose();
+            return rotated;
+        }
+        BufferedImage rotated = new BufferedImage(height, width, type);
+        Graphics2D g2d = rotated.createGraphics();
+        if (degrees == 90) {
+            g2d.translate(height, 0);
+            g2d.rotate(Math.toRadians(90));
+        } else if (degrees == 270) {
+            g2d.translate(0, width);
+            g2d.rotate(Math.toRadians(270));
+        } else {
+            g2d.drawImage(source, 0, 0, null);
+            g2d.dispose();
+            return rotated;
+        }
+        g2d.drawImage(source, 0, 0, null);
+        g2d.dispose();
+        return rotated;
+    }
+
+    private int getImageType(BufferedImage source) {
+        int type = source.getType();
+        return type == BufferedImage.TYPE_CUSTOM ? BufferedImage.TYPE_INT_RGB : type;
+    }
+
+    private OptionalInt readOrientation(byte[] bytes) {
+        try (ByteArrayInputStream input = new ByteArrayInputStream(bytes)) {
+            Metadata metadata = ImageMetadataReader.readMetadata(input);
+            ExifIFD0Directory directory = metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
+            if (directory == null || !directory.containsTag(ExifIFD0Directory.TAG_ORIENTATION)) {
+                return OptionalInt.empty();
+            }
+            return OptionalInt.of(directory.getInt(ExifIFD0Directory.TAG_ORIENTATION));
+        } catch (ImageProcessingException | IOException | MetadataException ex) {
+            log.debug("EXIF orientation konnte nicht gelesen werden: {}", ex.getMessage());
+            return OptionalInt.empty();
+        }
+    }
+
+    private BufferedImage applyOrientation(BufferedImage source, int orientation) {
+        return switch (orientation) {
+            case 2 -> flipHorizontal(source);
+            case 3 -> rotateImage(source, 180);
+            case 4 -> flipVertical(source);
+            case 5 -> rotateImage(flipHorizontal(source), 270);
+            case 6 -> rotateImage(source, 90);
+            case 7 -> rotateImage(flipHorizontal(source), 90);
+            case 8 -> rotateImage(source, 270);
+            default -> source;
+        };
+    }
+
+    private BufferedImage flipHorizontal(BufferedImage source) {
+        int width = source.getWidth();
+        int height = source.getHeight();
+        BufferedImage flipped = new BufferedImage(width, height, getImageType(source));
+        Graphics2D g2d = flipped.createGraphics();
+        g2d.drawImage(source, width, 0, -width, height, null);
+        g2d.dispose();
+        return flipped;
+    }
+
+    private BufferedImage flipVertical(BufferedImage source) {
+        int width = source.getWidth();
+        int height = source.getHeight();
+        BufferedImage flipped = new BufferedImage(width, height, getImageType(source));
+        Graphics2D g2d = flipped.createGraphics();
+        g2d.drawImage(source, 0, height, width, -height, null);
+        g2d.dispose();
+        return flipped;
+    }
+
     private BufferedImage readImage(MultipartFile photo) {
         try {
-            BufferedImage image = ImageIO.read(photo.getInputStream());
+            byte[] bytes = photo.getBytes();
+            BufferedImage image = ImageIO.read(new ByteArrayInputStream(bytes));
             if (image == null) {
                 throw new IllegalArgumentException("Foto konnte nicht gelesen werden");
             }
-            return image;
+            OptionalInt orientation = readOrientation(bytes);
+            return applyOrientation(image, orientation.orElse(1));
         } catch (IOException e) {
             throw new IllegalArgumentException("Foto konnte nicht gelesen werden", e);
         }
@@ -388,6 +499,10 @@ public class OcrService {
 
     int otsuThresholdForTest(BufferedImage source) {
         return otsuThreshold(source);
+    }
+
+    BufferedImage applyOrientationForTest(BufferedImage source, int orientation) {
+        return applyOrientation(source, orientation);
     }
 
     private Optional<Path> prepareDebugDir(String debugId) {
