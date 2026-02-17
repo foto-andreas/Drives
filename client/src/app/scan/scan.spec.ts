@@ -24,9 +24,11 @@ class ScanServiceMock {
 
 class MatSnackBarMock {
   lastMessage: string | null = null;
+  lastConfig: { duration?: number } | null = null;
 
-  open(message: string) {
+  open(message: string, _action?: string, config?: { duration?: number }) {
     this.lastMessage = message;
+    this.lastConfig = config ?? null;
     return;
   }
 }
@@ -308,17 +310,48 @@ describe('Scan', () => {
     }
   });
 
+  it('should show gps snackbar when capture starts', () => {
+    const fixture = TestBed.createComponent(Scan);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance as any;
+    component.startFileInput = { nativeElement: { click: vi.fn() } };
+    const original = Object.getOwnPropertyDescriptor(navigator, 'geolocation');
+    const geoMock = {
+      getCurrentPosition: (success: PositionCallback) => success({
+        coords: { latitude: 48.1, longitude: 11.6 } as GeolocationCoordinates,
+      } as GeolocationPosition)
+    };
+    Object.defineProperty(navigator, 'geolocation', { configurable: true, value: geoMock });
+
+    component.capture('START');
+
+    expect(snackBar.lastMessage).toContain('GPS wird ermittelt');
+    expect(snackBar.lastConfig?.duration).toBe(2000);
+
+    if (original) {
+      Object.defineProperty(navigator, 'geolocation', original);
+    } else {
+      delete (navigator as any).geolocation;
+    }
+  });
+
   it('should clear pending capture when no file is selected', () => {
     const fixture = TestBed.createComponent(Scan);
     fixture.detectChanges();
 
     const component = fixture.componentInstance as any;
     component.pendingStart = { timestamp: new Date(), latitude: 1, longitude: 2 };
+    component.pendingStartFile = new File(['x'], 'photo.jpg', { type: 'image/jpeg' });
+    const input = { files: [], value: 'x' };
+    component.startFileInput = { nativeElement: input };
 
     const event = { target: { files: [] } } as any;
     component.onFileSelected(event, 'START');
 
     expect(component.pendingStart).toBeNull();
+    expect(component.pendingStartFile).toBeNull();
+    expect(input.value).toBe('');
   });
 
   it('should capture and trigger start file selection on success', () => {
@@ -375,7 +408,7 @@ describe('Scan', () => {
     }
   });
 
-  it('should warn when file is selected without pending capture', () => {
+  it('should keep file when geolocation is not yet available', () => {
     const fixture = TestBed.createComponent(Scan);
     fixture.detectChanges();
 
@@ -386,8 +419,9 @@ describe('Scan', () => {
 
     component.onFileSelected({ target: input } as any, 'START');
 
-    expect(snackBar.lastMessage).toContain('Es fehlen Zeitstempel oder GPS-Daten');
-    expect(input.value).toBe('');
+    expect(snackBar.lastMessage).toBeNull();
+    expect(component.pendingStartFile).toBe(file);
+    expect(scanService.upload).not.toHaveBeenCalled();
   });
 
   it('should upload photo and update start entry', () => {
@@ -407,12 +441,14 @@ describe('Scan', () => {
       kmStand: 1000
     };
     component.pendingStart = { timestamp: entry.timestamp, latitude: 48.1, longitude: 11.6 };
+    component.startFileInput = { nativeElement: input };
     scanService.upload.mockReturnValue(of(entry));
 
     component.onFileSelected({ target: input } as any, 'START');
 
     expect(component.startEntry()).toEqual(entry);
     expect(component.pendingStart).toBeNull();
+    expect(component.pendingStartFile).toBeNull();
     expect(component.isUploading()).toBe(false);
     expect(input.value).toBe('');
     expect(snackBar.lastMessage).toContain('Foto verarbeitet');
@@ -435,6 +471,7 @@ describe('Scan', () => {
       kmStand: 1500
     };
     component.pendingEnd = { timestamp: entry.timestamp, latitude: 48.2, longitude: 11.7 };
+    component.endFileInput = { nativeElement: input };
     scanService.upload.mockReturnValue(of(entry));
 
     component.onFileSelected({ target: input } as any, 'ZIEL');
@@ -442,6 +479,7 @@ describe('Scan', () => {
     expect(component.endEntry()).toEqual(entry);
     expect(component.scanForm.controls.endKm.value).toBe(1500);
     expect(component.pendingEnd).toBeNull();
+    expect(component.pendingEndFile).toBeNull();
     expect(input.value).toBe('');
   });
 
@@ -453,11 +491,13 @@ describe('Scan', () => {
     const file = new File(['x'], 'photo.jpg', { type: 'image/jpeg' });
     const input = { files: [file], value: 'x' };
     component.pendingEnd = { timestamp: new Date(), latitude: 48.1, longitude: 11.6 };
+    component.endFileInput = { nativeElement: input };
     scanService.upload.mockReturnValue(throwError(() => ({ status: 500, message: 'Boom' })));
 
     component.onFileSelected({ target: input } as any, 'ZIEL');
 
     expect(component.pendingEnd).toBeNull();
+    expect(component.pendingEndFile).toBeNull();
     expect(component.isUploading()).toBe(false);
     expect(input.value).toBe('');
     expect(snackBar.lastMessage).toContain('Fehler beim Verarbeiten des Fotos');
@@ -590,10 +630,15 @@ describe('Scan', () => {
 
     const component = fixture.componentInstance as any;
     component.pendingEnd = { timestamp: new Date(), latitude: 1, longitude: 2 };
+    component.pendingEndFile = new File(['x'], 'photo.jpg', { type: 'image/jpeg' });
+    const input = { files: [], value: 'x' };
+    component.endFileInput = { nativeElement: input };
 
     const event = { target: { files: [] } } as any;
     component.onFileSelected(event, 'ZIEL');
 
     expect(component.pendingEnd).toBeNull();
+    expect(component.pendingEndFile).toBeNull();
+    expect(input.value).toBe('');
   });
 });

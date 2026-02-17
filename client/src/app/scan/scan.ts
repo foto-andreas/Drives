@@ -61,6 +61,8 @@ export class Scan {
 
   private pendingStart: PendingCapture | null = null;
   private pendingEnd: PendingCapture | null = null;
+  private pendingStartFile: File | null = null;
+  private pendingEndFile: File | null = null;
 
   protected readonly driveLength = computed(() => {
     this.scanFormValue();
@@ -111,6 +113,14 @@ export class Scan {
       return;
     }
 
+    this.clearPending(type);
+    this.clearPendingFile(type);
+    this.snackBar.open('GPS wird ermittelt...', undefined, {
+      duration: 2000,
+      horizontalPosition: 'center',
+      verticalPosition: 'bottom',
+    });
+    this.openFilePicker(type);
     const timestamp = new Date();
     navigator.geolocation.getCurrentPosition(
       position => {
@@ -121,11 +131,10 @@ export class Scan {
         };
         if (type === 'START') {
           this.pendingStart = pending;
-          this.startFileInput?.nativeElement.click();
         } else {
           this.pendingEnd = pending;
-          this.endFileInput?.nativeElement.click();
         }
+        this.tryUpload(type);
       },
       () => {
         this.snackBar.open('GPS-Position konnte nicht ermittelt werden', 'Schließen', {
@@ -134,6 +143,9 @@ export class Scan {
           verticalPosition: 'bottom',
           panelClass: ['error-snackbar']
         });
+        this.clearPending(type);
+        this.clearPendingFile(type);
+        this.resetFileInput(type);
       },
       { enableHighAccuracy: true, timeout: 15000 }
     );
@@ -144,18 +156,19 @@ export class Scan {
     const file = input.files && input.files.length > 0 ? input.files[0] : null;
     if (!file) {
       this.clearPending(type);
+      this.clearPendingFile(type);
+      this.resetFileInput(type);
       return;
     }
 
+    this.setPendingFile(type, file);
+    this.tryUpload(type);
+  }
+
+  private tryUpload(type: ScanType): void {
     const pending = type === 'START' ? this.pendingStart : this.pendingEnd;
-    if (!pending) {
-      this.snackBar.open('Es fehlen Zeitstempel oder GPS-Daten', 'Schließen', {
-        duration: 4000,
-        horizontalPosition: 'center',
-        verticalPosition: 'bottom',
-        panelClass: ['error-snackbar']
-      });
-      input.value = '';
+    const file = type === 'START' ? this.pendingStartFile : this.pendingEndFile;
+    if (!pending || !file) {
       return;
     }
 
@@ -166,7 +179,8 @@ export class Scan {
         finalize(() => {
           this.isUploading.set(false);
           this.clearPending(type);
-          input.value = '';
+          this.clearPendingFile(type);
+          this.resetFileInput(type);
         })
       )
       .subscribe({
@@ -261,6 +275,34 @@ export class Scan {
     } else {
       this.pendingEnd = null;
     }
+  }
+
+  private clearPendingFile(type: ScanType): void {
+    if (type === 'START') {
+      this.pendingStartFile = null;
+    } else {
+      this.pendingEndFile = null;
+    }
+  }
+
+  private setPendingFile(type: ScanType, file: File): void {
+    if (type === 'START') {
+      this.pendingStartFile = file;
+    } else {
+      this.pendingEndFile = file;
+    }
+  }
+
+  private resetFileInput(type: ScanType): void {
+    const input = type === 'START' ? this.startFileInput?.nativeElement : this.endFileInput?.nativeElement;
+    if (input) {
+      input.value = '';
+    }
+  }
+
+  private openFilePicker(type: ScanType): void {
+    const input = type === 'START' ? this.startFileInput?.nativeElement : this.endFileInput?.nativeElement;
+    input?.click();
   }
 
   private applyEntryToForm(entry: ScanEntry | null, type: ScanType): void {
