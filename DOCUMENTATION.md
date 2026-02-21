@@ -18,6 +18,7 @@ Das Backend ist mit Spring Boot 4 (Java 25) realisiert und verwaltet die Datenha
 
 - 🏗 **[Architektur & Schichtenmodell](docs/server/architecture.md)**: Details zum Aufbau der Anwendung und der Schichtentrennung.
 - 📊 **[Datenmodell](docs/server/data-model.md)**: ER-Diagramm und detaillierte Beschreibungen der Entities (`Drive`, `DriveTemplate`).
+- 🛫 **[DB-Migrationen (Flyway)](docs/server/database-migrations.md)**: Baseline-Strategie, Versionierung und Startup-Migration pro Tenant.
 - 🔌 **[API-Referenz](docs/server/api.md)**: Dokumentation der REST-Endpunkte, DTOs und Fehlerbehandlung.
 - 📦 **[Paket- & Klassenstruktur](docs/server/packages.md)**: Detaillierte Übersicht aller Java-Packages und Klassen-Verantwortlichkeiten.
 
@@ -54,7 +55,7 @@ graph LR
 Jeder Benutzer arbeitet auf seiner eigenen Datenbank (isolierte Datenhaltung).
 - **Identifikation:** Über Google OAuth2 (E-Mail).
 - **Datenhaltung:** Pro Benutzer eine eigene H2-Datenbankdatei (oder PostgreSQL-Schema).
-- **Automatisierung:** Schema-Erstellung und Migrationen erfolgen automatisch beim ersten Login.
+- **Automatisierung:** Flyway migriert `default` beim Serverstart und weitere Tenant-Datenbanken beim ersten Zugriff.
 
 ---
 

@@ -21,10 +21,6 @@ app:
 
 spring:
 
-  sql:
-    init:
-      mode: always
-
   application:
     name: Fahrten
 
@@ -36,11 +32,10 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     properties:
       hibernate:
         format_sql: true
-    defer-datasource-initialization: true
     show-sql: false
 
   web:
@@ -48,8 +43,11 @@ spring:
       static-locations: classpath:/public/browser
 
   flyway:
+    enabled: false
+    locations: classpath:db/migration
     baseline-on-migrate: true
-    baseline-version: 0
+    baseline-version: 1
+    ignore-migration-patterns: "*:missing"
 
   servlet:
     multipart:

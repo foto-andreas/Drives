@@ -3,8 +3,6 @@ package de.schrell.drives.drives.domain.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.UUID;
-
 @Getter
 @Setter
 @NoArgsConstructor
@@ -19,7 +17,7 @@ public class DriveTemplate {
     private String id;
 
     private String name;
-    @Column(name = "drive_length")
+    @Column(name = "drive_length", nullable = false)
     private int driveLength;
     @Column(name = "from_location")
     private String fromLocation;

@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 @TestPropertySource(properties = {
         "spring.datasource.url=jdbc:h2:mem:latestDriveDb;DB_CLOSE_DELAY=-1",
-        "spring.jpa.hibernate.ddl-auto=create-drop"
+        "spring.jpa.hibernate.ddl-auto=validate"
 })
 @TestConstructor(autowireMode = TestConstructor.AutowireMode.ALL)
 class LatestDriveEndpointTest {

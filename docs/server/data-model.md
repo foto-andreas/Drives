@@ -96,9 +96,10 @@ Beim Laden einer Fahrt sorgt der `DriveMapper` dafür, dass der Client immer die
 In `DriveRepository.findFiltered` wird ein `LEFT JOIN` auf das Template verwendet. Dies ist kritisch, da ein Standard-Join (Inner Join) Fahrten ohne Template aus dem Ergebnis ausschließen würde.
 
 ### Schema-Migration
-Das Projekt nutzt einen hybriden Ansatz:
-- **H2 (lokal):** Tabellen werden automatisch bei Bedarf erstellt (`MultiTenantDataSourceConfiguration`).
-- **Migration:** Bestehende `DRIVE`-Tabellen werden automatisch um die Spalten `from_location`, `to_location` und `drive_length` erweitert, falls sie aus einer älteren Version stammen.
+Das Projekt nutzt ausschließlich Flyway:
+- **Versionierung:** Das komplette Schema wird über versionierte SQL-Migrationen in `src/main/resources/db/migration` gepflegt.
+- **Startup-Verhalten:** Beim Start wird die `default`-Datenbank migriert; weitere Tenant-Datenbanken werden bei der ersten Erzeugung migriert.
+- **JPA-Rolle:** Hibernate validiert das Schema (`ddl-auto=validate`), führt aber keine Schema-Änderungen aus.
 
 ### Scan-Workflow
 - `ScanEntry` wird beim Upload gespeichert.

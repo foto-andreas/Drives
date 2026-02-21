@@ -19,7 +19,7 @@ import static org.mockito.Mockito.verify;
 
 @SpringBootTest(properties = {
         "spring.datasource.url=jdbc:h2:mem:securityDb;DB_CLOSE_DELAY=-1",
-        "spring.jpa.hibernate.ddl-auto=create-drop"
+        "spring.jpa.hibernate.ddl-auto=validate"
 })
 @TestConstructor(autowireMode = TestConstructor.AutowireMode.ALL)
 class SecurityConfigTest {

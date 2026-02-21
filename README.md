@@ -8,7 +8,7 @@ Diese Anwendung ist zu einem Großteil mit KI erstellt. Dazu wurde IntelliJ-Ulti
 
 Die ausführliche Dokumentation des Projekts (Architektur, API, Datenmodell, Frontend) befindet sich in der **[DOCUMENTATION.md](DOCUMENTATION.md)**.
 
-- Backend: siehe `docs/server/` (Architecture, Data-Model, API, Packages)
+- Backend: siehe `docs/server/` (Architecture, Data-Model, Database-Migrations, API, Packages)
 - Frontend: siehe `docs/client/` (Overview, Components, Services, Models)
 
 ## Test starten

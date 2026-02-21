@@ -54,7 +54,13 @@ graph TD
 Die Anwendung unterstützt mehrere Benutzer (Tenants) mit strikt getrennten Daten.
 1. **Identifikation:** Der Tenant wird über das OAuth2-Principal (E-Mail) ermittelt.
 2. **Isolierung:** Jeder Tenant erhält eine eigene Datenbankdatei (bei H2) bzw. ein eigenes Suffix.
-3. **Dynamik:** Die Datenbankverbindung wird "Just-in-Time" beim ersten Request des Benutzers aufgebaut und das Schema initialisiert.
+3. **Dynamik:** Die Datenbankverbindung wird "Just-in-Time" beim ersten Request des Benutzers aufgebaut.
+4. **Schema-Management:** Flyway migriert die `default`-Datenbank beim Serverstart und jede weitere Tenant-Datenbank direkt bei deren erster Erstellung.
+
+### Datenbank-Migrationen (Flyway)
+- **Single Source of Truth:** DDL-Änderungen werden ausschließlich als Flyway-Migrationen gepflegt.
+- **Sicherheit:** `spring.jpa.hibernate.ddl-auto=validate` verhindert unkontrollierte Schema-Änderungen durch JPA.
+- **Übergang bestehender DBs:** Bestehende aktuelle Datenbanken werden per Baseline übernommen und danach normal versioniert.
 
 ### Externe Dienste
 - **OCR:** Tesseract (via Tess4J) extrahiert den KM-Stand aus Fotos; der erste Pass arbeitet auf einem unteren Bildstreifen (Band-Crop) mit `PSM_SINGLE_LINE` und Ziffern-Whitelist. Der normale Pass erhöht Kontrast/Helligkeit, entfernt Schatten (Dilation + Median-Blur + Normalisierung) und binarisiert per Otsu; der Relaxed-Pass nutzt dieselbe Normalisierung ohne harte Binarisierung.

@@ -49,7 +49,7 @@ Spezialisierte Logik für den Mehrbenutzerbetrieb mit getrennten Datenbanken.
 
 | Klasse | Beschreibung |
 | :--- | :--- |
-| `MultiTenantDataSourceConfiguration` | Erzeugt dynamisch DataSources pro Tenant, initialisiert Schema und Migrationen. |
+| `MultiTenantDataSourceConfiguration` | Erzeugt dynamisch DataSources pro Tenant und führt pro neuer DataSource Flyway-Migrationen (inkl. Baseline bestehender DBs) aus. |
 | `InitializationNotificationFilter` | Servlet-Filter, der den Initialisierungsstatus im HTTP-Header `X-Db-Initialized` mitschickt. |
 | `DatabaseInitializationTracker` | Hält den Status, ob ein Tenant bereits initialisiert wurde. |
 | `TenantFilter` | Setzt den aktuellen Tenant aus dem Security-Context. |

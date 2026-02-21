@@ -6,11 +6,14 @@ spring:
     password:
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: validate
     show-sql: true
   flyway:
+    enabled: false
+    locations: classpath:db/migration
     baseline-on-migrate: true
-    baseline-version: 0
+    baseline-version: 1
+    ignore-migration-patterns: "*:missing"
   security:
     oauth2:
       client:
