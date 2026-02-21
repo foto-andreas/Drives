@@ -35,7 +35,7 @@ Lädt Informationen über den aktuell angemeldeten Benutzer.
 - **Backend-Kommunikation:** Ruft `/api/user` ab.
 - **State-Management:**
   - `name`: Ein Readonly-Signal, das den Namen des Benutzers enthält.
-  - `version`: Ein Readonly-Signal mit der Server-Version.
+  - `version`: Ein Readonly-Signal mit der Server-Version aus den Backend-Build-Metadaten.
 
 ## Helper
 
@@ -50,13 +50,13 @@ Die Anwendung nutzt Angular Signals, um Zustandsänderungen effizient zu verfolg
 
 ```typescript
 // Beispiel aus DriveService
-private readonly currentFilterSignal = signal<DriveFilter>({
+const currentFilterSignal = signal<DriveFilter>({
   year: new Date().getFullYear(),
   month: new Date().getMonth() + 1,
   reason: null,
 });
 
-public readonly currentFilter = this.currentFilterSignal.asReadonly();
+const currentFilter = currentFilterSignal.asReadonly();
 ```
 
 Vorteile:

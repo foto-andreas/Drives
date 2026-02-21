@@ -54,6 +54,7 @@ Basis-URL: `/api`
 
 ### GET `/user`
 - Antwort: `UserResponse` (Name, Version)
+- Hinweis: `version` wird serverseitig aus den Build-Metadaten (`BuildProperties`) geliefert. Die Quelle ist `APP_VERSION` aus `app.env` zur Build-Zeit.
 
 ## Initialization
 

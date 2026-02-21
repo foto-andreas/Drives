@@ -36,6 +36,26 @@ describe('UserService', () => {
     expect(service.version()).toBe('1.2.3');
   });
 
+  it('should normalize version string', () => {
+    service.load();
+
+    const req = httpMock.expectOne('/api/user');
+    expect(req.request.method).toBe('GET');
+    req.flush({ name: 'Alex', version: '  "1.2.3" \r\n' });
+
+    expect(service.version()).toBe('1.2.3');
+  });
+
+  it('should drop undefined-like version string', () => {
+    service.load();
+
+    const req = httpMock.expectOne('/api/user');
+    expect(req.request.method).toBe('GET');
+    req.flush({ name: 'Alex', version: ' "undefined" ' });
+
+    expect(service.version()).toBeNull();
+  });
+
   it('should clear user details on error', () => {
     service.load();
 

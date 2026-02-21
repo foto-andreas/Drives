@@ -2,7 +2,7 @@ package de.schrell.drives.drives.api.controllers;
 
 import de.schrell.drives.drives.api.dtos.UserResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
@@ -21,13 +21,12 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserController {
 
-    @Value("${app.version:unknown}")
-    private String version;
+    private final BuildProperties buildProperties;
 
     @GetMapping("/user")
     public UserResponse getUser(Authentication authentication) {
         String name = extractUserName(authentication).orElse("Unbekannt");
-        return new UserResponse(name, version);
+        return new UserResponse(name, buildProperties.getVersion());
     }
 
     private Optional<String> extractUserName(Authentication authentication) {

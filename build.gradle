@@ -124,8 +124,12 @@ project(':client') {
 	}
 }
 
-tasks.named('bootRun') {
-	environment 'APP_VERSION', resolvedAppVersion
+springBoot {
+	buildInfo {
+		properties {
+			version = resolvedAppVersion
+		}
+	}
 }
 
 java {

@@ -1,5 +1,4 @@
 app:
-  version: ${APP_VERSION:unknown}
   ocr:
     tesseract-path: ${TESSERACT_PATH:/usr/share/tesseract-ocr/5/tessdata}
     language: deu
