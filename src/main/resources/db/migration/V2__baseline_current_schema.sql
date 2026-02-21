@@ -1,3 +1,4 @@
+-- noinspection SqlNoDataSourceInspection,SqlDialectInspection
 CREATE TABLE IF NOT EXISTS drive_template (
     id VARCHAR(255) NOT NULL,
     name VARCHAR(255),

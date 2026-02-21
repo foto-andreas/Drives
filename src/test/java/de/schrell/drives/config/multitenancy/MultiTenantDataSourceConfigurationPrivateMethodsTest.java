@@ -13,6 +13,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+@SuppressWarnings({"SqlNoDataSourceInspection", "SqlDialectInspection"})
 class MultiTenantDataSourceConfigurationPrivateMethodsTest {
 
     @Test

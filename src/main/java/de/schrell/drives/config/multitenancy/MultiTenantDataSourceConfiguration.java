@@ -3,6 +3,7 @@ package de.schrell.drives.config.multitenancy;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.flywaydb.core.Flyway;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -45,11 +46,11 @@ public class MultiTenantDataSourceConfiguration {
     public DataSource dataSource() {
         TenantAwareRoutingDataSource routingDataSource = new TenantAwareRoutingDataSource() {
             @Override
-            protected DataSource determineTargetDataSource() {
+            protected @NonNull DataSource determineTargetDataSource() {
                 Object lookupKey = determineCurrentLookupKey();
                 if (lookupKey instanceof String tenantId) {
                     boolean[] created = new boolean[1];
-                    DataSource tenantDataSource = resolvedDataSources.computeIfAbsent(tenantId, key -> {
+                    resolvedDataSources.computeIfAbsent(tenantId, key -> {
                         created[0] = true;
                         return createDataSource(key);
                     });
