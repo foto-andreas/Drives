@@ -2,7 +2,7 @@
 
 Fahrtenbuch auf Basis von Fahrtvorlagen und Möglichkeit, Home-Office-Tage nachzuhalten. Es gibt einen CSV-Export (auf Basis der Filtermöglichkeiten) für die Steuererklärung.
 
-Diese Anwendung ist zu einem Großteil mit KI erstellt. Dazu wurde IntelliJ-Ultimate mit Jetbrains-AI verwendet. Es dient einerseits als nutzbare Anwendung im persönlichen Umfeld, als auch als Lernbeispiel für die Arbeit mit KI in der Softwareentwicklung.
+Diese Anwendung ist zu einem Großteil mit KI erstellt. Dazu wurde IntelliJ-Ultimate mit Jetbrains-AI und Codex (gpt-5.2/3-codex) verwendet. Es dient einerseits als nutzbare Anwendung im persönlichen Umfeld, als auch als Lernbeispiel für die Arbeit mit KI in der Softwareentwicklung.
 
 ## Dokumentation
 
