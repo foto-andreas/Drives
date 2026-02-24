@@ -28,7 +28,7 @@ APP_VERSION=$(grep APP_VERSION app.env | cut -d= -f2) && \
   ./gradlew build && \
   docker build --build-arg JAR_FILE=build/libs/drives-${APP_VERSION}.jar -t drives:${APP_VERSION} . && \
   docker save drives:${APP_VERSION} -o drives.tar && \
-  scp drives.tar root@evcc-box.schrell.de:
+  scp drives.tar root@drives.schrell.de:
 ```
 und nach Übertragung der drives.tar auf Server-Seite:
 ```bash
