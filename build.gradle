@@ -6,12 +6,6 @@ plugins {
 	id 'jacoco'
 }
 
-import org.gradle.api.file.RegularFileProperty
-import org.gradle.api.provider.Property
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputFile
-import org.gradle.api.tasks.TaskAction
-
 group = 'de.schrell'
 description = 'Fahrtenbuch'
 
@@ -153,7 +147,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
-	implementation 'net.sourceforge.tess4j:tess4j:5.13.0'
+	implementation 'net.sourceforge.tess4j:tess4j:5.18.0'
 	implementation 'org.flywaydb:flyway-core'
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'

@@ -13,6 +13,7 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
@@ -24,6 +25,8 @@ import net.sourceforge.tess4j.Tesseract;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.isNull;
 
 class OcrServiceTest {
 
@@ -192,7 +195,14 @@ class OcrServiceTest {
         MockMultipartFile file = createPngMultipartFile();
 
         try (MockedConstruction<Tesseract> mocked = Mockito.mockConstruction(Tesseract.class,
-                (mock, context) -> Mockito.when(mock.doOCR(any(BufferedImage.class))).thenReturn("KM 12345"))) {
+                (mock, context) -> Mockito.when(mock.doOCR(
+                        anyInt(),
+                        anyInt(),
+                        any(ByteBuffer.class),
+                        anyInt(),
+                        isNull(),
+                        isNull()
+                )).thenReturn("KM 12345"))) {
             int result = service.extractKmStand(file);
 
             assertThat(result).isEqualTo(12345);
@@ -215,9 +225,23 @@ class OcrServiceTest {
         try (MockedConstruction<Tesseract> mocked = Mockito.mockConstruction(Tesseract.class,
                 (mock, context) -> {
                     if (context.getCount() <= 2) {
-                        Mockito.when(mock.doOCR(any(BufferedImage.class))).thenReturn("000");
+                        Mockito.when(mock.doOCR(
+                                anyInt(),
+                                anyInt(),
+                                any(ByteBuffer.class),
+                                anyInt(),
+                                isNull(),
+                                isNull()
+                        )).thenReturn("000");
                     } else {
-                        Mockito.when(mock.doOCR(any(BufferedImage.class))).thenReturn("1234");
+                        Mockito.when(mock.doOCR(
+                                anyInt(),
+                                anyInt(),
+                                any(ByteBuffer.class),
+                                anyInt(),
+                                isNull(),
+                                isNull()
+                        )).thenReturn("1234");
                     }
                 })) {
             int result = service.extractKmStand(file);
@@ -234,9 +258,23 @@ class OcrServiceTest {
         try (MockedConstruction<Tesseract> mocked = Mockito.mockConstruction(Tesseract.class,
                 (mock, context) -> {
                     if (context.getCount() == 1) {
-                        Mockito.when(mock.doOCR(any(BufferedImage.class))).thenReturn("000");
+                        Mockito.when(mock.doOCR(
+                                anyInt(),
+                                anyInt(),
+                                any(ByteBuffer.class),
+                                anyInt(),
+                                isNull(),
+                                isNull()
+                        )).thenReturn("000");
                     } else {
-                        Mockito.when(mock.doOCR(any(BufferedImage.class))).thenReturn("98765");
+                        Mockito.when(mock.doOCR(
+                                anyInt(),
+                                anyInt(),
+                                any(ByteBuffer.class),
+                                anyInt(),
+                                isNull(),
+                                isNull()
+                        )).thenReturn("98765");
                     }
                 })) {
             int result = service.extractKmStand(file);

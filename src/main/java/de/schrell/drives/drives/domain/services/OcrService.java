@@ -8,6 +8,7 @@ import net.sourceforge.tess4j.ITesseract;
 import net.sourceforge.tess4j.TessAPI;
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
+import net.sourceforge.tess4j.util.ImageIOHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -16,6 +17,7 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -95,6 +97,7 @@ public class OcrService {
         System.setProperty("jna.library.path", trimmed);
         try {
             NativeLibrary.addSearchPath("tesseract", trimmed);
+            NativeLibrary.addSearchPath("leptonica", trimmed);
             NativeLibrary.addSearchPath("lept", trimmed);
         } catch (UnsatisfiedLinkError | NoClassDefFoundError ignored) {
             // Ignore: JNA might not be available yet; System property still helps.
@@ -186,10 +189,46 @@ public class OcrService {
     private String doOcr(BufferedImage image, boolean relaxed, boolean cliLike) {
         ITesseract tesseract = createTesseract(relaxed, cliLike);
         try {
-            return tesseract.doOCR(image);
+            OcrImageData ocrImageData = toOcrImageData(image);
+            return tesseract.doOCR(
+                    ocrImageData.width(),
+                    ocrImageData.height(),
+                    ocrImageData.buffer(),
+                    ocrImageData.bitsPerPixel(),
+                    null,
+                    null
+            );
         } catch (TesseractException e) {
             throw new IllegalArgumentException("OCR fehlgeschlagen", e);
         }
+    }
+
+    /**
+     * Uses Tess4J's raw-image API to avoid Lept4J image conversion, which is sensitive to
+     * distro-specific Leptonica versions in Docker images.
+     */
+    private OcrImageData toOcrImageData(BufferedImage source) {
+        BufferedImage grayscale = toByteGrayscale(source);
+        ByteBuffer buffer = ImageIOHelper.convertImageData(grayscale);
+        return new OcrImageData(grayscale.getWidth(), grayscale.getHeight(), buffer, 8);
+    }
+
+    private BufferedImage toByteGrayscale(BufferedImage source) {
+        if (source.getType() == BufferedImage.TYPE_BYTE_GRAY) {
+            return source;
+        }
+        BufferedImage grayscale = new BufferedImage(
+                source.getWidth(),
+                source.getHeight(),
+                BufferedImage.TYPE_BYTE_GRAY
+        );
+        Graphics2D graphics = grayscale.createGraphics();
+        graphics.drawImage(source, 0, 0, null);
+        graphics.dispose();
+        return grayscale;
+    }
+
+    private record OcrImageData(int width, int height, ByteBuffer buffer, int bitsPerPixel) {
     }
 
     private ITesseract createTesseract(boolean relaxed, boolean cliLike) {

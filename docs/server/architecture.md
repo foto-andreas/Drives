@@ -63,7 +63,7 @@ Die Anwendung unterstützt mehrere Benutzer (Tenants) mit strikt getrennten Date
 - **Übergang bestehender DBs:** Bestehende aktuelle Datenbanken werden per Baseline übernommen und danach normal versioniert.
 
 ### Externe Dienste
-- **OCR:** Tesseract (via Tess4J) extrahiert den KM-Stand aus Fotos; der erste Pass arbeitet auf einem unteren Bildstreifen (Band-Crop) mit `PSM_SINGLE_LINE` und Ziffern-Whitelist. Der normale Pass erhöht Kontrast/Helligkeit, entfernt Schatten (Dilation + Median-Blur + Normalisierung) und binarisiert per Otsu; der Relaxed-Pass nutzt dieselbe Normalisierung ohne harte Binarisierung.
+- **OCR:** Tesseract (via Tess4J) extrahiert den KM-Stand aus Fotos; der erste Pass arbeitet auf einem unteren Bildstreifen (Band-Crop) mit `PSM_SINGLE_LINE` und Ziffern-Whitelist. Der normale Pass erhöht Kontrast/Helligkeit, entfernt Schatten (Dilation + Median-Blur + Normalisierung) und binarisiert per Otsu; der Relaxed-Pass nutzt dieselbe Normalisierung ohne harte Binarisierung. Für die OCR-Ausführung übergibt der Backend-Service Bilder als Graustufen-ByteBuffer an Tess4J (Raw-Image-API) statt über Lept4J zu konvertieren, wodurch Docker-Runtime-Unterschiede bei Leptonica weniger problematisch sind.
 - **Geocoding:** Nominatim (OpenStreetMap) liefert Adressen für GPS-Koordinaten; Straße und Hausnummer werden ohne Komma kombiniert.
 
 ### OCR-Debugging (optional)
