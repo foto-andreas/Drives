@@ -4,7 +4,7 @@ apply: always
 
 # AGENTS
 
-## 1. Geltungsbereich
+## Geltungsbereich
 
 Dieses Repository nutzt zwei Guideline-Sets, die in dieser Datei konsolidiert sind:
 
@@ -13,13 +13,13 @@ Dieses Repository nutzt zwei Guideline-Sets, die in dieser Datei konsolidiert si
 
 Wenn ein Change beide Seiten betrifft, gelten die jeweiligen Regeln pro Datei.
 
-## 2. Priorität bei Konflikten
+## Priorität bei Konflikten
 
 1. Bereichsspezifische Regeln in dieser Datei (Backend vs. Frontend)
 2. Repo-weite Konventionen (z. B. `README.md`, Build-/Test-Vorgaben)
 3. Team-Entscheidungen im Review
 
-## 3. Allgemeine Regeln
+## Allgemeine Regeln
 
 - Änderungen minimal und zielgerichtet halten.
 - Aktuellen Code-Style, konsistente Benennungen und Einzüge beibehalten.
@@ -29,7 +29,7 @@ Wenn ein Change beide Seiten betrifft, gelten die jeweiligen Regeln pro Datei.
 - Wenn ein Prompt neue dauerhafte Vorgaben für Code-, Doku- oder Arbeitsstruktur einführt: Ergänzung für diese `AGENTS.md` vorschlagen und nach Zustimmung direkt einpflegen.
 - `npm`-Befehle immer im Modul `client/` ausführen.
 
-## 4. Korrektheit, Tests und Coverage
+## Korrektheit, Tests und Coverage
 
 - Änderungen über vorhandene und bei Bedarf neue Unit-Tests absichern.
 - Gefundene Fehler im Code bereinigen und durch zusätzliche Tests abdecken.
@@ -38,16 +38,16 @@ Wenn ein Change beide Seiten betrifft, gelten die jeweiligen Regeln pro Datei.
 - Frontend-Tests mit Vitest-Runner ausführen (`ng test --runner=vitest`, über `npm test`).
 - Falls Tests wegen erwarteter Änderungen fehlschlagen: Tests und/oder Produktionscode passend aktualisieren.
 
-## 5. Backend-Regeln (Java / Spring Boot / Jakarta)
+## Backend-Regeln (Java / Spring Boot / Jakarta)
 
-### 5.1 Voraussetzungen und Build
+### Voraussetzungen und Build
 
 - Java 25 (Toolchain)
 - Gradle über Wrapper (`./gradlew`)
 - Node.js + npm (Backend-Build baut den Client mit)
 - Docker / Docker Compose
 
-### 5.2 Architektur und Struktur
+### Architektur und Struktur
 
 - Package-by-feature/module und darin package-by-layer verwenden.
 - Schichten strikt trennen:
@@ -58,7 +58,7 @@ Wenn ein Change beide Seiten betrifft, gelten die jeweiligen Regeln pro Datei.
   - Mapper-Layer (`domain.mappers`)
   - Exceptions (`domain.exceptions`)
 
-### 5.3 Java- und Spring-Standards
+### Java- und Spring-Standards
 
 - Java-25-Features sinnvoll nutzen.
 - Sinnvolle Namen und Standard-Namenskonventionen einhalten.
@@ -68,7 +68,7 @@ Wenn ein Change beide Seiten betrifft, gelten die jeweiligen Regeln pro Datei.
 - Constructor Injection ohne `@Autowired` verwenden.
 - Logging nur über SLF4J, niemals `System.out.println()`.
 
-### 5.4 Service-, API- und Persistence-Regeln
+### Service-, API- und Persistence-Regeln
 
 - Schreib-Operationen als Use-Case-spezifische Command-Objekte modellieren.
 - `@Transactional(readOnly = true)` für reine Lesevorgänge.
@@ -80,14 +80,14 @@ Wenn ein Change beide Seiten betrifft, gelten die jeweiligen Regeln pro Datei.
 - Globale Exception-Behandlung via `@ControllerAdvice`/`@RestControllerAdvice` mit konsistentem Fehler-DTO.
 - Konfiguration über `application.yaml` mit gemeinsamem Prefix und typisierter `@ConfigurationProperties`-Klasse.
 
-### 5.5 Datenbank und Migrationen
+### Datenbank und Migrationen
 
 - Flyway ist Single Source of Truth für Schemaänderungen.
 - Migrationen unter `src/main/resources/db/migration`.
 - Namensschema: `V{version}__{description}.sql`.
 - `ddl-auto` in produktionsnahen Setups nicht destruktiv halten (`validate` oder `none`).
 
-### 5.6 Backend-Testing
+### Backend-Testing
 
 - JUnit 5 + Spring Boot Test.
 - AssertJ für Assertions.
@@ -95,15 +95,15 @@ Wenn ein Change beide Seiten betrifft, gelten die jeweiligen Regeln pro Datei.
 - Testnamen beschreibend, Given-When-Then bevorzugen.
 - Relevante Befehle: `./gradlew test`, `./gradlew check`.
 
-## 6. Frontend-Regeln (TypeScript / Angular)
+## Frontend-Regeln (TypeScript / Angular)
 
-### 6.1 TypeScript-Grundsätze
+### TypeScript-Grundsätze
 
 - Strict Type Checking verwenden.
 - Typinferenz nutzen, wenn der Typ offensichtlich ist.
 - `any` vermeiden; bei Unsicherheit `unknown` verwenden.
 
-### 6.2 Angular-Grundsätze
+### Angular-Grundsätze
 
 - Standalone-Komponenten verwenden (kein NgModule-Design).
 - `standalone: true` nicht explizit setzen (für dieses Projekt Standard).
@@ -112,12 +112,12 @@ Wenn ein Change beide Seiten betrifft, gelten die jeweiligen Regeln pro Datei.
 - `@HostBinding`/`@HostListener` nicht verwenden; Host-Bindings im `host`-Objekt deklarieren.
 - Für statische Bilder `NgOptimizedImage` verwenden (keine Base64-Inline-Bilder damit).
 
-### 6.3 Accessibility
+### Accessibility
 
 - AXE-Checks müssen bestehen.
 - WCAG AA Mindestanforderungen einhalten (Fokus, Kontrast, ARIA).
 
-### 6.4 Komponenten, Templates, Services
+### Komponenten, Templates, Services
 
 - Komponenten klein und fokussiert halten.
 - `input()`/`output()` statt Decorator-Inputs/Outputs.
@@ -134,7 +134,7 @@ Wenn ein Change beide Seiten betrifft, gelten die jeweiligen Regeln pro Datei.
 - Services Single Responsibility, `providedIn: 'root'`, `inject()` statt Constructor Injection.
 - Signal-Updates nur über `set`/`update`, niemals `mutate`.
 
-## 7. Dokumentation
+## Dokumentation
 
 - Dokumentation bei Codeänderungen immer aktuell halten.
 - Einheitliches Format und einheitliche Struktur beibehalten.
@@ -143,7 +143,7 @@ Wenn ein Change beide Seiten betrifft, gelten die jeweiligen Regeln pro Datei.
 - Doku-Anpassungen klein halten; unnötige Umformulierungen vermeiden.
 - Ungereimtheiten im Code oder inkonsistente deutsche Bezeichnungen am Ende der Gesamtdokumentation mit Code-Verweisen festhalten.
 
-### 7.1 Mermaid-Workflow
+### Mermaid-Workflow
 
 - Mermaid nicht direkt in Markdown einbetten.
 - Diagrammquelle als `.mmd` speichern.
@@ -174,13 +174,13 @@ config:
   - `rg 'width="100%"|max-width:' docs/diagrams/*.svg` darf keine Treffer liefern.
   - `rg 'max-width:min\(100%, 960px\); max-height:480px; width:auto; height:auto;' DOCUMENTATION.md docs/**/*.md` muss für alle Diagramm-Einbindungen Treffer liefern.
 
-### 7.2 Sprache und Zeilenenden in Doku
+### Sprache und Zeilenenden in Doku
 
 - In Doku-/Markdown-Dateien und Diagrammtexten standardmäßig echte deutsche Umlaute (`ä`, `ö`, `ü`) und `ß` verwenden.
 - Umschreibungen (`ae`, `oe`, `ue`, `ss`) nur bei technischen Literalen/Identifiern (z. B. Code-Literale, Dateinamen, API-Namen).
 - In Dokumentationsdateien LF verwenden und generell keine gemischten Zeilenenden erzeugen.
 
-## 8. Zeilenenden (global)
+## Zeilenenden (global)
 
 - Für Code-, Konfigurations- und Dokumentationsdateien sind LF-Zeilenenden zu verwenden.
 - Gemischte Zeilenenden sind im gesamten Repository zu vermeiden.
