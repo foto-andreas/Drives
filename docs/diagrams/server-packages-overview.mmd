@@ -1,0 +1,23 @@
+---
+config:
+  look: neo
+  layout: elk
+---
+graph TD
+    subgraph API-Layer
+        C[Controller] --> DTO[DTOs]
+        H[GlobalExceptionHandler]
+    end
+    subgraph Domain-Layer
+        S[Services] --> CMD[Commands]
+        S --> M[Mapper]
+        S --> R[Repositories]
+        R --> E[Entities]
+    end
+    subgraph Config-Layer
+        MT[Multitenancy]
+        SC[Security/WebConfig]
+    end
+    C --> S
+    M --> DTO
+    M --> E

@@ -1,0 +1,15 @@
+---
+config:
+  look: neo
+  layout: elk
+---
+graph TD
+    AppComponent --> Toolbar[MatToolbar]
+    AppComponent --> Sidenav[MatSidenav]
+    Sidenav --> NavList[MatNavList]
+    AppComponent --> Content[RouterOutlet]
+    Content --> DL[DriveList]
+    Content --> DF[DriveForm]
+    Content --> TL[DriveTemplateList]
+    Content --> TF[DriveTemplateForm]
+    Content --> SC[Scan]

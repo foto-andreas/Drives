@@ -4,40 +4,11 @@ Das Datenmodell ist darauf ausgelegt, Fahrten effizient zu speichern, wobei sowo
 
 ## 📊 Entity-Beziehung (ER-Diagramm)
 
-```mermaid
----
-config:
-  layout: elk
----
-erDiagram
-    DRIVE_TEMPLATE ||--o{ DRIVE : "liefert Standardwerte für"
-    SCAN_ENTRY {
-        string id PK
-        string type
-        datetime timestamp
-        double latitude
-        double longitude
-        string address
-        int km_stand
-    }
-    DRIVE_TEMPLATE {
-        string id PK
-        string name UK
-        int drive_length
-        string from_location
-        string to_location
-        int reason
-    }
-    DRIVE {
-        string id PK
-        string template_id FK
-        date date
-        int reason
-        string from_location
-        string to_location
-        int drive_length
-    }
-```
+<p align="center">
+  <img src="../diagrams/server-data-model-er.svg" alt="ER-Diagramm" style="max-width:min(100%, 960px); max-height:480px; width:auto; height:auto;">
+</p>
+
+Quelle: [`docs/diagrams/server-data-model-er.mmd`](../diagrams/server-data-model-er.mmd)
 
 ## 📝 Entity-Details
 

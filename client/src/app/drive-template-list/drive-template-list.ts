@@ -130,7 +130,16 @@ export class DriveTemplateList {
   }
 
   protected confirmDeletion(type: string): boolean {
-    return window.confirm(`Möchten Sie diese ${type} wirklich löschen?`);
+    const confirmFn: unknown = window.confirm;
+    if (typeof confirmFn !== 'function') return false;
+
+    // In jsdom window.confirm is not implemented and emits noisy warnings unless explicitly mocked.
+    const isJsdm = typeof navigator !== 'undefined' && /jsdom/i.test(navigator.userAgent);
+    if (isJsdm && !('mock' in (confirmFn as object))) {
+      return false;
+    }
+
+    return confirmFn(`Möchten Sie diese ${type} wirklich löschen?`);
   }
 
   protected readonly Reason = Reason;

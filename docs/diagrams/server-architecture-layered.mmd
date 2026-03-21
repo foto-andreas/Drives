@@ -1,0 +1,24 @@
+---
+config:
+  look: neo
+  layout: elk
+---
+graph TD
+    subgraph Web-Layer
+        C[Controller]
+        H[GlobalExceptionHandler]
+    end
+    subgraph Business-Logic-Layer
+        S[Services]
+    end
+    subgraph Persistence-Layer
+        R[Repositories]
+        E[Entities]
+    end
+    subgraph Integration-Layer
+        M[Mapper]
+    end
+    C --> S
+    S --> R
+    S --> M
+    R --> E

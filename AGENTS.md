@@ -4,77 +4,82 @@ apply: always
 
 # AGENTS
 
-Dieses Repository hat **zwei getrennte Guideline-Sets** (jeweils im `.junie`-Verzeichnis), abhängig davon, ob du am Backend oder Frontend arbeitest.
+## 1. Geltungsbereich
 
-## 1) Backend (Java / Spring Boot / Jakarta)
+Dieses Repository nutzt zwei Guideline-Sets im `.junie`-Verzeichnis:
 
-- **Geltungsbereich:** alle Backend-Änderungen außerhalb von `client/` (z. B. `src/main/java`, `src/test/java`, `build.gradle`, Docker/Deploy, etc.)
-- **Zu verwendende Guidelines:** `/.junie/**`
+- Backend (alles außerhalb von `client/`): `/.junie/**`
+- Frontend (alles unter `client/`): `/client/.junie/**`
 
-**Regel:** Wenn du Backend-Code oder Backend-Konfiguration anfasst, befolge die Guidelines aus `/.junie`.
+Wenn ein Change beide Seiten betrifft, gelten die jeweiligen Regeln pro Datei.
 
-## 2) Frontend (TypeScript / Angular)
+## 2. Priorität bei Konflikten
 
-- **Geltungsbereich:** alles unter `client/` (z. B. `client/src/**`, `client/angular.json`, `client/package.json`, Tests, Build-Konfig)
-- **Zu verwendende Guidelines:** `/client/.junie/**`
-
-**Regel:** Wenn du TypeScript- oder Angular-Code im Frontend anfasst, befolge die Guidelines aus `client/.junie`.
-
-## 3) Wenn ein Change beide Seiten betrifft
-
-- Wende **jeweils die passenden Guidelines pro Teiländerung** an:
-    - Backend-Dateien → `/.junie`
-    - Frontend-Dateien in `client/` → `client/.junie`
-
-## 4) Priorität bei Konflikten
-
-1. Bereichsspezifische Guidelines (`client/.junie` für Frontend, `/.junie` für Backend)
-2. Repo-weite Konventionen (z. B. aus `README.md`, Build-/Test-Vorgaben)
+1. Bereichsspezifische Guidelines (`/.junie` bzw. `client/.junie`)
+2. Repo-weite Konventionen (z. B. `README.md`, Build-/Test-Vorgaben)
 3. Team-Entscheidungen im Review
 
-## 5) Korrektheit
+## 3. Allgemeine Regeln
 
-1. Sichere bei allen Änderungen die Korrektheit durch vorhandene und neue Unit-Tests
-2. Stell die Testabdeckung sicher, so dass möglichst 90% erreicht werden.
-3. Nutze auch fachliche Prüfung auf Sinnhaftigkeit und frage ggf. nach.
-4. Prüfe den gesamten Code intensiv auf Korrektheit.
-5. Wenn ein Verhalten fraglich ist, stell Rückfragen.
-6. Bereinige den Code bei Fehlern.
-7. Erstelle zusätzliche Testfälle, die diese Probleme abdecken.
+- Änderungen minimal und zielgerichtet halten.
+- Aktuellen Code-Style, konsistente Benennungen und Einzüge beibehalten.
+- Nur stabile Bibliotheks-/Framework-Versionen verwenden; niemals Java- oder Bibliotheksversionen downgraden.
+- Lombok berücksichtigen und keinen Boilerplate-Code ergänzen, den Lombok bereits liefert.
+- Bei unklarem oder fraglichem Verhalten fachlich prüfen und Rückfragen stellen.
+- Wenn ein Prompt neue dauerhafte Vorgaben für Code-, Doku- oder Arbeitsstruktur einführt: Ergänzung für diese `AGENTS.md` vorschlagen und nach Zustimmung direkt einpflegen.
+- Führe npm im Modul client aus
 
-## 7) Ergänzungen
-* Verwende die neuesten stabilen Versionen von Bibliotheken und Frameworks
-* Verwende sinnvolle und beschreibende Namen für Variablen, Funktionen und Klassen
-* Verwende konsistente Einzüge und Formatierungen im gesamten Codebasis
-* WICHTIG: Führe alle Unit-Tests nach Abschluss einer Aufgabe durch. Überprüfe, ob Tests aufgrund erwarteter Änderungen nicht bestehen. Wenn ja, schreiben Sie den Testcode neu oder überprüfen Sie den Produktionscode erneut. Verwenden Sie "-runner=vitest"
-* Denk IMMER daran, dass Lombok im Code verwendet wird, aber NICHT Code, was Lombok bereitstellt,
-* NIEMALS JAVA-Version oder andere BIBLIOTHEKSVERSIONEN herunterzustufen
-* Führe alle Unit-Tests durch, nachdem du eine Aufgabe abgeschlossen hast. Überprüfe, ob Tests aufgrund erwarteter Änderungen nicht bestehen. Wenn ja, schreiben Sie den Testcode neu oder überprüfen Sie den Produktionscode erneut.
+## 4. Korrektheit, Tests und Coverage
 
-## 7) Systemdokumentation
-* Erstelle eine ausführliche Dokumentation für jedes Package und jede Klasse bzw. passe diese bei Änderungen im Code an.
-* Beschreibe Ressourcen und deren Nutzung.
-* Ergänze Grafiken (mit Mermaid) und Tabellen, falls sinnvoll.
-* Gehe auf alle Besonderheiten ein.
-* Erstelle eine Gesamtdokumentation auf oberer Ebene, die eine Zusammenfassung und Links zu den Einzel-Dokumentationen enthält.
-* Die gesamte Dokumentation soll einheitlich aussehen
-* Prüfe sämtliche Dokumentations-Dateien und Kommentare im Code auf aktuellen Stand und Korrektheit.
-* Nimm eventuelle Korrekturen und Erweiterungen vor.
-* Halte dich an die aktuelle einheitliche Struktur.
-* Ergänze Kommentare, falls sinnvoll.
-* Ergänze IMMER die Dokumentation um fehlende Teile und passe sie entsprechend der aktuellen Implementierung an.
-* Ergänze die Dokumentation um neue Funktionen und Features, wenn diese hinzugefügt werden.
-* Aktualisiere die Dokumentation bei Änderungen an bestehenden Funktionen und Features.
-* Verwende ein einheitliches Format für die Dokumentation, um eine konsistente Darstellung zu gewährleisten.
-* Verwende Markdown für die Dokumentation, um eine einfache und lesbare Formatierung zu ermöglichen.
-* Verwende Markdown-Plugins für die Dokumentation, um zusätzliche Funktionalitäten wie Code-Snippets oder Diagramme zu unterstützen.
-* Verwende Markdown-Tools für die Dokumentation, um die Dokumentation zu erstellen und zu verwalten.
-* Verwende Markdown-Editor-Plugins für die Dokumentation, um die Dokumentation zu bearbeiten und zu formatieren.
-* Verwende Markdown-Viewer-Plugins für die Dokumentation, um die Dokumentation zu lesen und zu präsentieren.
-* in allen Mermaid-Diagrammen ergänze am Anfang die Formatier-Anweisung:
-```
+- Änderungen über vorhandene und bei Bedarf neue Unit-Tests absichern.
+- Gefundene Fehler im Code bereinigen und durch zusätzliche Testfälle abdecken.
+- Zielabdeckung: möglichst 90%.
+- Nach Abschluss jeder Aufgabe alle relevanten Unit-Tests ausführen.
+- Frontend-Tests mit Vitest-Runner ausführen (z. B. `--runner=vitest`).
+- Falls Tests aufgrund erwarteter Änderungen fehlschlagen: Tests und/oder Produktionscode passend aktualisieren.
+
+## 5. Dokumentation
+
+- Dokumentation bei Codeänderungen immer auf aktuellen Stand bringen.
+- Einheitliches Format und einheitliche Struktur beibehalten.
+- `DOCUMENTATION.md` als zentrale Gesamtdokumentation mit Zusammenfassung und Links auf Detaildokumente pflegen.
+- Packages, Klassen, Ressourcen und Besonderheiten ausreichend dokumentieren; Tabellen/Diagramme nutzen, wenn sinnvoll.
+- Doku-Anpassungen klein halten; unnötige Umformulierungen vermeiden.
+- Ungereimtheiten im Code oder inkonsistente deutsche Bezeichnungen in einem Abschnitt am Ende der Gesamtdokumentation mit Code-Verweisen festhalten.
+
+### 5.1 Mermaid-Workflow
+
+- Mermaid nicht direkt in Markdown einbetten.
+- Diagrammquelle als `.mmd` speichern.
+- Jede `.mmd` beginnt mit:
+
+```text
 ---
 config:
-layout: elk
+  look: neo
+  layout: elk
 ---
 ```
+
+- `.mmd` mit `mermaid-cli` (aus `client/node_modules`) nach `.svg` rendern und SVG in Markdown einbinden.
+- SVGs nach dem Rendern normalisieren:
+  - kein Root-`width="100%"`
+  - kein Root-`max-width`
+  - kleine Diagramme mit intrinsischen Maßen belassen
+- SVGs in Markdown zentriert und mit begrenzter Darstellungsgröße einbinden, um übergroße Diagramme zuverlässig zu vermeiden:
+
+```html
+<p align="center">
+  <img src="..." alt="..." style="max-width:min(100%, 960px); max-height:480px; width:auto; height:auto;">
+</p>
+```
+
+- Nach jeder Mermaid-Änderung immer diese Checks ausführen und ggf. korrigieren:
+  - `rg 'width="100%"|max-width:' docs/diagrams/*.svg` darf keine Treffer liefern.
+  - `rg '<p align="center">\\n\\s*<img .*max-width:min\\(100%, 960px\\); max-height:480px;' DOCUMENTATION.md docs/**/*.md` muss für alle Diagramm-Einbindungen Treffer liefern.
+
+### 5.2 Sprache und Zeilenenden in Doku
+
+- In Doku-/Markdown-Dateien und Diagrammtexten standardmäßig echte deutsche Umlaute (`ä`, `ö`, `ü`) und `ß` verwenden.
+- Umschreibungen (`ae`, `oe`, `ue`, `ss`) nur bei technischen Literalen/Identifiern (z. B. Code-Literale, Dateinamen, API-Namen).
+- In Dokumentationsdateien LF verwenden und generell keine gemischten Zeilenenden erzeugen.

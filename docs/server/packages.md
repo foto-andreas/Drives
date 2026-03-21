@@ -6,40 +6,27 @@ Dieses Dokument beschreibt die interne Organisation des Backends, die Verantwort
 
 Das Backend folgt einem Schichtenmodell, wobei die Geschäftslogik in der Domänenschicht konzentriert ist.
 
-```mermaid
----
-config:
-  layout: elk
----
-graph TD
-    subgraph API-Layer
-        C[Controller] --> DTO[DTOs]
-        H[GlobalExceptionHandler]
-    end
-    subgraph Domain-Layer
-        S[Services] --> CMD[Commands]
-        S --> M[Mapper]
-        S --> R[Repositories]
-        R --> E[Entities]
-    end
-    subgraph Config-Layer
-        MT[Multitenancy]
-        SC[Security/WebConfig]
-    end
-    C --> S
-    M --> DTO
-    M --> E
-```
+<p align="center">
+  <img src="../diagrams/server-packages-overview.svg" alt="Architektur-Übersicht Backend" style="max-width:min(100%, 960px); max-height:480px; width:auto; height:auto;">
+</p>
+
+Quelle: [`docs/diagrams/server-packages-overview.mmd`](../diagrams/server-packages-overview.mmd)
 
 ## 📦 Paket-Details
 
-### 1. `de.schrell.drives.config`
-Konfigurationsklassen für das Framework und die Infrastruktur.
+### 1. `de.schrell.drives`
+Konfigurationsklassen auf Root-Ebene für Security/Web-Infrastruktur.
 
 | Klasse | Beschreibung |
 | :--- | :--- |
 | `SecurityConfig` | Konfiguration von Spring Security (OAuth2 Login, CSRF, Authorisierung). |
 | `WebConfig` | Web-spezifische Einstellungen (z.B. CORS-Header). |
+
+### 2. `de.schrell.drives.config`
+Konfigurationsklassen für Integrationen und externe Services.
+
+| Klasse | Beschreibung |
+| :--- | :--- |
 | `RestTemplateConfig` | Stellt einen `RestTemplate` für Geocoding bereit. |
 | `OcrProperties` | Konfigurationswerte für OCR (Tesseract-Pfade via `TESSERACT_PATH`, optionale Native-Libs via `OCR_LIBRARY_PATH`, Debug-Output via `OCR_DEBUG_ENABLED`/`OCR_DEBUG_DIR`, Bild-Preprocessing). |
 | `GeocodingProperties` | Konfiguration für Reverse-Geocoding (Base-URL, User-Agent, Sprache). |
@@ -56,7 +43,7 @@ Spezialisierte Logik für den Mehrbenutzerbetrieb mit getrennten Datenbanken.
 | `TenantContext` | ThreadLocal-Kontext für den aktuellen Tenant. |
 | `TenantAwareRoutingDataSource` | Routing-DataSource auf Basis des Tenants. |
 
-### 2. `de.schrell.drives.drives.api`
+### 3. `de.schrell.drives.drives.api`
 Die Schnittstelle nach außen.
 
 #### 📂 `api.controllers`
@@ -88,7 +75,7 @@ Data Transfer Objects (Java Records) für Request/Response.
 | :--- | :--- |
 | `GlobalExceptionHandler` | Zentrales Error-Handling mit `@RestControllerAdvice`. Wandelt Exceptions in `ErrorResponse` um. |
 
-### 3. `de.schrell.drives.drives.domain`
+### 4. `de.schrell.drives.drives.domain`
 Der Kern der Anwendung.
 
 #### 📂 `domain.services`

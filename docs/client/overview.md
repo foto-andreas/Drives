@@ -19,22 +19,11 @@ Die Navigation innerhalb der Anwendung wird über den Angular Router gesteuert (
 
 ## 🏗 Komponenten-Hierarchie
 
-```mermaid
----
-config:
-  layout: elk
----
-graph TD
-    AppComponent --> Toolbar[MatToolbar]
-    AppComponent --> Sidenav[MatSidenav]
-    Sidenav --> NavList[MatNavList]
-    AppComponent --> Content[RouterOutlet]
-    Content --> DL[DriveList]
-    Content --> DF[DriveForm]
-    Content --> TL[DriveTemplateList]
-    Content --> TF[DriveTemplateForm]
-    Content --> SC[Scan]
-```
+<p align="center">
+  <img src="../diagrams/client-components-hierarchy.svg" alt="Komponenten-Hierarchie" style="max-width:min(100%, 960px); max-height:480px; width:auto; height:auto;">
+</p>
+
+Quelle: [`docs/diagrams/client-components-hierarchy.mmd`](../diagrams/client-components-hierarchy.mmd)
 
 ## 📱 Mobil-Optimierungen & UX
 

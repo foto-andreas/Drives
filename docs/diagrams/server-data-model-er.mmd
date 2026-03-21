@@ -1,0 +1,33 @@
+---
+config:
+  look: neo
+  layout: elk
+---
+erDiagram
+    DRIVE_TEMPLATE ||--o{ DRIVE : "liefert Standardwerte für"
+    SCAN_ENTRY {
+        string id PK
+        string type
+        datetime timestamp
+        double latitude
+        double longitude
+        string address
+        int km_stand
+    }
+    DRIVE_TEMPLATE {
+        string id PK
+        string name UK
+        int drive_length
+        string from_location
+        string to_location
+        int reason
+    }
+    DRIVE {
+        string id PK
+        string template_id FK
+        date date
+        int reason
+        string from_location
+        string to_location
+        int drive_length
+    }

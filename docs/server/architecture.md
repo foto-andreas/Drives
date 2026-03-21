@@ -4,31 +4,11 @@ Das Backend ist als Spring Boot 4 Anwendung (Java 25) konzipiert und folgt einem
 
 ## 🏛 Schichtenmodell
 
-```mermaid
----
-config:
-  layout: elk
----
-graph TD
-    subgraph Web-Layer
-        C[Controller]
-        H[GlobalExceptionHandler]
-    end
-    subgraph Business-Logic-Layer
-        S[Services]
-    end
-    subgraph Persistence-Layer
-        R[Repositories]
-        E[Entities]
-    end
-    subgraph Integration-Layer
-        M[Mapper]
-    end
-    C --> S
-    S --> R
-    S --> M
-    R --> E
-```
+<p align="center">
+  <img src="../diagrams/server-architecture-layered.svg" alt="Server Schichtenmodell" style="max-width:min(100%, 960px); max-height:480px; width:auto; height:auto;">
+</p>
+
+Quelle: [`docs/diagrams/server-architecture-layered.mmd`](../diagrams/server-architecture-layered.mmd)
 
 ### 1. Web-Layer (`api.controllers`, `api.handlers`)
 - **Controller:** Definieren die REST-Endpunkte und validieren eingehende Daten mittels Jakarta Validation (auf DTO-Ebene).

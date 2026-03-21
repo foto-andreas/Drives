@@ -1,0 +1,13 @@
+---
+config:
+  look: neo
+  layout: elk
+---
+flowchart LR
+    A[Server startet] --> B[Routing-DataSource erstellt default-DataSource]
+    B --> C[Flyway migrate für default]
+    C --> D[default Tenant ist bereit]
+    D --> E[Request für Tenant X]
+    E --> F[DataSource für Tenant X wird lazy erstellt]
+    F --> G[Flyway migrate für Tenant X]
+    G --> H[Tenant X ist bereit]

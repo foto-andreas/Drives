@@ -40,16 +40,11 @@ Das Frontend basiert auf Angular 21 und bietet eine moderne, reaktive Benutzerob
 ### Schichtenmodell
 Die Anwendung folgt einem klassischen Schichtenmodell (Controller -> Service -> Repository), wobei die Fachlogik strikt in den Services gekapselt ist.
 
-```mermaid
----
-config:
-  layout: elk
----
-graph LR
-    User[Benutzer] <--> Angular[Angular Frontend]
-    Angular <--> Spring[Spring Boot Backend]
-    Spring <--> DB[(Datenbank)]
-```
+<p align="center">
+  <img src="docs/diagrams/system-context.svg" alt="Schichtenmodell Gesamt" style="max-width:min(100%, 960px); max-height:480px; width:auto; height:auto;">
+</p>
+
+Quelle: [`docs/diagrams/system-context.mmd`](docs/diagrams/system-context.mmd)
 
 ### Multitenancy (Mehrbenutzerbetrieb)
 Jeder Benutzer arbeitet auf seiner eigenen Datenbank (isolierte Datenhaltung).
@@ -90,6 +85,11 @@ Die App-Version wird **zentral** in `app.env` gepflegt.
 Empfohlener Ablauf:
 - Version nur in `app.env` ändern.
 - Danach wie gewohnt bauen/ausliefern (`./gradlew build`, Docker-Image bauen).
+
+---
+## ⚠️ Festgestellte Unstimmigkeiten
+
+Aktuell keine offenen Unstimmigkeiten.
 
 ---
 > 💡 *Tipp: Weitere Informationen zum Deployment und zum Starten der Anwendung finden sich in der [README.md](README.md).*

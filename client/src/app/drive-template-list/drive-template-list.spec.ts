@@ -140,11 +140,12 @@ describe('DriveTemplateList', () => {
   });
 
   it('should call window.confirm in confirmDeletion', () => {
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const confirmMock = vi.fn(() => true);
+    vi.stubGlobal('confirm', confirmMock);
     const result = (component as any).confirmDeletion('test');
-    expect(confirmSpy).toHaveBeenCalled();
+    expect(confirmMock).toHaveBeenCalled();
     expect(result).toBe(true);
-    confirmSpy.mockRestore();
+    vi.unstubAllGlobals();
   });
 
   it('should render rows and react to row click and delete button', async () => {
@@ -177,7 +178,7 @@ describe('DriveTemplateList', () => {
     expect(navigateSpy).toHaveBeenCalledWith(['/driveTemplates/edit', 't1']);
 
     // Click on delete icon button in first row
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+    vi.stubGlobal('confirm', vi.fn(() => true));
     const deleteBtn: HTMLButtonElement | null = table!.querySelector('button[color="warn"]');
     if (deleteBtn) {
       driveTemplateServiceMock.delete.mockReturnValue(of(undefined));
@@ -185,6 +186,6 @@ describe('DriveTemplateList', () => {
       await new Promise(r => setTimeout(r, 50));
       expect(driveTemplateServiceMock.delete).toHaveBeenCalled();
     }
-    confirmSpy.mockRestore();
+    vi.unstubAllGlobals();
   });
 });

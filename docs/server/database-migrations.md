@@ -20,20 +20,11 @@ Hinweis:
 
 ## Ablauf zur Laufzeit
 
-```mermaid
----
-config:
-  layout: elk
----
-flowchart TD
-    A[Server startet] --> B[Routing-DataSource erstellt default-DataSource]
-    B --> C[Flyway migrate fuer default]
-    C --> D[default Tenant ist bereit]
-    D --> E[Request fuer Tenant X]
-    E --> F[DataSource fuer Tenant X wird lazy erstellt]
-    F --> G[Flyway migrate fuer Tenant X]
-    G --> H[Tenant X ist bereit]
-```
+<p align="center">
+  <img src="../diagrams/server-migration-flow.svg" alt="Ablauf zur Laufzeit" style="max-width:min(100%, 960px); max-height:480px; width:auto; height:auto;">
+</p>
+
+Quelle: [`docs/diagrams/server-migration-flow.mmd`](../diagrams/server-migration-flow.mmd)
 
 ## Kompatibilität mit bestehenden Datenbanken
 

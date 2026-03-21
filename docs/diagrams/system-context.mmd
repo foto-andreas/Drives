@@ -1,0 +1,9 @@
+---
+config:
+  look: neo
+  layout: elk
+---
+graph LR
+    User[Benutzer] <--> Angular[Angular Frontend]
+    Angular <--> Spring[Spring Boot Backend]
+    Spring <--> DB[(Datenbank)]
