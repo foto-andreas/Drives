@@ -88,7 +88,7 @@ class DriveServiceTest {
         Drive drive = new Drive();
         DriveResponse response = new DriveResponse("1", LocalDate.now(), null, Reason.WORK, "A", "B", 10);
 
-        when(driveRepository.findLatestDrive()).thenReturn(List.of(drive));
+        when(driveRepository.findTopByOrderByDateDescIdDesc()).thenReturn(Optional.of(drive));
         when(driveMapper.toResponse(drive)).thenReturn(response);
 
         Optional<DriveResponse> result = driveService.findLatestDrive();
@@ -98,7 +98,7 @@ class DriveServiceTest {
 
     @Test
     void findLatestDriveReturnsEmptyWhenNoDrives() {
-        when(driveRepository.findLatestDrive()).thenReturn(List.of());
+        when(driveRepository.findTopByOrderByDateDescIdDesc()).thenReturn(Optional.empty());
 
         Optional<DriveResponse> result = driveService.findLatestDrive();
 

@@ -56,8 +56,7 @@ public class DriveService {
 
     @Transactional(readOnly = true)
     public Optional<DriveResponse> findLatestDrive() {
-        return driveRepository.findLatestDrive().stream()
-                .findFirst()
+        return driveRepository.findTopByOrderByDateDescIdDesc()
                 .map(driveMapper::toResponse);
     }
 

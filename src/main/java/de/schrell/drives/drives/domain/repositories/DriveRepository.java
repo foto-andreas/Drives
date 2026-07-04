@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface DriveRepository extends JpaRepository<Drive, String> {
@@ -18,15 +19,12 @@ public interface DriveRepository extends JpaRepository<Drive, String> {
      * nicht aus der Ergebnisliste herausfallen. Der Grund-Filter berücksichtigt sowohl den expliziten Grund
      * an der Fahrt als auch – falls dort null – den Grund der Vorlage.
      */
-    @Query("select d from Drive d order by d.date asc")
-    List<Drive> findAllByOrderByDateAsc();
     long countByTemplate(DriveTemplate template);
 
     @Query("select max(d.date) from Drive d")
     LocalDate findLatestDate();
 
-    @Query("select d from Drive d order by d.date desc, d.id desc")
-    List<Drive> findLatestDrive();
+    Optional<Drive> findTopByOrderByDateDescIdDesc();
 
     @Query("select d from Drive d left join d.template t " +
             "where (:year is null or YEAR(d.date) = :year) " +
