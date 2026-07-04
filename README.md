@@ -26,18 +26,16 @@ Der Client-Code wird zusammen mit dem Server-Code gebaut. Die gesamte Anwendung 
 ```bash
 APP_VERSION=$(grep APP_VERSION app.env | cut -d= -f2) && \
   ./gradlew build && \
-  docker build --build-arg JAR_FILE=build/libs/drives-${APP_VERSION}.jar -t drives:${APP_VERSION} . && \
+  docker build --platform linux/amd64 --build-arg JAR_FILE=build/libs/drives-${APP_VERSION}.jar -t drives:${APP_VERSION} . && \
   docker save drives:${APP_VERSION} -o drives.tar && \
-  scp drives.tar root@drives.schrell.de:
+  rsync -v drives.tar root@drives.schrell.de:
 ```
+Hinweis: Wenn der Zielserver `x86_64` ist, muss `--platform linux/amd64` gesetzt sein, auch wenn lokal auf ARM gebaut wird.
+
 und nach Übertragung der drives.tar auf Server-Seite:
 ```bash
 docker load -i ~/drives.tar && \
-  pushd /opt/drives-as && \
-  docker compose down \
-  docker compose up -d && \
-  popd && \
-  pushd /opt/drives-tas && \
+  pushd /opt/drives && \
   docker compose down \
   docker compose up -d && \
   popd

@@ -81,6 +81,7 @@ Die App-Version wird **zentral** in `app.env` gepflegt.
 2. Gradle liest diese Version und verwendet sie als `project.version`.
 3. `client/package.json` und `client/package-lock.json` werden vor `npmInstall` automatisch synchronisiert.
 4. Docker-Compose Dateien verwenden `image: drives:${APP_VERSION}` und laden `app.env`.
+5. Der Gradle-Task `dockerBuild` baut standardmäßig mit `--platform linux/amd64` (für `x86_64`-Zielsysteme). Bei ARM-Zielen kann `-PdockerPlatform=linux/arm64` gesetzt werden.
 
 Empfohlener Ablauf:
 - Version nur in `app.env` ändern.

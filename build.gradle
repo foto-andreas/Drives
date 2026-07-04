@@ -201,7 +201,9 @@ tasks.register('dockerBuild', Exec) {
 	group = 'docker'
 	description = 'Erstellt ein Docker Image der Anwendung.'
 	dependsOn build
-	doFirst {
-		commandLine 'docker', 'build', '--build-arg', "JAR_FILE=build/libs/${tasks.bootJar.archiveFileName.get()}", '-t', "drives:${project.version}", '.'
-	}
+	def dockerPlatform = providers.gradleProperty('dockerPlatform').map { it.trim() }.orElse('linux/amd64')
+	def jarFileName = tasks.named('bootJar', org.springframework.boot.gradle.tasks.bundling.BootJar).flatMap { it.archiveFileName }
+	inputs.property('dockerPlatform', dockerPlatform)
+	inputs.property('jarFileName', jarFileName)
+	commandLine 'docker', 'build', '--platform', dockerPlatform.get(), '--build-arg', "JAR_FILE=build/libs/${jarFileName.get()}", '-t', "drives:${project.version}", '.'
 }
