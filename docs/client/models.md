@@ -72,13 +72,6 @@ interface UserResponse {
 }
 ```
 
-### `InitializationStatusResponse`
-```
-interface InitializationStatusResponse {
-  initialized: boolean;
-}
-```
-
 ### `Reason`
 ```
 export enum Reason {

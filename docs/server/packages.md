@@ -54,7 +54,6 @@ REST-Endpunkte für die Kommunikation mit dem Frontend.
 | `DriveController` | Endpunkte für Fahrten (`/api/drives`, `/api/latestDrive`). |
 | `DriveTemplateController` | Endpunkte für Fahrtvorlagen (`/api/driveTemplates`). |
 | `ScanEntryController` | Scan-Flow (`/api/scan-entries`, Commit von Start/Ziel). |
-| `InitializationController` | Initialisierungsstatus der Tenant-Datenbank. |
 | `UserController` | Benutzerinformationen und Version (`/api/user`). |
 
 #### 📂 `api.dtos`
@@ -67,7 +66,6 @@ Data Transfer Objects (Java Records) für Request/Response.
 | `ScanEntryResponse` | Scan-Daten (Start/Ziel) inkl. GPS und KM-Stand. |
 | `ScanEntryCommitRequest` | Payload für die Erzeugung einer Fahrt aus Scan-Daten, inkl. optionalem `reason` (Default: `OTHER`). |
 | `UserResponse` | Nutzername und Server-Version. |
-| `InitializationStatusResponse` | Initialisierungsflag für den aktuellen Tenant. |
 | `ErrorResponse` | Standardisiertes Fehlerformat für den `GlobalExceptionHandler`. |
 
 #### 📂 `api.handlers`

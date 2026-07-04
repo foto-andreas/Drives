@@ -56,11 +56,6 @@ Basis-URL: `/api`
 - Antwort: `UserResponse` (Name, Version)
 - Hinweis: `version` wird serverseitig aus den Build-Metadaten (`BuildProperties`) geliefert. Die Quelle ist `APP_VERSION` aus `app.env` zur Build-Zeit.
 
-## Initialization
-
-### GET `/initialization-status`
-- Antwort: `InitializationStatusResponse` (`initialized: true|false`)
-
 ## DriveTemplates
 
 ### GET `/driveTemplates`
@@ -139,12 +134,5 @@ Basis-URL: `/api`
 {
   name: string,
   version: string
-}
-```
-
-### InitializationStatusResponse
-```
-{
-  initialized: boolean
 }
 ```

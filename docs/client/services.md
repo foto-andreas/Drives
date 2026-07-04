@@ -25,11 +25,6 @@ Verantwortlich für das Scannen von Start/Ziel.
 - **Latest-Start:** `GET /api/scan-entries/latest-start` (204 wenn kein Start verfügbar).
 - **Commit:** `POST /api/scan-entries/commit` erzeugt eine Fahrt aus Scan-Daten, inkl. optionalem `reason` (Default: `OTHER`).
 
-### InitializationService
-Liest den Initialisierungsstatus der Tenant-Datenbank.
-- **Endpoint:** `GET /api/initialization-status`
-- **Nutzung:** App zeigt eine Toast-Nachricht, wenn eine neue DB initialisiert wurde.
-
 ### UserService
 Lädt Informationen über den aktuell angemeldeten Benutzer.
 - **Backend-Kommunikation:** Ruft `/api/user` ab.

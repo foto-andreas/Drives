@@ -23,18 +23,14 @@ public class InitializationNotificationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        boolean isInitializationStatusRequest = request.getRequestURI() != null
-                && request.getRequestURI().endsWith("/api/initialization-status");
         try {
             filterChain.doFilter(request, response);
         } finally {
-            if (!isInitializationStatusRequest) {
-                String tenantId = TenantContext.getCurrentTenant();
-                String effectiveTenant = tenantId == null ? "default" : tenantId;
-                boolean isInit = initializationTracker.consumeInitializationFlag(effectiveTenant);
-                if (isInit) {
-                    response.setHeader(INITIALIZED_HEADER, "true");
-                }
+            String tenantId = TenantContext.getCurrentTenant();
+            String effectiveTenant = tenantId == null ? "default" : tenantId;
+            boolean isInit = initializationTracker.consumeInitializationFlag(effectiveTenant);
+            if (isInit) {
+                response.setHeader(INITIALIZED_HEADER, "true");
             }
         }
     }

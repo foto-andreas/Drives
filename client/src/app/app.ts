@@ -5,11 +5,9 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { UserService } from './user-service';
-import { InitializationService } from './initialization-service';
 
 @Component({
   selector: 'app-root',
@@ -24,13 +22,10 @@ import { InitializationService } from './initialization-service';
     MatButtonModule,
     MatIconModule,
     MatListModule,
-    MatSnackBarModule,
   ],
 })
 export class App implements OnInit {
   private readonly userService = inject(UserService);
-  private readonly initializationService = inject(InitializationService);
-  private readonly snackBar = inject(MatSnackBar);
   private readonly breakpointObserver = inject(BreakpointObserver);
   private readonly destroyRef = inject(DestroyRef);
   protected readonly title = signal('Fahrtenbuch');
@@ -43,20 +38,5 @@ export class App implements OnInit {
       .subscribe(result => this.isMobile.set(result.matches));
 
     this.userService.load();
-    this.initializationService.getStatus().subscribe({
-      next: (res) => {
-        if (res?.initialized) {
-          this.snackBar.open('Datenbank wurde initialisiert', 'Schließen', {
-            duration: 4000,
-            horizontalPosition: 'center',
-            verticalPosition: 'bottom',
-            panelClass: ['success-snackbar']
-          });
-        }
-      },
-      error: () => {
-        return;
-      }
-    });
   }
 }

@@ -6,7 +6,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
@@ -56,19 +55,4 @@ class InitializationNotificationFilterTest {
         verify(tracker, times(1)).consumeInitializationFlag("t2");
     }
 
-    @Test
-    void shouldNotCheckFlagForInitializationStatusEndpoint() throws ServletException, IOException {
-        DatabaseInitializationTracker tracker = mock(DatabaseInitializationTracker.class);
-        InitializationNotificationFilter filter = new InitializationNotificationFilter(tracker);
-
-        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/initialization-status");
-        MockHttpServletResponse response = new MockHttpServletResponse();
-        FilterChain chain = mock(FilterChain.class);
-        TenantContext.setCurrentTenant("t3");
-
-        filter.doFilter(request, response, chain);
-
-        verify(tracker, never()).consumeInitializationFlag(Mockito.any());
-        assertThat(response.getHeader(InitializationNotificationFilter.INITIALIZED_HEADER)).isNull();
-    }
 }
