@@ -15,12 +15,11 @@ Quelle: [`docs/diagrams/server-packages-overview.mmd`](../diagrams/server-packag
 ## 📦 Paket-Details
 
 ### 1. `de.schrell.drives`
-Konfigurationsklassen auf Root-Ebene für Security/Web-Infrastruktur.
+Konfigurationsklassen auf Root-Ebene für Security-Infrastruktur.
 
 | Klasse | Beschreibung |
 | :--- | :--- |
 | `SecurityConfig` | Konfiguration von Spring Security (OAuth2 Login, CSRF, Authorisierung). |
-| `WebConfig` | Web-spezifische Einstellungen (z.B. CORS-Header). |
 
 ### 2. `de.schrell.drives.config`
 Konfigurationsklassen für Integrationen und externe Services.
