@@ -6,16 +6,16 @@ import { DriveTemplateList } from './drive-template-list/drive-template-list';
 import { Scan } from './scan/scan';
 
 describe('routes', () => {
-  it('should define expected route mappings', () => {
+  it('should define expected route mappings', async () => {
     const byPath = new Map(routes.map(route => [route.path, route]));
 
-    expect(byPath.get('drives')?.component).toBe(DriveList);
-    expect(byPath.get('drives/new')?.component).toBe(DriveForm);
-    expect(byPath.get('drives/edit/:id')?.component).toBe(DriveForm);
-    expect(byPath.get('scan')?.component).toBe(Scan);
-    expect(byPath.get('driveTemplates')?.component).toBe(DriveTemplateList);
-    expect(byPath.get('driveTemplates/new')?.component).toBe(DriveTemplateForm);
-    expect(byPath.get('driveTemplates/edit/:id')?.component).toBe(DriveTemplateForm);
+    await expect(byPath.get('drives')?.loadComponent?.()).resolves.toBe(DriveList);
+    await expect(byPath.get('drives/new')?.loadComponent?.()).resolves.toBe(DriveForm);
+    await expect(byPath.get('drives/edit/:id')?.loadComponent?.()).resolves.toBe(DriveForm);
+    await expect(byPath.get('scan')?.loadComponent?.()).resolves.toBe(Scan);
+    await expect(byPath.get('driveTemplates')?.loadComponent?.()).resolves.toBe(DriveTemplateList);
+    await expect(byPath.get('driveTemplates/new')?.loadComponent?.()).resolves.toBe(DriveTemplateForm);
+    await expect(byPath.get('driveTemplates/edit/:id')?.loadComponent?.()).resolves.toBe(DriveTemplateForm);
 
     const rootRedirect = byPath.get('');
     expect(rootRedirect?.redirectTo).toBe('drives/new');
