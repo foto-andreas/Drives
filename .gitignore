@@ -38,6 +38,9 @@ out/
 .DS_Store
 /drives.tar
 src/main/resources/public/browser
+src/main/resources/public/3rdpartylicenses.txt
+src/main/resources/public/prerendered-routes.json
+src/main/resources/static/.well-known/appspecific/com.chrome.devtools.json
 /runLocal.sh
 **/.DS_Store
 /.output.txt
