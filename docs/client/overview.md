@@ -29,13 +29,8 @@ Quelle: [`docs/diagrams/client-components-hierarchy.mmd`](../diagrams/client-com
 
 Die Anwendung ist "Mobile First" gestaltet, um die Erfassung direkt im Fahrzeug zu erleichtern.
 
-### Swipe-to-Delete
-In den Listen (`DriveList`, `DriveTemplateList`) können Zeilen nach links gewischt werden, um eine Lösch-Aktion freizulegen. Dies ermöglicht eine schnelle Verwaltung ohne dedizierte Buttons in jeder Zeile auf kleinen Bildschirmen.
-
-### Scroll-Verhalten
-Um die Übersichtlichkeit zu wahren, wurde ein spezielles CSS-Layout implementiert:
-- Die Filter und Aktions-Buttons oben bleiben statisch (Sticky-Header-Effekt).
-- Nur der Tabelleninhalt (`mat-table`) innerhalb des `table-container` ist vertikal scrollbar.
+### Listen-Aktionen
+In den Listen (`DriveList`, `DriveTemplateList`) öffnet ein Zeilenklick die Bearbeitung. Löschen erfolgt über die sichtbare Aktionsspalte mit Bestätigungsdialog.
 
 ### Dynamische UI-Elemente
 - **Pfeil-Separator:** In der Liste wird zwischen Start und Ziel ein Pfeil angezeigt. Bei `HOME` (Home-Office) wird dieser ausgeblendet, da kein physischer Weg zurückgelegt wurde.

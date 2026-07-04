@@ -27,29 +27,6 @@ tr.mat-mdc-row:hover {
   cursor: pointer;
 }
 
-tr.mat-mdc-row {
-  touch-action: pan-y;
-  background-color: white; /* Verhindert Transparenz beim Swipen */
-  position: relative;
-}
-
-.mat-elevation-z8 {
-  overflow: hidden; /* Verhindert Scrollbars beim Swipen der Zeilen */
-}
-
-.delete-indicator {
-  position: absolute;
-  right: -70px;
-  top: 0;
-  bottom: 0;
-  width: 70px;
-  background-color: red;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-}
-
 .location-cell {
   display: flex;
   flex-direction: column;
@@ -58,10 +35,6 @@ tr.mat-mdc-row {
 
 .location-separator {
   display: none;
-}
-
-.desktop-only {
-  display: none !important;
 }
 
 @media (min-width: 600px) {
@@ -80,9 +53,6 @@ tr.mat-mdc-row {
     display: inline;
   }
 
-  .desktop-only {
-    display: table-cell !important;
-  }
 }
 
 h2 {

@@ -33,16 +33,13 @@
         <th mat-header-cell *matHeaderCellDef>Grund</th>
         <td mat-cell *matCellDef="let element">
           {{ ReasonHelper.toString(element.reason) }}
-          <div class="delete-indicator">
-            <mat-icon>delete</mat-icon>
-          </div>
         </td>
       </ng-container>
 
       <!-- Aktion Column -->
       <ng-container matColumnDef="Aktion">
-        <th mat-header-cell *matHeaderCellDef class="desktop-only">Aktion</th>
-        <td mat-cell *matCellDef="let element" class="desktop-only">
+        <th mat-header-cell *matHeaderCellDef>Aktion</th>
+        <td mat-cell *matCellDef="let element">
           <button mat-icon-button color="warn" (click)="deleteTemplate(element.id); $event.stopPropagation()">
             <mat-icon>delete</mat-icon>
           </button>
@@ -51,13 +48,7 @@
 
 
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;" (click)="editTemplate(row.id)"
-          (touchstart)="onRowTouchStart($event, row.id)"
-          (touchmove)="onRowTouchMove($event)"
-          (touchend)="onRowTouchEnd($event, row.id)"
-          (touchcancel)="onRowTouchEnd($event, row.id)"
-          [style.transform]="row.id === swipedRowId ? 'translateX(-' + currentSwipeOffset + 'px)' : 'translateX(0)'"
-          [style.transition]="row.id === swipedRowId ? 'none' : 'transform 0.2s ease-out'"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;" (click)="editTemplate(row.id)"></tr>
 
     </table>
 

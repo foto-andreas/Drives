@@ -85,12 +85,6 @@ export class DriveList {
 
   protected readonly drives = computed(() => this.allDrives());
 
-  private touchStartX = 0;
-  private touchStartY = 0;
-  private isActuallySwiping = false;
-  protected swipedRowId: string | null = null;
-  protected currentSwipeOffset = 0;
-
   constructor() {
     this.updateMonthDisabledState(this.filterForm.controls.year.value);
 
@@ -122,61 +116,7 @@ export class DriveList {
   }
 
   editDrive(id: string): void {
-    if (this.isActuallySwiping) return;
     this.router.navigate(['/drives/edit', id]);
-  }
-
-  onRowTouchStart(event: TouchEvent, id: string): void {
-    this.touchStartX = event.touches[0].clientX;
-    this.touchStartY = event.touches[0].clientY;
-    this.swipedRowId = id;
-    this.currentSwipeOffset = 0;
-    this.isActuallySwiping = false;
-  }
-
-  onRowTouchMove(event: TouchEvent): void {
-    if (!this.swipedRowId) return;
-
-    const currentX = event.touches[0].clientX;
-    const currentY = event.touches[0].clientY;
-
-    const deltaX = this.touchStartX - currentX;
-    const deltaY = Math.abs(this.touchStartY - currentY);
-
-    // Wenn es eher ein horizontaler Swipe nach links ist
-    if (deltaX > 10 && deltaX > deltaY) {
-      this.isActuallySwiping = true;
-      this.currentSwipeOffset = deltaX;
-      // Verhindere vertikales Scrollen während des Swipes
-      if (event.cancelable) {
-        event.preventDefault();
-      }
-    } else if (deltaX <= 0) {
-      this.currentSwipeOffset = 0;
-    }
-  }
-
-  onRowTouchEnd(event: TouchEvent, elementId: string): void {
-    const deltaX = this.currentSwipeOffset;
-    const touchEndY = event.changedTouches?.length > 0 ? event.changedTouches[0].clientY : this.touchStartY;
-    const deltaY = Math.abs(this.touchStartY - touchEndY);
-    const isDelete = deltaX > 50 && deltaY < deltaX * 0.5;
-
-    // UI-Zustand sofort zurücksetzen, damit die Zeile zurückgleitet
-    this.swipedRowId = null;
-    this.currentSwipeOffset = 0;
-
-    if (isDelete) {
-      // Verzögerung, damit die UI aktualisiert werden kann und Klicks blockiert bleiben
-      setTimeout(() => {
-        this.deleteDrive(elementId);
-        this.isActuallySwiping = false;
-      }, 50);
-    } else {
-      setTimeout(() => {
-        this.isActuallySwiping = false;
-      }, 50);
-    }
   }
 
   deleteDrive(id: string): void {

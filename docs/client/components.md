@@ -43,31 +43,15 @@ Zentrale Übersicht der Fahrten.
 
 - **Filterleiste:** Ermöglicht Filtern nach Jahr (Pflicht für Monat), Monat und Grund.
 - **Tabelle:** Zeigt Datum, Vorlagen-Name, Von/Nach (mit Pfeil-Logik), Länge und Grund.
+- **Aktionen:** Zeilenklick öffnet die Bearbeitung; die Aktionsspalte löscht nach Bestätigung.
 - **CSV-Export:** Generiert eine CSV-Datei basierend auf den aktuell sichtbaren (gefilterten) Daten.
-- **Swipe-Logic:** Implementiert `onRowTouchStart/Move/End`, um Zeilen auf Mobilgeräten nach links zu wischen (Lösch-Indikator).
 - **Home-Office-Export:** Bei Grund `HOME` wird im Export die Anzahl statt Kilometer aggregiert.
 
 ### 2. `DriveTemplateList`
 Verwaltung der verfügbaren Vorlagen.
 
 - Zeigt Name, Strecke und Standard-Grund.
-- Implementiert dieselbe Swipe-Geste zum Löschen wie die Fahrtenliste.
-
-## 🏗 Gemeinsame Features
-
-### Sticky Table Header & Scroll Container
-Beide Listen-Komponenten nutzen einen `.table-container` in ihrem CSS:
-```css
-.table-container {
-  max-height: 75vh; /* Mobil */
-  overflow: auto;
-}
-@media (min-width: 600px) {
-  .table-container {
-    max-height: 80vh; /* Desktop */
-  }
-}
-```
+- Zeilenklick öffnet die Bearbeitung; die Aktionsspalte löscht nach Bestätigung.
 Dies stellt sicher, dass die Tabellenüberschriften und Filter beim Scrollen sichtbar bleiben.
 
 ### ReasonHelper Integration

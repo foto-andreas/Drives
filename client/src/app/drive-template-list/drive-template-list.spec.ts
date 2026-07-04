@@ -63,32 +63,17 @@ describe('DriveTemplateList', () => {
     // 2. Navigation
     const router = TestBed.inject(Router);
     const navigateSpy = vi.spyOn(router, 'navigate');
-    (component as any).isActuallySwiping = false;
     component.editTemplate('1');
     expect(navigateSpy).toHaveBeenCalledWith(['/driveTemplates/edit', '1']);
 
-    // 3. Swipe & Deletion success
-    const mockEvent = { touches: [{ clientX: 100, clientY: 100 }], preventDefault: vi.fn() } as any;
-    component.onRowTouchStart(mockEvent, '1');
-    const moveEvent = { touches: [{ clientX: 40, clientY: 100 }], preventDefault: vi.fn(), cancelable: true } as any;
-    component.onRowTouchMove(moveEvent);
-    expect((component as any).isActuallySwiping).toBe(true);
-
+    // 3. Deletion success
     vi.stubGlobal('confirm', vi.fn(() => true));
-    const endEvent = { changedTouches: [{ clientX: 40, clientY: 100 }] } as any;
-    component.onRowTouchEnd(endEvent, '1');
-    await new Promise(resolve => setTimeout(resolve, 100));
+    component.deleteTemplate('1');
     expect(driveTemplateServiceMock.delete).toHaveBeenCalledWith('1');
     vi.unstubAllGlobals();
 
     // Clear snackBar mock
     snackBarMock.open.mockClear();
-
-    // Short swipe (no delete)
-    (component as any).currentSwipeOffset = 10;
-    component.onRowTouchEnd(endEvent, '1');
-    await new Promise(resolve => setTimeout(resolve, 100));
-    expect((component as any).isActuallySwiping).toBe(false);
 
     // 4. Deletion error
     vi.stubGlobal('confirm', vi.fn(() => true));
@@ -109,32 +94,6 @@ describe('DriveTemplateList', () => {
       'Schließen',
       expect.any(Object)
     );
-
-    // 5. Swipe move right (deltaX <= 0)
-    component.onRowTouchStart(mockEvent, '1');
-    const rightMoveEvent = { touches: [{ clientX: 150, clientY: 100 }] } as any;
-    component.onRowTouchMove(rightMoveEvent);
-    expect((component as any).currentSwipeOffset).toBe(0);
-
-    // 6. Navigation while swiping
-    navigateSpy.mockClear();
-    (component as any).isActuallySwiping = true;
-    component.editTemplate('1');
-    expect(navigateSpy).not.toHaveBeenCalled();
-
-    // 7. Touch move left (deltaX > 10)
-    component.onRowTouchStart(mockEvent, '2');
-    const moveLeftEvent = { touches: [{ clientX: 50, clientY: 100 }], preventDefault: vi.fn(), cancelable: true } as any;
-    component.onRowTouchMove(moveLeftEvent);
-    expect((component as any).isActuallySwiping).toBe(true);
-    expect((component as any).currentSwipeOffset).toBe(50);
-    expect(moveLeftEvent.preventDefault).toHaveBeenCalled();
-
-    // 8. Touch move vertical (deltaY > deltaX)
-    component.onRowTouchStart(mockEvent, '3');
-    const moveVerticalEvent = { touches: [{ clientX: 95, clientY: 200 }], preventDefault: vi.fn(), cancelable: true } as any;
-    component.onRowTouchMove(moveVerticalEvent);
-    expect((component as any).currentSwipeOffset).toBe(0); // Should not start swipe
 
     vi.unstubAllGlobals();
   });
