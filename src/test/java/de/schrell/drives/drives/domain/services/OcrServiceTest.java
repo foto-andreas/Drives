@@ -8,7 +8,6 @@ import org.mockito.Mockito;
 import org.springframework.mock.web.MockMultipartFile;
 
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
@@ -76,70 +75,6 @@ class OcrServiceTest {
         boolean suspicious = service.isSuspiciousOcrResultForTest("no digits here", Optional.empty());
 
         assertThat(suspicious).isTrue();
-    }
-
-    @Test
-    void findWhiteTextRoiDetectsWhiteTextOnBlueBackground() {
-        OcrProperties properties = new OcrProperties();
-        properties.setWhiteMinBrightness(200);
-        properties.setWhiteMaxDelta(60);
-        properties.setMinWhitePixels(100);
-        properties.setRoiPadding(4);
-        OcrService service = new OcrService(properties);
-
-        BufferedImage image = new BufferedImage(800, 300, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g2d = image.createGraphics();
-        g2d.setColor(new Color(15, 40, 90));
-        g2d.fillRect(0, 0, 800, 300);
-        g2d.setColor(Color.WHITE);
-        g2d.setFont(new Font("SansSerif", Font.BOLD, 72));
-        g2d.drawString("100000", 140, 190);
-        g2d.dispose();
-
-        Optional<BufferedImage> roi = service.findWhiteTextRoiForTest(image);
-
-        assertThat(roi).isPresent();
-        assertThat(roi.get().getWidth()).isLessThan(image.getWidth());
-        assertThat(roi.get().getHeight()).isLessThan(image.getHeight());
-    }
-
-    @Test
-    void findWhiteTextRoiReturnsEmptyWhenNotEnoughWhitePixels() {
-        OcrProperties properties = new OcrProperties();
-        properties.setMinWhitePixels(10_000);
-        OcrService service = new OcrService(properties);
-
-        BufferedImage image = new BufferedImage(400, 200, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g2d = image.createGraphics();
-        g2d.setColor(new Color(10, 30, 70));
-        g2d.fillRect(0, 0, 400, 200);
-        g2d.dispose();
-
-        Optional<BufferedImage> roi = service.findWhiteTextRoiForTest(image);
-
-        assertThat(roi).isEmpty();
-    }
-
-    @Test
-    void findWhiteTextRoiIgnoresAreasThatAreTooSmall() {
-        OcrProperties properties = new OcrProperties();
-        properties.setWhiteMinBrightness(200);
-        properties.setWhiteMaxDelta(60);
-        properties.setMinWhitePixels(10);
-        properties.setRoiPadding(0);
-        OcrService service = new OcrService(properties);
-
-        BufferedImage image = new BufferedImage(100, 40, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g2d = image.createGraphics();
-        g2d.setColor(new Color(15, 40, 90));
-        g2d.fillRect(0, 0, 100, 40);
-        g2d.setColor(Color.WHITE);
-        g2d.fillRect(10, 2, 2, 36);
-        g2d.dispose();
-
-        Optional<BufferedImage> roi = service.findWhiteTextRoiForTest(image);
-
-        assertThat(roi).isEmpty();
     }
 
     @Test

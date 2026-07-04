@@ -35,8 +35,6 @@ import java.util.regex.Pattern;
 public class OcrService {
 
     private static final Pattern DIGITS = Pattern.compile("(\\d{3,})");
-    private static final int MIN_ROI_DIMENSION = 3;
-    private static final double MIN_ROI_RATIO = 0.05;
     private static final double CLI_LIKE_CROP_TOP_RATIO = 0.25;
     private static final double CLI_LIKE_CROP_HEIGHT_RATIO = 0.6;
     private static final double PREPROCESS_CONTRAST = 1.0;
@@ -320,73 +318,6 @@ public class OcrService {
         return source.getSubimage(0, y, width, cropHeight);
     }
 
-    private BufferedImage centerBandCrop(BufferedImage source, double widthRatio, double heightRatio, int minHeight) {
-        int width = source.getWidth();
-        int height = source.getHeight();
-        int cropWidth = Math.max(1, (int) Math.round(width * widthRatio));
-        int cropHeight = Math.max(minHeight, (int) Math.round(height * heightRatio));
-        if (cropHeight > height) {
-            cropHeight = height;
-        }
-        int x = Math.max(0, (width - cropWidth) / 2);
-        int y = Math.max(0, (height - cropHeight) / 2);
-        return source.getSubimage(x, y, cropWidth, cropHeight);
-    }
-
-    private Optional<BufferedImage> findWhiteTextRoi(BufferedImage source) {
-        int width = source.getWidth();
-        int height = source.getHeight();
-        int minX = width;
-        int minY = height;
-        int maxX = -1;
-        int maxY = -1;
-        int count = 0;
-
-        int minBrightness = properties.getWhiteMinBrightness();
-        int maxDelta = properties.getWhiteMaxDelta();
-
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                int rgb = source.getRGB(x, y);
-                int r = (rgb >> 16) & 0xff;
-                int g = (rgb >> 8) & 0xff;
-                int b = rgb & 0xff;
-                int max = Math.max(r, Math.max(g, b));
-                int min = Math.min(r, Math.min(g, b));
-                int delta = max - min;
-                int brightness = (r + g + b) / 3;
-                if (brightness >= minBrightness && delta <= maxDelta) {
-                    count++;
-                    if (x < minX) minX = x;
-                    if (y < minY) minY = y;
-                    if (x > maxX) maxX = x;
-                    if (y > maxY) maxY = y;
-                }
-            }
-        }
-
-        if (count < properties.getMinWhitePixels() || maxX < 0 || maxY < 0) {
-            return Optional.empty();
-        }
-
-        int pad = properties.getRoiPadding();
-        int x1 = Math.max(0, minX - pad);
-        int y1 = Math.max(0, minY - pad);
-        int x2 = Math.min(width - 1, maxX + pad);
-        int y2 = Math.min(height - 1, maxY + pad);
-
-        int roiWidth = Math.max(1, x2 - x1 + 1);
-        int roiHeight = Math.max(1, y2 - y1 + 1);
-
-        int minWidth = Math.max(MIN_ROI_DIMENSION, (int) Math.round(width * MIN_ROI_RATIO));
-        int minHeight = Math.max(MIN_ROI_DIMENSION, (int) Math.round(height * MIN_ROI_RATIO));
-        if (roiWidth < minWidth || roiHeight < minHeight) {
-            return Optional.empty();
-        }
-
-        return Optional.of(source.getSubimage(x1, y1, roiWidth, roiHeight));
-    }
-
     private BufferedImage toGrayscale(BufferedImage source) {
         int width = source.getWidth();
         int height = source.getHeight();
@@ -664,10 +595,6 @@ public class OcrService {
 
     boolean isSuspiciousOcrResultForTest(String text, Optional<Integer> number) {
         return isSuspiciousOcrResult(text, number);
-    }
-
-    Optional<BufferedImage> findWhiteTextRoiForTest(BufferedImage source) {
-        return findWhiteTextRoi(source);
     }
 
     BufferedImage ensureBlackTextOnWhiteForTest(BufferedImage source) {
