@@ -16,7 +16,6 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin
 @RequiredArgsConstructor
 public class DriveController {
 

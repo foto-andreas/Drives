@@ -16,7 +16,6 @@ import java.time.format.DateTimeParseException;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin
 @RequiredArgsConstructor
 public class ScanEntryController {
 
